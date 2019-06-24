@@ -622,8 +622,6 @@ public class Main {
             }
         }
 
-        boolean successReadFromFile=false;  // TODO: set
-
 
         MonteCarloSimulation simulation=null;
         if (parallelMode=='t'){
@@ -663,8 +661,9 @@ public class Main {
                             .setBufferSize(bufferSize)
                             .build();
 
+                    // TODO: may need to move this up and then first check which kind of save was read: singleT or multipleT
                     makeDir("states" + File.separator, folderName);
-                    fSaveState = new File("states" + File.separator + folderName + File.separator + "save_state_" + Lx + "_" + Lz + "_" + dilution + "_" + h + "_" + extBx + "_" + suppressInternalTransFields + "_t.txt");
+                    fSaveState = new File("states" + File.separator + folderName + File.separator + "save_state_" + Lx + "_" + Lz + "_" + extBx + "_" + suppressInternalTransFields + ".txt");
                     FileInputStream fis = null;
                     boolean successReadFromFile=false;
 
