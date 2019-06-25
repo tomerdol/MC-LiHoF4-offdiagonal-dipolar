@@ -456,6 +456,8 @@ public class Main {
 
 
 
+
+
     public static void main(String[] args){
 
         int Lx=0;	// lattice x-y size
@@ -477,7 +479,7 @@ public class Main {
         double alpha=1.0;
         boolean realTimeEqTest=false;
         boolean verboseOutput=false;
-        char parallelMode='t';
+        char tempParallelMode='t';
         double temperature=-1;
 
         // create Options object
@@ -503,7 +505,7 @@ public class Main {
                         "must be provided.");
             }
 
-            if (commandLine.hasOption("mode")) parallelMode = ((Character) commandLine.getParsedOptionValue("mode")).charValue();
+            if (commandLine.hasOption("mode")) tempParallelMode = ((Character) commandLine.getParsedOptionValue("mode")).charValue();
             if (commandLine.hasOption("t")) temperature = ((Number) commandLine.getParsedOptionValue("t")).doubleValue();
 
             Lx = Integer.parseInt(commandLine.getOptionValues("L")[0]);
@@ -551,6 +553,10 @@ public class Main {
         }
 
         saveState = !printOutput;	// when output is printed to the console the state should not be saved.
+        final char parallelMode = tempParallelMode;
+
+        double[] T=null;
+        if (parallelMode!='t') T = receiveTemperatureSchedule(tempScheduleFileName);
 
         // first try and get spin size (initial guess) from manual calculation that diagonalizes the Ho C-F hamiltonian
         // using the external Bx.
@@ -590,7 +596,7 @@ public class Main {
         //  v 2. create and initialize RNG
         //  v 3. create k_tables
         //  v 4. FieldTables
-        //  5. OutputWriters
+        //  v 5. OutputWriters
         //  6. save states (try read etc.)
         //  7. problematic configs
 
@@ -622,38 +628,67 @@ public class Main {
             }
         }
 
+        SimulationCheckpointer checkpointer = new SimulationCheckpointer(folderName, Lx, Lz, extBx, suppressInternalTransFields);
+        boolean successReadFromFile = false;
+        MonteCarloSimulation simulation = null;
 
-        MonteCarloSimulation simulation=null;
+        if (continueFromSave) {
+            simulation = checkpointer.readCheckpoint();
+            if (simulation!=null) successReadFromFile=true;
+            String inconsistencies;
+            if (parallelMode=='t'){
+                // single T
+                inconsistencies=SimulationCheckpointer.verifyCheckpointCompatibility(new double[]{temperature}, parallelTemperingOff, parallelMode, simulation);
+
+            }else{
+                // multiple T
+                inconsistencies=SimulationCheckpointer.verifyCheckpointCompatibility(T, parallelTemperingOff, parallelMode, simulation);
+            }
+            if (!inconsistencies.isEmpty()){
+                System.err.println("There were some inconsistencies between the checkpoint parameters and the current parameters: " + inconsistencies);
+                System.err.println("Exiting.");
+                System.exit(1);
+
+                successReadFromFile=false;  // maybe later the simulation can be run with the new parameters.
+            }
+
+        }
+
+        makeDir("analysis" + File.separator, folderName);
+
         if (parallelMode=='t'){
             // single temperature mode
-            Lattice lattice = new Lattice(Lx, Lz, extBx, suppressInternalTransFields, intTable, exchangeIntTable, nnArray, energyTable, momentTable, new ObservableExtractor(k_cos_table, k_sin_table));
-
             try (FileWriter out = new FileWriter("analysis" + File.separator + folderName + File.separator + "table_" + Lx + "_" + Lz + "_" + extBx + "_" + temperature + "_" + suppressInternalTransFields + ".txt",successReadFromFile)) {
                 OutputWriter outputWriter = new OutputWriter.Builder(verboseOutput, folderName, obsPrintSweepNum, out)
                         .setPrintOutput(printOutput)
                         .setPrintProgress(printProgress)
                         .setBufferSize(bufferSize)
                         .build();
-                simulation = new SingleTMonteCarloSimulation(temperature, lattice, 30, maxSweeps, seed, mutualRnd, continueFromSave, realTimeEqTest, outputWriter);
+                if (successReadFromFile){
+                    ((SingleTMonteCarloSimulation) simulation).setMaxIter(maxIter);
+                    ((SingleTMonteCarloSimulation) simulation).setAlpha(alpha);
+                    ((SingleTMonteCarloSimulation) simulation).setOutWriter(outputWriter);
+                    ((SingleTMonteCarloSimulation) simulation).getLattice().setEnergyTable(energyTable);
+                }else {
+                    Lattice lattice = new Lattice(Lx, Lz, extBx, suppressInternalTransFields, intTable, exchangeIntTable, nnArray, energyTable, momentTable, new ObservableExtractor(k_cos_table, k_sin_table));
+                    simulation = new SingleTMonteCarloSimulation(temperature, -1, lattice, 30, maxSweeps, seed, mutualRnd, continueFromSave, realTimeEqTest, outputWriter, saveState, maxIter, alpha);
+                }
 
+                // run simulation
+                simulation.run();
             } catch (IOException e) {
                 System.err.println("Error writing to file. ");
                 e.printStackTrace();
-
             }
         }else{
             // multiple temperatures
-            double[] T = receiveTemperatureSchedule(tempScheduleFileName);
 
             long[] seeds = LongStream.rangeClosed(seed+1, seed+T.length).toArray();
             MersenneTwister[] rnd = new MersenneTwister[T.length];
             SingleTMonteCarloSimulation[] subSimulations = new SingleTMonteCarloSimulation[T.length];
-            File fSaveState;
 
             try {
                 for (int i=0;i<T.length;i++){
-                    Lattice lattice = new Lattice(Lx, Lz, extBx, suppressInternalTransFields, intTable, exchangeIntTable, nnArray, energyTable, momentTable, new ObservableExtractor(k_cos_table, k_sin_table));
-                    rnd[i] = new MersenneTwister(seeds[i]);
                     FileWriter out = new FileWriter("analysis" + File.separator + folderName + File.separator + "table_" + Lx + "_" + Lz + "_" + extBx + "_" + temperature + "_" + suppressInternalTransFields + ".txt", successReadFromFile)
                     OutputWriter outputWriter = new OutputWriter.Builder(verboseOutput, folderName, obsPrintSweepNum, out)
                             .setPrintOutput(printOutput)
@@ -661,33 +696,11 @@ public class Main {
                             .setBufferSize(bufferSize)
                             .build();
 
-                    // TODO: may need to move this up and then first check which kind of save was read: singleT or multipleT
-                    makeDir("states" + File.separator, folderName);
-                    fSaveState = new File("states" + File.separator + folderName + File.separator + "save_state_" + Lx + "_" + Lz + "_" + extBx + "_" + suppressInternalTransFields + ".txt");
-                    FileInputStream fis = null;
-                    boolean successReadFromFile=false;
-
-                    if (fSaveState.exists() && continueFromSave){
-                        try{
-                            // Open FileInputStream to the file
-                            fis = new FileInputStream(fSaveState);
-                            // Deserialize and cast into String
-                            state = (ProgramState) SerializationUtils.deserialize(fis);
-                            successReadFromFile=true;
-                        }catch(Exception e) {
-                            // for any problem reading previous state, just continue from start
-                            successReadFromFile=false;
-                        }finally{
-                            if (fis!=null) fis.close();
-                        }
-                    }
-
-                    subSimulations[i] = new SingleTMonteCarloSimulation(temperature, lattice, 30, maxSweeps, seeds[i], rnd[i], continueFromSave, realTimeEqTest, outputWriter);
-
                 }
 
-
-
+                Lattice lattice = new Lattice(Lx, Lz, extBx, suppressInternalTransFields, intTable, exchangeIntTable, nnArray, energyTable, momentTable, new ObservableExtractor(k_cos_table, k_sin_table));
+                rnd[i] = new MersenneTwister(seeds[i]);
+                subSimulations[i] = new SingleTMonteCarloSimulation(temperature, lattice, 30, maxSweeps, seeds[i], rnd[i], continueFromSave, realTimeEqTest, outputWriter);
 
 
                 if (parallelMode=='s'){
@@ -714,3 +727,5 @@ public class Main {
     }
 
 }
+
+

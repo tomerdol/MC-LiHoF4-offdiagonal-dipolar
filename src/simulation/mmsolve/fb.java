@@ -72,7 +72,7 @@ class fb extends fij_xi {
                             + E[1][i][j] * momentTable.getDerivative(1, getField(x, i, E, extBx, suppressInternalTransFields), -1*arr[i].getSpin(), arr[i].getPrevBIndices())
                             + E[2][i][j] * momentTable.getDerivative(0, getField(x, i, E, extBx, suppressInternalTransFields), -1*arr[i].getSpin(), arr[i].getPrevBIndices()));
                 }
-                if (((func)f).numCalledPython>=20){
+                if (((func)f).numManualCalc >=20){
                     System.err.println("called python too many times!");
                 }
                 //System.out.print(ret[i][j]+" ");

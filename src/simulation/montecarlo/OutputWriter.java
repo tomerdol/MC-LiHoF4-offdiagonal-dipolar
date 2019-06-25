@@ -102,6 +102,12 @@ public class OutputWriter implements Closeable {
         }
     }
 
+    public int getBufferSize(){ return this.bufferSize; }
+
+    public String getFolderName() { return this.folderName; }
+
+    public boolean isVerboseOutput() { return this.verboseOutput; }
+
     public OutputWriter(Builder builder) {
         this.printProgress = builder.printProgress;
         this.printOutputToConsole = builder.printOutputToConsole;

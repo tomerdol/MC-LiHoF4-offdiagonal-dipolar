@@ -35,15 +35,16 @@ class funcForHomotopy extends func {
      */
     public double[] func(double[] x) throws ConvergenceException {
         double[] retVec=new double[x.length];
-        for (int i=0;i<retVec.length && numCalledPython<20;i++) {
+        for (int i = 0; i<retVec.length && numManualCalc <20; i++) {
             if (i!=flippedSpin)  retVec[i] = x[i] - g(x, i, intTable, momentTable, arr, extBx, suppressInternalTransFields);
             else retVec[i] = x[i] - g(x, i, intTable, momentTable, arr, extBx, flippedSpin);
         }
 
-        if (numCalledPython>=20) {
-            ConvergenceException e = new ConvergenceException("the function surpassed the permitted threshold (20) for manual calculations. ");
-            e.setErrorLocation("Function evaluation");
-            e.setNumCalledPython(numCalledPython);
+        if (numManualCalc >=20) {
+            ConvergenceException e = new ConvergenceException.Builder("the function surpassed the permitted threshold (20) for manual calculations. ",
+                    "Function evaluation")
+                    .setNumManualCalc(numManualCalc)
+                    .build();
             throw e;
         }
 
@@ -78,11 +79,11 @@ class funcForHomotopy extends func {
         }
 
         returnDoubleAndStatus retNext = momentTable.getValue(B[0], B[1], B[2], -1 * arr[i].getSpin(), true);
-        if (!retNext.isSuccessful()) numCalledPython++; // to keep track of how many times python has been called
+        if (!retNext.isSuccessful()) numManualCalc++; // to keep track of how many times python has been called
 
 
         returnDoubleAndStatus retPrev = momentTable.getValue(B[0], B[1], B[2], arr[i].getSpin(), true);
-        if (!retPrev.isSuccessful()) numCalledPython++; // to keep track of how many times python has been called
+        if (!retPrev.isSuccessful()) numManualCalc++; // to keep track of how many times python has been called
         return retNext.getValue()*perc + retPrev.getValue()*(1-perc);
 
     }

@@ -4,12 +4,7 @@ import org.apache.commons.math3.random.MersenneTwister;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.util.Arrays;
-import org.apache.commons.math3.random.MersenneTwister;
-
-import java.io.Closeable;
-import java.io.IOException;
-import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 
 public abstract class MultipleTMonteCarloSimulation extends MonteCarloSimulation implements Closeable {
@@ -27,7 +22,7 @@ public abstract class MultipleTMonteCarloSimulation extends MonteCarloSimulation
     }
 
 
-    public MultipleTMonteCarloSimulation(double[] T, SingleTMonteCarloSimulation[] subSimulations, long maxSweeps, long seed, MersenneTwister rnd, boolean continueFromSave, boolean realTimeEqTest, boolean parallelTempetingOff){
+    public MultipleTMonteCarloSimulation(final double[] T, final SingleTMonteCarloSimulation[] subSimulations, final long maxSweeps, final long seed, final MersenneTwister rnd, final boolean continueFromSave, final boolean realTimeEqTest, final boolean parallelTempetingOff, final boolean checkpoint){
         this.parallelTempetingOff=parallelTempetingOff;
         this.acceptanceRateCount=new int[T.length];
         this.acceptanceRateSum=new int[T.length];
@@ -38,9 +33,18 @@ public abstract class MultipleTMonteCarloSimulation extends MonteCarloSimulation
         this.realTimeEqTest=realTimeEqTest;
         this.T = Arrays.copyOf(T, T.length);
         this.simulations = subSimulations;
+        this.checkpoint=checkpoint;
     }
 
+    public void printRunParameters(){
 
+    }
 
+    public boolean isParallelTempetingOff() {
+        return parallelTempetingOff;
+    }
 
+    public double[] getT() {
+        return Arrays.copyOf(T,T.length);
+    }
 }

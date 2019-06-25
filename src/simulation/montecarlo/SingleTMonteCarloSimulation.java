@@ -2,26 +2,32 @@ package simulation.montecarlo;
 
 import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.commons.math3.exception.NullArgumentException;
 import org.apache.commons.math3.random.MersenneTwister;
 
-import java.io.Closeable;
-import java.io.IOException;
-import java.io.Serializable;
+import java.io.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements Serializable, Closeable {
     private final double T;
+    private final int temperatureIndex;  // should be -1 if not part of multiple T simulation
     private long sweeps;
     private long currentBinCount;
     private final double[] binAvg;
     private final ArrayList<CircularFifoQueue<Pair<Double,Double>>> equilibratingObs;
     private Lattice lattice;
     private final MersenneTwister rnd;
-    private final OutputWriter outWriter;
+    private transient OutputWriter outWriter;
+    // parameters for the iterative solvers
+    private transient int maxIter;
+    private transient double alpha;
 
-    public SingleTMonteCarloSimulation(double T, Lattice lattice, int numOfObservables, long maxSweeps, long seed, MersenneTwister rnd, boolean continueFromSave, boolean realTimeEqTest, OutputWriter out) {
+    public SingleTMonteCarloSimulation(final double T, final int temperatureIndex, final Lattice lattice, final int numOfObservables, final long maxSweeps,
+                                       final long seed, final MersenneTwister rnd, final boolean continueFromSave, final boolean realTimeEqTest,
+                                       final OutputWriter out, final boolean checkpoint, final int maxIter, final double alpha) {
         this.T = T;
+        this.temperatureIndex=temperatureIndex;
         this.sweeps = 0;
         this.currentBinCount = 0;
         binAvg = new double[numOfObservables];
@@ -33,6 +39,9 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
         this.realTimeEqTest=realTimeEqTest;
         this.rnd=rnd;
         this.outWriter=out;
+        this.checkpoint=checkpoint;
+        this.alpha=alpha;
+        this.maxIter=maxIter;
 
         if (lattice.energyTable==null || lattice.momentTable==null || lattice.nnArray==null || lattice.exchangeIntTable==null || lattice.intTable==null) {
             throw new NullPointerException("The Lattice given to the SingleTMonteCarloSimulation has null some pointers. ");
@@ -41,6 +50,18 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
 
     public void close() throws IOException{
         outWriter.close();
+    }
+
+    public Lattice getLattice(){ return this.lattice; }
+
+    public void setOutWriter(final OutputWriter outWriter){
+        this.outWriter=outWriter;
+    }
+    public void setMaxIter(final int maxIter){
+        this.maxIter=maxIter;
+    }
+    public void setAlpha(final double alpha){
+        this.alpha=alpha;
     }
 
     public static void addToAvg(double[] avgArr, double[] currentValueArray){
@@ -104,11 +125,40 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
 
     }
 
+    public void printRunParameters(double[] T) throws IOException{
+        // print some information to the begining of the file:
+        outWriter.print("#" + LocalDateTime.now(), true);
+        outWriter.print("#temperature_schedule: "+ Arrays.toString(T), true);
+        outWriter.print("#T="+T + ":" + temperatureIndex, true);
+        //print constants:
+        outWriter.print("#" + Constants.constantsToString(), true);
+        outWriter.print(String.format("# Lx=%s, Ly=%s, Lz=%s, extBx=%s, maxSweeps=%s, suppressInternalTransFields=%s, " +
+                        "continueFromSave=%s, maxIter=%s, bufferSize=%s, tempScheduleFileName=%s, parallelTemperingOff=%s, " +
+                        "checkpoint=%s, folderName=%s, alpha=%s, verboseOutput=%s ",lattice.getLx(),lattice.getLx(),lattice.getLz(),lattice.getExtBx(), maxSweeps,lattice.isSuppressInternalTransFields(),
+                continueFromSave, maxIter, outWriter.getBufferSize(),
+                checkpoint, outWriter.getFolderName(),
+                alpha, outWriter.isVerboseOutput()),true);
+        outWriter.print("#" + Constants.locationsToString(), true);
+
+    }
+
     public static ArrayList<CircularFifoQueue<Pair<Double,Double>>> generateEquilibrationQueues(int numOfBins, int numOfObservables){
         ArrayList<CircularFifoQueue<Pair<Double,Double>>> obsArr = new ArrayList<>(numOfObservables);
         for (int observable=0;observable<numOfObservables;observable++){
             obsArr.add(new CircularFifoQueue<>(numOfBins));
         }
         return obsArr;
+    }
+
+    public double getT() {
+        return T;
+    }
+
+    public long getSweeps() {
+        return sweeps;
+    }
+
+    public long getCurrentBinCount() {
+        return currentBinCount;
     }
 }

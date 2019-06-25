@@ -96,7 +96,7 @@ public class MagneticMomentsSolve {
         try {
             f = fmin.calc(x);
         } catch (ConvergenceException e){
-            e.setErrorLocation("Broyden");
+            e.setErrorLocation("Broyden (" + e.getErrorLocation() + ")");
             e.setIndex(0);
             throw e;
         }
@@ -126,7 +126,10 @@ public class MagneticMomentsSolve {
                 qr = new QRdcmp(fdjac.func(x, identityJacobian));
                 if (changeJacobianIdentity) identityJacobian=!identityJacobian; // next time use actual Jacobian
                 if (qr.sing()) {
-                    throw new ConvergenceException("singular Jacobian in broydn. ", its, "Broyden", test);
+                    throw new ConvergenceException.Builder("singular Jacobian in broydn. ", "Broyden")
+                                                    .setIndex(its)
+                                                    .setConvergenceDistance(test)
+                                                    .build();
                 }
             } else { // Carry out Broyden update.
                 for (i = 0; i < n; i++)
@@ -155,7 +158,10 @@ public class MagneticMomentsSolve {
                         s[i] /= den; // Store s/(s(dot)s) in s.
                     qr.update(t, s); // Update R and QT .
                     if (qr.sing())
-                        throw new ConvergenceException("singular update in broydn. ", its, "Broyden", test);
+                        throw new ConvergenceException.Builder("singular update in broydn. ", "Broyden")
+                                .setIndex(its)
+                                .setConvergenceDistance(test)
+                                .build();
                 }
             }
             qr.qtmult(fvec, p);
@@ -175,14 +181,18 @@ public class MagneticMomentsSolve {
             try {
                 qr.rsolve(p, p); // Solve linear equations.
             } catch (Exception e){
-                throw new ConvergenceException("Something went wrong with rsolve in QRdcmp. ", e, its, "Broyden", test);
+                throw new ConvergenceException.Builder("Something went wrong with rsolve in QRdcmp. ", "Broyden")
+                        .setIndex(its)
+                        .setConvergenceDistance(test)
+                        .setCause(e)
+                        .build();
             }
 
             Double lnsrchRet;
             try {
                 lnsrchRet = lnsrch(xold, fold, g, p, x, stpmax, EPSILON, fmin);
             } catch (ConvergenceException e){
-                e.setErrorLocation("Broyden");
+                e.setErrorLocation("Broyden (" + e.getErrorLocation() + ")");
                 e.setIndex(its);
                 throw e;
             }
@@ -201,8 +211,11 @@ public class MagneticMomentsSolve {
             if (lnsrchRet==null) { // True if line search failed to find a new x.
                 if (restrt) { // Failure; already tried reinitializing the Jacobian.
                     qr = null;
-                    throw new ConvergenceException("Broyden failed to find solution even after reinitialization " +
-                            "of the Jacobian. Perhaps try a different initial guess. ", its, "Broyden", test);
+                    throw new ConvergenceException.Builder("Broyden failed to find solution even after reinitialization " +
+                            "of the Jacobian. Perhaps try a different initial guess. ", "Broyden")
+                            .setIndex(its)
+                            .setConvergenceDistance(test)
+                            .build();
                 } else {
                     test = 0.0; // Check for gradient of f zero, i.e., spurious convergence.
                     den = Math.max(f, 0.5 * n);
@@ -233,7 +246,10 @@ public class MagneticMomentsSolve {
                 }
             }
         }
-        throw new ConvergenceException("MAXITS exceeded in broyden. ", its, "Broyden", test);
+        throw new ConvergenceException.Builder("MAXITS exceeded in broyden. ", "Broyden")
+                                        .setIndex(its)
+                                        .setConvergenceDistance(test)
+                                        .build();
 
     }
 
@@ -269,7 +285,7 @@ public class MagneticMomentsSolve {
             f = fmin.calc(x);
         } catch (ConvergenceException e){
             e.setIndex(0);
-            e.setErrorLocation("Newton");
+            e.setErrorLocation("Newton (" + e.getErrorLocation() + ")");
             throw e;
         }
         fvec=fmin.getFvec();
@@ -309,16 +325,22 @@ public class MagneticMomentsSolve {
                 // decomposition
                 alu.solve(p, p);
             } catch (SingularMatrixException e){
-                throw new ConvergenceException("Singular Jacobian matrix given for LU decomposition. ", e, its, "Newton");
+                throw new ConvergenceException.Builder("Singular Jacobian matrix given for LU decomposition. ", "Newton")
+                        .setIndex(its)
+                        .setCause(e)
+                        .build();
             } catch (MatrixDimensionMismatchException e){
-                throw new ConvergenceException("Problem with matrix dimensions in LU decomposition. ", e, its, "Newton");
+                throw new ConvergenceException.Builder("Problem with matrix dimensions in LU decomposition. ", "Newton")
+                        .setIndex(its)
+                        .setCause(e)
+                        .build();
             }
             Double lnsrchRet;
             try {
                 lnsrchRet = lnsrch(xold, fold, g, p, x, stpmax, EPSILON, fmin);
             }catch (ConvergenceException e){
                 e.setIndex(its);
-                e.setErrorLocation("Newton");
+                e.setErrorLocation("Newton (" + e.getErrorLocation() + ")");
                 throw e;
             }
             fvec=fmin.getFvec();
@@ -355,7 +377,10 @@ public class MagneticMomentsSolve {
             if (test < TOLX)
                 return x;
         }
-        throw new ConvergenceException("MAXITS exceeded in newt. ", its, "Newton", test);
+        throw new ConvergenceException.Builder("MAXITS exceeded in newt. ", "Newton")
+                                        .setIndex(its)
+                                        .setConvergenceDistance(test)
+                                        .build();
     }
 
 
@@ -442,7 +467,8 @@ public class MagneticMomentsSolve {
             f2 = f;
             alam = Math.max(tmplam, 0.1 * alam);// lambda >= 0.1*lambda_1
         } // Try again.
-        throw new ConvergenceException("lnssrch could not find a new x[] after 200 iterations. ");
+        throw new ConvergenceException.Builder("lnssrch could not find a new x[] after 200 iterations. ", "lnsrch")
+                .build();
     }
 
 }

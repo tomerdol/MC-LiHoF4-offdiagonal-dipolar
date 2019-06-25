@@ -12,7 +12,7 @@ public class func extends fi_xi {
     final FieldTable momentTable;
     final singleSpin[] arr;
     final double extBx;
-    int numCalledPython;
+    int numManualCalc;
     final boolean suppressInternalTransFields;
 
     public func(final double[][][] intTable0, final FieldTable momentTable0, final singleSpin[] arr0, double extBx0, boolean suppressInternalTransFields0){
@@ -20,12 +20,12 @@ public class func extends fi_xi {
         momentTable=momentTable0;
         arr=arr0;
         extBx=extBx0;
-        numCalledPython=0;
+        numManualCalc =0;
         suppressInternalTransFields=suppressInternalTransFields0;
     }
 
-    public int getNumCalledPython() {
-        return numCalledPython;
+    public int getNumManualCalc() {
+        return numManualCalc;
     }
 
     public double[][][] getIntTable() {
@@ -55,14 +55,15 @@ public class func extends fi_xi {
      */
     public double[] func(double[] x) throws ConvergenceException {
         double[] retVec=new double[x.length];
-        for (int i=0;i<retVec.length && numCalledPython<20;i++) {
+        for (int i = 0; i<retVec.length && numManualCalc <20; i++) {
             retVec[i] = x[i] - g(x, i, intTable, momentTable, arr, extBx, suppressInternalTransFields);
         }
 
-        if (numCalledPython>=20) {
-            ConvergenceException e = new ConvergenceException("the function surpassed the permitted threshold (20) for manual calculations. ");
-            e.setNumCalledPython(numCalledPython);
-            e.setErrorLocation("Function evaluation");
+        if (numManualCalc >=20) {
+            ConvergenceException e = new ConvergenceException.Builder("the function surpassed the permitted threshold (20) for manual calculations. ",
+                    "Function evaluation")
+                    .setNumManualCalc(numManualCalc)
+                    .build();
             throw e;
         }
 
@@ -92,7 +93,7 @@ public class func extends fi_xi {
         returnDoubleAndStatus ret = momentTable.getValue(B[0], B[1], B[2], arr[i].getSpin(), true);
 
 
-        if (!ret.isSuccessful()) numCalledPython++; // to keep track of how many times python has been called
+        if (!ret.isSuccessful()) numManualCalc++; // to keep track of how many times python has been called
         return ret.getValue();
     }
 

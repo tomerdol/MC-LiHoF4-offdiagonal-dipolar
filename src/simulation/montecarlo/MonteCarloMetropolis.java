@@ -112,26 +112,26 @@ public class MonteCarloMetropolis {
 		try{
 			// ********************* initialize output of checkpoint ************************
 			// initialize program state
-			state = new ProgramState(null,null, 0, 0, null, null, null, null, null ,null, null);
-			makeDir("states" + File.separator, folderName);
-			fSaveState = new File("states" + File.separator + folderName + File.separator + "save_state_" + Lx + "_" + Lz + "_" + dilution + "_" + h + "_" + extBx + "_" + suppressInternalTransFields + "_t.txt");
-			FileInputStream fis = null;
-			boolean successReadFromFile=false;
-
-			if (fSaveState.exists() && continueFromSave){
-				try{
-					// Open FileInputStream to the file
-					fis = new FileInputStream(fSaveState);
-					// Deserialize and cast into String
-					state = (ProgramState) SerializationUtils.deserialize(fis);
-					successReadFromFile=true;
-				}catch(Exception e) {
-					// for any problem reading previous state, just continue from start
-					successReadFromFile=false;
-				}finally{
-					if (fis!=null) fis.close();
-				}
-			}
+//			state = new ProgramState(null,null, 0, 0, null, null, null, null, null ,null, null);
+//			makeDir("states" + File.separator, folderName);
+//			fSaveState = new File("states" + File.separator + folderName + File.separator + "save_state_" + Lx + "_" + Lz + "_" + dilution + "_" + h + "_" + extBx + "_" + suppressInternalTransFields + "_t.txt");
+//			FileInputStream fis = null;
+//			boolean successReadFromFile=false;
+//
+//			if (fSaveState.exists() && continueFromSave){
+//				try{
+//					// Open FileInputStream to the file
+//					fis = new FileInputStream(fSaveState);
+//					// Deserialize and cast into String
+//					state = (ProgramState) SerializationUtils.deserialize(fis);
+//					successReadFromFile=true;
+//				}catch(Exception e) {
+//					// for any problem reading previous state, just continue from start
+//					successReadFromFile=false;
+//				}finally{
+//					if (fis!=null) fis.close();
+//				}
+//			}
 
 			// *******************************************************************************
 
@@ -143,25 +143,25 @@ public class MonteCarloMetropolis {
 			ArrayList<ArrayList<CircularFifoQueue<Pair<Double,Double>>>> equilibratingObservables;
 
 			for (int t=0;t<T.length;t++) {
-				double temperature = T[t];
-				if (t<T.length-1) {	// last temperature is only for parallel tempering and not written to file
-
-					// ******************** initialize output of results ****************************
-					makeDir("analysis" + File.separator, folderName);
-					out[t] = new FileWriter("analysis" + File.separator + folderName + File.separator + "table_" + Lx + "_" + Lz + "_" + dilution + "_" + h + "_" + extBx + "_" + temperature + "_" + suppressInternalTransFields + "_t.txt",successReadFromFile);
-					// print some information to the begining of the file:
-					print("#" + LocalDateTime.now(), out[t], true, printOutput);
-					print("#temperature_schedule: "+Arrays.toString(T), out[t], true, printOutput);
-					print("#T="+t + ":" + temperature, out[t], true, printOutput);
-
-					//print constants:
-					print("#" + Constants.constantsToString(), out[t], true, printOutput);
-					print(String.format("# Lx=%s, Ly=%s, Lz=%s, extBx=%s, maxSweeps=%s, suppressInternalTransFields=%s, " +
-							"continueFromSave=%s, maxIter=%s, bufferSize=%s, tempScheduleFileName=%s, parallelTemperingOff=%s, " +
-							"saveState=%s, folderName=%s, alpha=%s, verboseOutput=%s ",Lx,Lx,Lz,extBx, maxSweeps,suppressInternalTransFields,
-							continueFromSave, maxIter, bufferSize, tempScheduleFileName, parallelTemperingOff, saveState, folderName,
-							alpha, verboseOutput),out[t],true,printOutput);
-					print("#" + Constants.locationsToString(), out[t], true, printOutput);
+//				double temperature = T[t];
+//				if (t<T.length-1) {	// last temperature is only for parallel tempering and not written to file
+//
+//					// ******************** initialize output of results ****************************
+//					makeDir("analysis" + File.separator, folderName);
+//					out[t] = new FileWriter("analysis" + File.separator + folderName + File.separator + "table_" + Lx + "_" + Lz + "_" + dilution + "_" + h + "_" + extBx + "_" + temperature + "_" + suppressInternalTransFields + "_t.txt",successReadFromFile);
+//					// print some information to the begining of the file:
+//					print("#" + LocalDateTime.now(), out[t], true, printOutput);
+//					print("#temperature_schedule: "+Arrays.toString(T), out[t], true, printOutput);
+//					print("#T="+t + ":" + temperature, out[t], true, printOutput);
+//
+//					//print constants:
+//					print("#" + Constants.constantsToString(), out[t], true, printOutput);
+//					print(String.format("# Lx=%s, Ly=%s, Lz=%s, extBx=%s, maxSweeps=%s, suppressInternalTransFields=%s, " +
+//							"continueFromSave=%s, maxIter=%s, bufferSize=%s, tempScheduleFileName=%s, parallelTemperingOff=%s, " +
+//							"saveState=%s, folderName=%s, alpha=%s, verboseOutput=%s ",Lx,Lx,Lz,extBx, maxSweeps,suppressInternalTransFields,
+//							continueFromSave, maxIter, bufferSize, tempScheduleFileName, parallelTemperingOff, saveState, folderName,
+//							alpha, verboseOutput),out[t],true,printOutput);
+//					print("#" + Constants.locationsToString(), out[t], true, printOutput);
 
 					// ******************************************************************************
 				}

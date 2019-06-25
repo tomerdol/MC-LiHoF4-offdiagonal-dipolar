@@ -8,6 +8,7 @@ public abstract class MonteCarloSimulation implements Serializable, Runnable, Cl
     protected boolean continueFromSave;
     protected long seed;
     protected boolean realTimeEqTest;
+    protected boolean checkpoint;
 
     public abstract void run();
 }

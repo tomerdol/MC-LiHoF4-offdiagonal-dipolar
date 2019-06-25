@@ -61,6 +61,34 @@ public class Lattice implements Serializable {
 
     }
 
+    public void setIntTable(double[][][] intTable) {
+        this.intTable = intTable;
+    }
+
+    public void setExchangeIntTable(double[][] exchangeIntTable) {
+        this.exchangeIntTable = exchangeIntTable;
+    }
+
+    public void setMomentTable(FieldTable momentTable) {
+        this.momentTable = momentTable;
+    }
+
+    public void setEnergyTable(FieldTable energyTable) {
+        this.energyTable = energyTable;
+    }
+
+    public void setNnArray(int[][] nnArray) {
+        this.nnArray = nnArray;
+    }
+
+    public void setMeasure(ObservableExtractor measure) {
+        this.measure = measure;
+    }
+
+    public void setIterativeSolver(MagneticMomentsSolveIter iterativeSolver) {
+        this.iterativeSolver = iterativeSolver;
+    }
+
     public int getN() {
         return N;
     }
@@ -139,7 +167,9 @@ public class Lattice implements Serializable {
 
                 double convergenceDistance = magneticMomentConvergence();
                 if (convergenceDistance > tol){
-                    throw new ConvergenceException("max number of iterations performed without reaching convergence.", "regular", convergenceDistance);
+                    throw new ConvergenceException.Builder("max number of iterations performed without reaching convergence.", "regular")
+                            .setConvergenceDistance(convergenceDistance)
+                            .build();
                 }else{
                     return lattice;
                 }
@@ -206,11 +236,12 @@ public class Lattice implements Serializable {
             this.updateAllLocalFields();
 
             if (magneticMomentConvergence() > tol) { // not converged
-                ConvergenceException e = new ConvergenceException("solver exited before reaching convergence. ", method == 3 ? "Newton" : "Broyden",
-                        magneticMomentConvergence());
-                e.setFlippedSpin(flipSpin);
+                ConvergenceException e = new ConvergenceException.Builder("solver exited before reaching convergence. ", method == 3 ? "Newton" : "Broyden")
+                        .setConvergenceDistance(magneticMomentConvergence())
+                        .setFlippedSpin(flipSpin)
+                        .build();
                 if (funcToSolve instanceof func) {
-                    e.setNumCalledPython(((func)funcToSolve).getNumCalledPython());
+                    e.setNumManualCalc(((func)funcToSolve).getNumManualCalc());
                 }
                 throw e;
             }else{
@@ -723,8 +754,11 @@ public class Lattice implements Serializable {
                     numOfStepsLeft = -1;  // this ends the loop
                     lattice[flipSpin].flipSpin();   // this does nothing. it is only so that magneticMomentConvergence that is called
                     // for the error information is run correctly.
-                    ConvergenceException e = new ConvergenceException("Too many homotopic step taken without convergence. numOfStepsLeft=" + numOfStepsLeft +
-                            ", i=" + i, i, "homotopic", magneticMomentConvergence());
+                    ConvergenceException e = new ConvergenceException.Builder("Too many homotopic step taken without convergence. numOfStepsLeft=" + numOfStepsLeft +
+                    ", i=" + i, "homotopic")
+                            .setIndex(i)
+                            .setConvergenceDistance(magneticMomentConvergence())
+                            .build();
                     throw e;
                 }
             }
@@ -818,8 +852,11 @@ public class Lattice implements Serializable {
                     addMixedSpinField(flipSpin, lattice[flipSpin].getSpinSize());   // this make the fields match the moments
                     lattice[flipSpin].flipSpin();
 
-                    ConvergenceException e = new ConvergenceException("Too many homotopic step taken without convergence. numOfStepsLeft=" + numOfStepsLeft +
-                            ", i=" + i, i, "homotopic", magneticMomentConvergence());
+                    ConvergenceException e = new ConvergenceException.Builder("Too many homotopic step taken without convergence. numOfStepsLeft=" + numOfStepsLeft +
+                            ", i=" + i, "homotopic")
+                            .setIndex(i)
+                            .setConvergenceDistance(magneticMomentConvergence())
+                            .build();
                     throw e;
                 }
             }
