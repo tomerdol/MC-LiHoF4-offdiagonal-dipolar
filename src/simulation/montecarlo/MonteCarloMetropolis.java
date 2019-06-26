@@ -1,59 +1,59 @@
 package simulation.montecarlo;
-
-import java.io.*;
-import java.time.LocalDateTime;
-import java.util.*;
-import java.util.stream.IntStream;
-
-import simulation.mmsolve.ConvergenceException;
-import simulation.mmsolve.MagneticMomentsSolveIter;
-import simulation.mmsolve.fi_xi;
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
-import org.apache.commons.lang3.SerializationUtils;
-import org.apache.commons.lang3.tuple.Pair;
-import org.apache.commons.math3.random.MersenneTwister;
-import org.apache.commons.collections4.queue.CircularFifoQueue;
-
+//
+//import java.io.*;
+//import java.time.LocalDateTime;
+//import java.util.*;
+//import java.util.stream.IntStream;
+//
+//import simulation.mmsolve.ConvergenceException;
+//import simulation.mmsolve.MagneticMomentsSolveIter;
+//import simulation.mmsolve.fi_xi;
+//import org.apache.commons.cli.CommandLine;
+//import org.apache.commons.cli.Options;
+//import org.apache.commons.cli.ParseException;
+//import org.apache.commons.lang3.SerializationUtils;
+//import org.apache.commons.lang3.tuple.Pair;
+//import org.apache.commons.math3.random.MersenneTwister;
+//import org.apache.commons.collections4.queue.CircularFifoQueue;
+//
 public class MonteCarloMetropolis {
-	static int failedSteps=0, successfulSteps=0;
-	static double avgSuccessTime=0, avgFailTime=0;
-	static long successCount=0, failCount=0;
+//	static int failedSteps=0, successfulSteps=0;
+//	static double avgSuccessTime=0, avgFailTime=0;
+//	static long successCount=0, failCount=0;
+//
+//
+//
+//	public static void printArr(singleSpin[] arr, int Lz, int Lx){
+//		for (int i=0; i<arr.length; i++){
+//			double B = Math.sqrt(arr[i].getLocalBx()*arr[i].getLocalBx() + arr[i].getLocalBy()*arr[i].getLocalBy());
+//			System.out.print(arr[i].getX(Lz,Lx) + "," + arr[i].getY(Lz,Lx) + "," + arr[i].getZ(Lz,Lx) + "," + arr[i].getN() + "," + arr[i].getSpin() + "," + B + "\n");
+//
+//		}
+//	}
 
 
 
-	public static void printArr(singleSpin[] arr, int Lz, int Lx){
-		for (int i=0; i<arr.length; i++){
-			double B = Math.sqrt(arr[i].getLocalBx()*arr[i].getLocalBx() + arr[i].getLocalBy()*arr[i].getLocalBy());
-			System.out.print(arr[i].getX(Lz,Lx) + "," + arr[i].getY(Lz,Lx) + "," + arr[i].getZ(Lz,Lx) + "," + arr[i].getN() + "," + arr[i].getSpin() + "," + B + "\n");
-
-		}
-	}
 
 
-
-
-
-	public static double updateFieldsAndCheckMagneticMomentConvergence(singleSpin[] arr, double[][][] intTable, FieldTable momentTable, double extBx, boolean suppressInternalTransFields, ConvergenceException e){
-		singleSpin[] tempLattice = Lattice.copyLattice(arr);
-		double beforeUpdate = magneticMomentConvergence(tempLattice, momentTable, extBx);
-		updateAllLocalTransFields(tempLattice, intTable, extBx, suppressInternalTransFields);
-		updateAllLocalFields(tempLattice, intTable[2]);
-		double afterUpdate=magneticMomentConvergence(tempLattice, momentTable, extBx);
-		//System.out.println(Math.abs(beforeUpdate-afterUpdate) +"  "+ verifyAllLocalFields(arr, intTable, extBx));
-		if (Math.abs(beforeUpdate-afterUpdate)>1.0e-10){
-			System.err.println("fields are not up to date! difference is " + (afterUpdate-beforeUpdate));
-			System.err.println("fields state after (in arr): " + verifyAllLocalFields(arr, intTable, extBx));
-			System.err.println("fields state after (in tempLattice): " + verifyAllLocalFields(tempLattice, intTable, extBx));
-			if (e!=null) {
-				System.err.println("e is not null:");
-				e.printStackTrace();
-			}
-			System.exit(1);
-		}
-		return magneticMomentConvergence(tempLattice, momentTable, extBx);
-	}
+//	public static double updateFieldsAndCheckMagneticMomentConvergence(singleSpin[] arr, double[][][] intTable, FieldTable momentTable, double extBx, boolean suppressInternalTransFields, ConvergenceException e){
+//		singleSpin[] tempLattice = Lattice.copyLattice(arr);
+//		double beforeUpdate = magneticMomentConvergence(tempLattice, momentTable, extBx);
+//		updateAllLocalTransFields(tempLattice, intTable, extBx, suppressInternalTransFields);
+//		updateAllLocalFields(tempLattice, intTable[2]);
+//		double afterUpdate=magneticMomentConvergence(tempLattice, momentTable, extBx);
+//		//System.out.println(Math.abs(beforeUpdate-afterUpdate) +"  "+ verifyAllLocalFields(arr, intTable, extBx));
+//		if (Math.abs(beforeUpdate-afterUpdate)>1.0e-10){
+//			System.err.println("fields are not up to date! difference is " + (afterUpdate-beforeUpdate));
+//			System.err.println("fields state after (in arr): " + verifyAllLocalFields(arr, intTable, extBx));
+//			System.err.println("fields state after (in tempLattice): " + verifyAllLocalFields(tempLattice, intTable, extBx));
+//			if (e!=null) {
+//				System.err.println("e is not null:");
+//				e.printStackTrace();
+//			}
+//			System.exit(1);
+//		}
+//		return magneticMomentConvergence(tempLattice, momentTable, extBx);
+//	}
 
 
 //	public static void printProblematicConfig(singleSpin[] arr, int flippedSpin, BufferedWriter out){
@@ -74,8 +74,8 @@ public class MonteCarloMetropolis {
 
 
 
-	public static void main(String[] args) throws RuntimeException, IOException {
-}
+//	public static void main(String[] args) throws RuntimeException, IOException {
+//}
 
 
 
@@ -374,7 +374,7 @@ public class MonteCarloMetropolis {
 //////                                    System.out.println("System equilibrated! sweeps="+sweeps+". Date&Time: "+LocalDateTime.now());
 //////                                    equilibrationDeclared=true;
 //////
-//////                                    // TODO change output type from bin to verbose
+
 //////
 //////                                } else if (t==T.length-1 && equilibrationDeclared && !isAllTrue(equilibratedT)){
 //////                                    // equilibration has previously been declared and now it turns out to have been a mistake
@@ -390,7 +390,7 @@ public class MonteCarloMetropolis {
 
 //					sweeps++;
 
-				}
+//				}
 				// parallel tempering scheme
 //				for (int t = 0; t < T.length - 1; t++) {
 //					double thisEnergy = currentEnergy[t];
@@ -456,6 +456,8 @@ public class MonteCarloMetropolis {
 
 //			}
 
+
+/*
 			System.out.println("Success %: "+successfulSteps+"/"+(failedSteps+successfulSteps)+" - "+100*((double)successfulSteps/(successfulSteps+failedSteps))+"%");
 			System.out.println("total time: " + (System.currentTimeMillis()-startTime));
 			System.out.println();
@@ -465,7 +467,7 @@ public class MonteCarloMetropolis {
 			System.out.println("success rate: " + successCount + "/" + totalCount + "=" + (1.0*successCount)/totalCount);
 			System.out.println("fail rate: " + failCount + "/" + totalCount + "=" + (1.0*failCount)/totalCount);
 			System.out.println((avgSuccessTime/successCount) + "\t" + (1.0*successCount)/totalCount + "\t" + (avgFailTime/failCount) + "\t" + (1.0*failCount)/totalCount);
-
+*/
 
 			// close outProblematicConfigs
 //			try {
@@ -496,7 +498,7 @@ public class MonteCarloMetropolis {
 
 
 
-	}
+//	}
 
 	/*
 	@Deprecated
@@ -551,147 +553,147 @@ public class MonteCarloMetropolis {
 
 }
 
-
-/**
- * Saves important variables and states so that the program can continue from where it left off in case of a crash.
- * @author Tomer
- *
- */
-class ProgramState implements Serializable {	// TODO: add some sort of deserialize verification (Lx, Lz etc. match current values)
-	private double[] currentEnergy;
-	private long seed, sweep;
-	private MersenneTwister rnd;
-	private singleSpin[][] arr;
-	private long[] currentBinCount;
-	private double[][] binAvg;
-	private int[] acceptanceRateCount;
-	private int[] acceptanceRateSum;
-	private ArrayList<ArrayList<CircularFifoQueue<Pair<Double,Double>>>> equilibratingObservables;
-
-	/**
-	 * Constructor for Program state
-	 * @param currentTransEnergy - current transverse energy array
-	 * @param currentLongEnergy - current longitudinal energy array
-	 * @param seed - RNG seed
-	 * @param sweep - sweep number
-	 * @param rnd - random number generator (MersenneTwister)
-	 * @param arr - spin lattice arrays
-	 */
-	public ProgramState(double[] currentTransEnergy, double[] currentLongEnergy, long seed, long sweep, MersenneTwister rnd, singleSpin[][] arr, long[] currentBinCount, double[][] binAvg,
-						int[] acceptanceRateCount, int[] acceptanceRateSum, ArrayList<ArrayList<CircularFifoQueue<Pair<Double,Double>>>> equilibratingObservables) {
-		this.currentEnergy = currentEnergy;
-		this.seed = seed;
-		this.sweep = sweep;
-		this.rnd = rnd;
-		this.arr = arr;
-		this.acceptanceRateCount = acceptanceRateCount;
-		this.acceptanceRateSum = acceptanceRateSum;
-		this.binAvg = binAvg;
-		this.currentBinCount = currentBinCount;
-		this.equilibratingObservables = equilibratingObservables;
-	}
-
-
-	/**
-	 * update program state (to be used before saving)
-	 * @param currentEnergy - current energy array
-	 * @param seed - RNG seed
-	 * @param sweep - sweep number
-	 * @param rnd - random number generator (MersenneTwister)
-	 * @param arr - spin lattice arrays
-	 */
-	public void updateAll(double[] currentEnergy, long seed, long sweep, MersenneTwister rnd, singleSpin[][] arr, long[] currentBinCount, double[][] binAvg,
-						  int[] acceptanceRateCount, int[] acceptanceRateSum, ArrayList<ArrayList<CircularFifoQueue<Pair<Double,Double>>>> equilibratingObservables) {
-		this.currentEnergy = currentEnergy;
-		this.seed = seed;
-		this.sweep = sweep;
-		this.rnd = rnd;
-		this.arr = arr;
-		this.acceptanceRateCount = acceptanceRateCount;
-		this.acceptanceRateSum = acceptanceRateSum;
-		this.binAvg = binAvg;
-		this.currentBinCount = currentBinCount;
-		this.equilibratingObservables = equilibratingObservables;
-	}
-
-	public double[] getCurrentEnergy() {
-		return currentEnergy;
-	}
-
-	public void setCurrentEnergy(double[] currentTransEnergy) {
-		this.currentEnergy = currentEnergy;
-	}
-
-
-	public long getSeed() {
-		return seed;
-	}
-
-	public void setSeed(long seed) {
-		this.seed = seed;
-	}
-
-	public long getSweep() {
-		return sweep;
-	}
-
-	public void setSweep(long sweep) {
-		this.sweep = sweep;
-	}
-
-	public MersenneTwister getRnd() {
-		return rnd;
-	}
-
-	public void setRnd(MersenneTwister rnd) {
-		this.rnd = rnd;
-	}
-
-	public singleSpin[][] getArr() {
-		return arr;
-	}
-
-	public void setArr(singleSpin[][] arr) {
-		this.arr = arr;
-	}
-
-	public long[] getCurrentBinCount() {
-		return currentBinCount;
-	}
-
-	public void setCurrentBinCount(long[] currentBinCount) {
-		this.currentBinCount = currentBinCount;
-	}
-
-	public double[][] getBinAvg() {
-		return binAvg;
-	}
-
-	public void setBinAvg(double[][] binAvg) {
-		this.binAvg = binAvg;
-	}
-
-	public int[] getAcceptanceRateCount() {
-		return acceptanceRateCount;
-	}
-
-	public void setAcceptanceRateCount(int[] acceptanceRateCount) {
-		this.acceptanceRateCount = acceptanceRateCount;
-	}
-
-	public int[] getAcceptanceRateSum() {
-		return acceptanceRateSum;
-	}
-
-	public void setAcceptanceRateSum(int[] acceptanceRateSum) {
-		this.acceptanceRateSum = acceptanceRateSum;
-	}
-
-    public ArrayList<ArrayList<CircularFifoQueue<Pair<Double, Double>>>> getEquilibratingObservables() {
-        return equilibratingObservables;
-    }
-
-    public void setEquilibratingObservables(ArrayList<ArrayList<CircularFifoQueue<Pair<Double, Double>>>> equilibratingObservables) {
-        this.equilibratingObservables = equilibratingObservables;
-    }
-}
+//
+///**
+// * Saves important variables and states so that the program can continue from where it left off in case of a crash.
+// * @author Tomer
+// *
+// */
+//class ProgramState implements Serializable {
+//	private double[] currentEnergy;
+//	private long seed, sweep;
+//	private MersenneTwister rnd;
+//	private singleSpin[][] arr;
+//	private long[] currentBinCount;
+//	private double[][] binAvg;
+//	private int[] acceptanceRateCount;
+//	private int[] acceptanceRateSum;
+//	private ArrayList<ArrayList<CircularFifoQueue<Pair<Double,Double>>>> equilibratingObservables;
+//
+//	/**
+//	 * Constructor for Program state
+//	 * @param currentTransEnergy - current transverse energy array
+//	 * @param currentLongEnergy - current longitudinal energy array
+//	 * @param seed - RNG seed
+//	 * @param sweep - sweep number
+//	 * @param rnd - random number generator (MersenneTwister)
+//	 * @param arr - spin lattice arrays
+//	 */
+//	public ProgramState(double[] currentTransEnergy, double[] currentLongEnergy, long seed, long sweep, MersenneTwister rnd, singleSpin[][] arr, long[] currentBinCount, double[][] binAvg,
+//						int[] acceptanceRateCount, int[] acceptanceRateSum, ArrayList<ArrayList<CircularFifoQueue<Pair<Double,Double>>>> equilibratingObservables) {
+//		this.currentEnergy = currentEnergy;
+//		this.seed = seed;
+//		this.sweep = sweep;
+//		this.rnd = rnd;
+//		this.arr = arr;
+//		this.acceptanceRateCount = acceptanceRateCount;
+//		this.acceptanceRateSum = acceptanceRateSum;
+//		this.binAvg = binAvg;
+//		this.currentBinCount = currentBinCount;
+//		this.equilibratingObservables = equilibratingObservables;
+//	}
+//
+//
+//	/**
+//	 * update program state (to be used before saving)
+//	 * @param currentEnergy - current energy array
+//	 * @param seed - RNG seed
+//	 * @param sweep - sweep number
+//	 * @param rnd - random number generator (MersenneTwister)
+//	 * @param arr - spin lattice arrays
+//	 */
+//	public void updateAll(double[] currentEnergy, long seed, long sweep, MersenneTwister rnd, singleSpin[][] arr, long[] currentBinCount, double[][] binAvg,
+//						  int[] acceptanceRateCount, int[] acceptanceRateSum, ArrayList<ArrayList<CircularFifoQueue<Pair<Double,Double>>>> equilibratingObservables) {
+//		this.currentEnergy = currentEnergy;
+//		this.seed = seed;
+//		this.sweep = sweep;
+//		this.rnd = rnd;
+//		this.arr = arr;
+//		this.acceptanceRateCount = acceptanceRateCount;
+//		this.acceptanceRateSum = acceptanceRateSum;
+//		this.binAvg = binAvg;
+//		this.currentBinCount = currentBinCount;
+//		this.equilibratingObservables = equilibratingObservables;
+//	}
+//
+//	public double[] getCurrentEnergy() {
+//		return currentEnergy;
+//	}
+//
+//	public void setCurrentEnergy(double[] currentTransEnergy) {
+//		this.currentEnergy = currentEnergy;
+//	}
+//
+//
+//	public long getSeed() {
+//		return seed;
+//	}
+//
+//	public void setSeed(long seed) {
+//		this.seed = seed;
+//	}
+//
+//	public long getSweep() {
+//		return sweep;
+//	}
+//
+//	public void setSweep(long sweep) {
+//		this.sweep = sweep;
+//	}
+//
+//	public MersenneTwister getRnd() {
+//		return rnd;
+//	}
+//
+//	public void setRnd(MersenneTwister rnd) {
+//		this.rnd = rnd;
+//	}
+//
+//	public singleSpin[][] getArr() {
+//		return arr;
+//	}
+//
+//	public void setArr(singleSpin[][] arr) {
+//		this.arr = arr;
+//	}
+//
+//	public long[] getCurrentBinCount() {
+//		return currentBinCount;
+//	}
+//
+//	public void setCurrentBinCount(long[] currentBinCount) {
+//		this.currentBinCount = currentBinCount;
+//	}
+//
+//	public double[][] getBinAvg() {
+//		return binAvg;
+//	}
+//
+//	public void setBinAvg(double[][] binAvg) {
+//		this.binAvg = binAvg;
+//	}
+//
+//	public int[] getAcceptanceRateCount() {
+//		return acceptanceRateCount;
+//	}
+//
+//	public void setAcceptanceRateCount(int[] acceptanceRateCount) {
+//		this.acceptanceRateCount = acceptanceRateCount;
+//	}
+//
+//	public int[] getAcceptanceRateSum() {
+//		return acceptanceRateSum;
+//	}
+//
+//	public void setAcceptanceRateSum(int[] acceptanceRateSum) {
+//		this.acceptanceRateSum = acceptanceRateSum;
+//	}
+//
+//    public ArrayList<ArrayList<CircularFifoQueue<Pair<Double, Double>>>> getEquilibratingObservables() {
+//        return equilibratingObservables;
+//    }
+//
+//    public void setEquilibratingObservables(ArrayList<ArrayList<CircularFifoQueue<Pair<Double, Double>>>> equilibratingObservables) {
+//        this.equilibratingObservables = equilibratingObservables;
+//    }
+//}

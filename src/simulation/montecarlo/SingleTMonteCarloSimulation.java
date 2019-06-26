@@ -12,10 +12,7 @@ import java.io.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Formatter;
 
-import static simulation.montecarlo.MonteCarloMetropolis.*;
-import static simulation.montecarlo.MonteCarloMetropolis.failedSteps;
 
 public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements Serializable, Closeable {
     private final double T;
@@ -198,17 +195,17 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
                 }else{
                     deltaEnergy=null;
                 }
-                successfulSteps++;
+//                successfulSteps++;
 
                 //System.out.println("step " + step + " successful");
             } catch (ConvergenceException e){
                 printProblematicConfig(tempLattice, e.getFlippedSpin(), outProblematicConfigs);
                 deltaEnergy=null;
-                failedSteps++;
+//                failedSteps++;
                 System.err.println("There was an error converging, had to abort metropolis step ("+step+ ", sweep="+sweeps+" T="+T+") and try another one. \n" + e.getMessage());
             } catch (IndexOutOfBoundsException e){
                 deltaEnergy=null;
-                failedSteps++;
+//                failedSteps++;
                 System.err.println("There was an error while calculating the derivative, had to abort metropolis step ("+step+ ", sweep="+sweeps+" T="+T+") and try another one.\n" + e.toString());
             }
 
@@ -361,23 +358,23 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
         writeObservables();
         sweeps++;
 
-        if (sweeps%outWriter.getObsPrintSweepNum()==0 || sweeps==maxSweeps-1) {	// every obsPrintSweepNum sweeps or at the last one
+        if (sweeps%outWriter.getObsPrintSweepNum()==0 || sweeps==maxSweeps) {	// every obsPrintSweepNum sweeps or at the last one
             outWriter.flush();
         }
     }
 
-    public void printRunParameters(double[] T, String extraMessage) throws IOException{
+    public void printRunParameters(double[] T, String extraMessage, String tempScheduleFileName, boolean parallelTemperingOff) throws IOException{
         // print some information to the begining of the file:
         outWriter.print("#" + LocalDateTime.now(), true);
         outWriter.print("#temperature_schedule: "+ Arrays.toString(T), true);
-        outWriter.print("#T="+T + ":" + temperatureIndex, true);
+        outWriter.print("#T="+ this.T + ":" + temperatureIndex, true);
         //print constants:
         outWriter.print("#" + Constants.constantsToString(), true);
         outWriter.print(String.format("# Lx=%s, Ly=%s, Lz=%s, extBx=%s, maxSweeps=%s, suppressInternalTransFields=%s, " +
                         "continueFromSave=%s, maxIter=%s, bufferSize=%s, tempScheduleFileName=%s, parallelTemperingOff=%s, " +
                         "checkpoint=%s, folderName=%s, alpha=%s, verboseOutput=%s ",lattice.getLx(),lattice.getLx(),lattice.getLz(),lattice.getExtBx(), maxSweeps,lattice.isSuppressInternalTransFields(),
                 continueFromSave, maxIter, outWriter.getBufferSize(),
-                checkpoint, outWriter.getFolderName(),
+                tempScheduleFileName, parallelTemperingOff, checkpoint, outWriter.getFolderName(),
                 alpha, outWriter.isVerboseOutput()),true);
         outWriter.print("#" + Constants.locationsToString(), true);
         outWriter.print("#seed=" + seed, true);

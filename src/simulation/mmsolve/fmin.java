@@ -1,18 +1,14 @@
 package simulation.mmsolve;
 
-import simulation.montecarlo.MagneticMomentsSolve;
-import simulation.montecarlo.f_xi;
-import simulation.montecarlo.fi_xi;
-
 /**
  * Returns 0.5*func(dot)func . Also stores value of func in fvec.
  */
 public class fmin extends f_xi {
     //Returns 0.5*func(dot)func . Also stores value of func in fvec.
-    final fi_xi vecFunc;
-    double[] fvec;
+    private final fi_xi vecFunc;
+    private double[] fvec;
 
-    public fmin(fi_xi func0){
+    fmin(fi_xi func0){
         vecFunc=func0;
     }
 
@@ -23,7 +19,7 @@ public class fmin extends f_xi {
         return 0.5*sum;
     }
 
-    public double[] getFvec() {
+    double[] getFvec() {
         return fvec;
     }
 }

@@ -1,7 +1,6 @@
 
 package simulation.mmsolve;
 
-import QRdcmp;
 import org.apache.commons.math3.linear.MatrixDimensionMismatchException;
 import org.apache.commons.math3.linear.SingularMatrixException;
 

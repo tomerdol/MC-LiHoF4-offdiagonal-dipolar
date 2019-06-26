@@ -55,9 +55,9 @@ public class GenerateLattice {
 	            		if (rnd_spin!=null && rnd_spin.nextDouble()<dilution){
 	            			int s=1;
 	            			//if (rnd_spin.nextBoolean()) s=-1;
-	            			arr[i*Lx*Lz*4+j*Lz*4+k*4+l]=new singleSpin(s,rnd_spin.nextGaussian()*h, i*Lx*Lz*4+j*Lz*4+k*4+l, 0);
+//	            			arr[i*Lx*Lz*4+j*Lz*4+k*4+l]=new singleSpin(s,rnd_spin.nextGaussian()*h, i*Lx*Lz*4+j*Lz*4+k*4+l, 0);
 	            		}else{
-		                	arr[i*Lx*Lz*4+j*Lz*4+k*4+l]=new singleSpin(0, 0, i*Lx*Lz*4+j*Lz*4+k*4+l, 0);
+//		                	arr[i*Lx*Lz*4+j*Lz*4+k*4+l]=new singleSpin(0, 0, i*Lx*Lz*4+j*Lz*4+k*4+l, 0);
 	            		}
             		}
             	}
@@ -70,10 +70,10 @@ public class GenerateLattice {
 	public static void printArr(singleSpin[] arr, int Lz, int Lx, BufferedWriter out){
 		for (int i=0; i<arr.length; i++){
 			try{
-				//if (arr[i].getX()==0){
-				out.write(arr[i].getX(Lz,Lx)+","+arr[i].getY(Lz,Lx)+","+arr[i].getZ(Lz,Lx)+","+arr[i].getSpin()+","+arr[i].getH()+","+arr[i].getN());
+
+//				out.write(arr[i].getX(Lz,Lx)+","+arr[i].getY(Lz,Lx)+","+arr[i].getZ(Lz,Lx)+","+arr[i].getSpin()+","+arr[i].getH()+","+arr[i].getN());
 				out.newLine();
-				//}
+
 			}
 			catch (IOException e) {}
 		}

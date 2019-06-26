@@ -14,17 +14,17 @@ public class Lattice implements Serializable {
     private final double extBx;
     private final boolean suppressInternalTransFields;
     // after deserialization these must be set:
-    public transient double[][][] intTable=null;
-    public transient double[][] exchangeIntTable=null;
-    public transient FieldTable momentTable=null;
-    public transient FieldTable energyTable=null;
-    public transient int[][] nnArray=null;
+    transient double[][][] intTable=null;
+    transient double[][] exchangeIntTable=null;
+    transient FieldTable momentTable=null;
+    transient FieldTable energyTable=null;
+    transient int[][] nnArray=null;
     private transient ObservableExtractor measure;
     private transient MagneticMomentsSolveIter iterativeSolver;
 
     private singleSpin[] lattice;
 
-    public Lattice(int Lx, int Lz, double extBx, boolean suppressInternalTransFields, double[][][] intTable, double[][] exchangeIntTable, int[][] nnArray, FieldTable energyTable, FieldTable momentTable, ObservableExtractor measure){
+    public Lattice(int Lx, int Lz, double extBx, boolean suppressInternalTransFields, double[][][] intTable, double[][] exchangeIntTable, int[][] nnArray, FieldTable energyTable, FieldTable momentTable, final ObservableExtractor measure){
         this.N=Lx*Lx*Lz*4;
         this.Lx=Lx;
         this.Lz=Lz;
@@ -39,7 +39,8 @@ public class Lattice implements Serializable {
         this.iterativeSolver = new MagneticMomentsSolveIter();
 
         this.lattice=generateIsingLattice(Lx,Lz);
-        this.updateAllLocalFields();
+        if (intTable!=null && exchangeIntTable!=null && energyTable!=null && momentTable!=null && nnArray!=null && measure!=null)
+            this.updateAllLocalFields();
     }
 
     public Lattice(Lattice other){
@@ -50,8 +51,10 @@ public class Lattice implements Serializable {
         this.suppressInternalTransFields=other.suppressInternalTransFields;
         this.intTable=other.intTable;
         this.exchangeIntTable=other.exchangeIntTable;
-        this.momentTable=other.momentTable;
         this.energyTable=other.energyTable;
+        this.momentTable=other.momentTable;
+        this.nnArray=other.nnArray;
+        this.measure=other.measure;
         this.iterativeSolver = new MagneticMomentsSolveIter();
 
         lattice = new singleSpin[other.lattice.length];
@@ -87,6 +90,10 @@ public class Lattice implements Serializable {
 
     public void initIterativeSolver() {
         this.iterativeSolver = new MagneticMomentsSolveIter();
+    }
+
+    public ObservableExtractor getMeasure() {
+        return measure;
     }
 
     public MagneticMomentsSolveIter getIterativeSolver() {
@@ -203,7 +210,7 @@ public class Lattice implements Serializable {
                 // method numbers in the range 3<=method<=7 use the given initial guess
                 for (int j = 0; j < lattice.length; j++) x[j] = lattice[j].getSpinSize();
             }
-            else if (method>=9 && method <=13){
+            else if (method>=9 && method<=13){
                 // method numbers in the range 8<=method<=12 use a random initial guess
                 Random rnd = new Random();  // TODO: make sure this is reproducible (seed/use other RNG)
                 for (int j = 0; j < x.length; j++) x[j] = Constants.spinSize * rnd.nextDouble() * (rnd.nextBoolean() ? 1 : -1);
@@ -256,9 +263,8 @@ public class Lattice implements Serializable {
             }
         }else{
             System.err.println("Method number does not exist.");
-            System.exit(1);
-
-
+            throw new ConvergenceException.Builder("Method number does not exist.", "solveSelfConsistentCalc")
+                    .build();
         }
         return lattice;
     }
@@ -267,7 +273,7 @@ public class Lattice implements Serializable {
 
     // returns new int array which has the BFS order with respect to the given spin index
     // n is the maximum (arr.length)
-    public int[] orderBFS(int n, int root) {
+    private int[] orderBFS(int n, int root) {
         int[] bfs = new int[n];
         int head = 0, tail = 0; // head and tail of the queue
         boolean[] visited = new boolean[n];
@@ -309,7 +315,7 @@ public class Lattice implements Serializable {
 
     // copies the contents of the given iterator to an array of size N
     // used for saving a configuration
-    public static singleSpin[] copyLattice(singleSpin[] arr){
+    private static singleSpin[] copyLattice(singleSpin[] arr){
         singleSpin[] newLatticeArr = new singleSpin[arr.length];
         for (int i=0;i<arr.length;i++){
             newLatticeArr[i] = new singleSpin(arr[i]);
@@ -349,7 +355,7 @@ public class Lattice implements Serializable {
 
     }
 
-    public double magneticMomentConvergence(int flipSpin, double frac){
+    private double magneticMomentConvergence(int flipSpin, double frac){
         double converged = 0;
         double max = 0;
 
@@ -381,11 +387,11 @@ public class Lattice implements Serializable {
 
     // calculate the magnetic moment convergence without any frac spins.
     // flipSpin is ignored (required for homotopicSolve2)
-    public double magneticMomentConvergence(int flipSpin){
+    private double magneticMomentConvergence(int flipSpin){
         return magneticMomentConvergence(flipSpin, 0);
     }
 
-    public void updateFieldsAfterSpinSizeChange(int i, double prevSpinSize){
+    private void updateFieldsAfterSpinSizeChange(int i, double prevSpinSize){
         int j;
         double deltaSpinSize = lattice[i].getSpinSize()-prevSpinSize;
         if (lattice[i].getSpin()!=0) {
@@ -443,7 +449,7 @@ public class Lattice implements Serializable {
             //System.out.println("calc'd Bz: " + Bz);
             */
             // check is Bx,By or Bz are not equal to the values stored in the i-th site up to a tolerance constant
-            ret = ret && (Math.abs(lattice[i].getLocalBx()-Bx)<tol) && (Math.abs(lattice[i].getLocalBy()-By)<tol) && (Math.abs(lattice[i].getLocalBz()-Bz)<tol);
+            ret &= (Math.abs(lattice[i].getLocalBx()-Bx)<tol) && (Math.abs(lattice[i].getLocalBy()-By)<tol) && (Math.abs(lattice[i].getLocalBz()-Bz)<tol);
 
 
         }
@@ -468,7 +474,7 @@ public class Lattice implements Serializable {
      * @return Received Ising lattice
      * @throws IOException
      */
-    static singleSpin[] receiveIsingLattice(int fileNumber, double dilution, int Lx, int Lz, double h, MersenneTwister rnd) throws RuntimeException, IOException {
+    static singleSpin[] receiveIsingLattice(int fileNumber, double dilution, int Lx, int Lz, double h, MersenneTwister rnd) throws IOException {
         singleSpin[] arr = null;
         BufferedReader in = null;
         try {
@@ -565,9 +571,7 @@ public class Lattice implements Serializable {
         return measure.meanField(lattice);
     }
 
-    public double getMK2(){
-        return measure.calc_mk2(lattice);
-    }
+    public double getMK2(){ return measure.calc_mk2(lattice); }
 
     public double getMagnetization(){
         return measure.calcMagnetization(lattice);

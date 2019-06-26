@@ -496,7 +496,7 @@ public class Main {
         // then parse the interrogate the commandLine object
         try {
 
-            if (commandLine.hasOption("mode")) tempParallelMode = ((Character) commandLine.getParsedOptionValue("mode")).charValue();
+            if (commandLine.hasOption("mode")) tempParallelMode = commandLine.getOptionValue("mode").charAt(0);
 
             Lx = Integer.parseInt(commandLine.getOptionValues("L")[0]);
             Lz = Integer.parseInt(commandLine.getOptionValues("L")[1]);
@@ -593,6 +593,8 @@ public class Main {
         FieldTable energyTable = FieldTable.of(String.format("energy_up_broyden_arr_%1.2f",extBx), false);
         FieldTable momentTable = FieldTable.of(String.format("magnetic_moment_up_broyden_arr_%1.2f",extBx), true);
 
+        ObservableExtractor measure = new ObservableExtractor(k_cos_table, k_sin_table);
+
         MersenneTwister mutualRnd = new MersenneTwister();
         if (!receivedSeed) {
             seed = initializeRNG(mutualRnd, taskID);
@@ -652,16 +654,18 @@ public class Main {
                     ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).getLattice().setIntTable(intTable);
                     ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).getLattice().setMomentTable(momentTable);
                     ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).getLattice().setNnArray(nnArray);
+                    ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).getLattice().setMeasure(measure);
                     ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).getLattice().initIterativeSolver();
 
-                    ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).printRunParameters(T, "# successfully read saved state");
+
+                    ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).printRunParameters(T, "# successfully read saved state", tempScheduleFileName, parallelTemperingOff);
                 }else{
                     // initialize new simulation
-                    Lattice lattice = new Lattice(Lx, Lz, extBx, suppressInternalTransFields, intTable, exchangeIntTable, nnArray, energyTable, momentTable, new ObservableExtractor(k_cos_table, k_sin_table));
+                    Lattice lattice = new Lattice(Lx, Lz, extBx, suppressInternalTransFields, intTable, exchangeIntTable, nnArray, energyTable, momentTable, measure);
                     rnd[i] = new MersenneTwister(seeds[i]);
                     subSimulations[i] = new SingleTMonteCarloSimulation(T[i], i, T.length, lattice, 30, maxSweeps, seeds[i], rnd[i], continueFromSave,
                             realTimeEqTest, outputWriter, saveState, maxIter, alpha, outProblematicConfigs);
-                    subSimulations[i].printRunParameters(T, "# unsuccessful reading checkpoint... Starting new state.");
+                    subSimulations[i].printRunParameters(T, "# unsuccessful reading checkpoint... Starting new state.", tempScheduleFileName, parallelTemperingOff);
                 }
 
                 outputWriter.print(outputWriter.makeTableHeader(), true);

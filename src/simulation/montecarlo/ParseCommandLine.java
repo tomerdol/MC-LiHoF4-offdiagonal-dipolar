@@ -11,7 +11,7 @@ public class ParseCommandLine {
      * "Definition" stage of command-line parsing with Apache Commons CLI.
      * @return Definition of command-line options.
      */
-    protected static Options generateOptions()
+    static Options generateOptions()
     {
         final Option magneticMomentCalcMaxIter = Option.builder("max_iter")
                 .required(true)
@@ -128,7 +128,7 @@ public class ParseCommandLine {
                 .desc("Name of folder in which to save the output and save files.")
                 .build();
         final Option method = Option.builder("method")
-                .required(true)
+                .required(false)
                 .hasArg()
                 .desc("method for solving megnetic moment calculation")
                 .type(Number.class)
@@ -157,7 +157,6 @@ public class ParseCommandLine {
                 .longOpt("parallel_mode")
                 .hasArg(true)
                 .required(true)
-                .type(Character.class)
                 .desc("mode of operation when simulating multiple temperatures. serial (s) or parallel (p)")
                 .build();
         final Option temperature = Option.builder("t")
@@ -217,7 +216,7 @@ public class ParseCommandLine {
      *    command line arguments; may be {@code null} if there is an exception
      *    encountered while attempting to parse the command line options.
      */
-    protected static CommandLine generateCommandLine(
+    static CommandLine generateCommandLine(
             final Options options, final String[] commandLineArguments)
     {
         final CommandLineParser cmdLineParser = new DefaultParser();
@@ -241,8 +240,6 @@ public class ParseCommandLine {
      *
      * @param options Instance of Options to be used to prepare
      *    usage formatter.
-     * @return HelpFormatter instance that can be used to print
-     *    usage information.
      */
     protected static void printUsage(final Options options)
     {
@@ -261,10 +258,8 @@ public class ParseCommandLine {
      *
      * @param options Instance of Options to be used to prepare
      *    help formatter.
-     * @return HelpFormatter instance that can be used to print
-     *    help information.
      */
-    protected static void printHelp(final Options options)
+    static void printHelp(final Options options)
     {
         final HelpFormatter formatter = new HelpFormatter();
         final String syntax = "simulation/montecarlo";

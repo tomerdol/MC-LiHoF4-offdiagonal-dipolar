@@ -105,7 +105,7 @@ public class OutputWriter implements Closeable {
 
     public String makeTableRowFormat(char[] colTypes){
         if (colWidths.length!=colTypes.length)
-            throw new InputMismatchException("array of column types should be the same length as array of column widths.");
+            throw new InputMismatchException("array of column types should be the same length as array of column widths. colWidths.length=" + colWidths.length + ", colTypes.length="+colTypes.length);
         StringBuilder rowFormat = new StringBuilder(colTypes.length*9);
         for (int i=0;i<colTypes.length-1;i++){	// the last column is printed separately
             // % 10d
@@ -182,14 +182,16 @@ public class OutputWriter implements Closeable {
         private int bufferSize=0;
 
         // created without outside input
-        private final int[] colWidths=makeColHeaderWidths();
-        private final String[] colNames=makeColHeaderNames();
+        private final int[] colWidths;
+        private final String[] colNames;
 
         public Builder(boolean verboseOutput, String folderName, long obsPrintSweepNum, FileWriter out) {
             this.verboseOutput = verboseOutput;
             this.folderName = folderName;
             this.obsPrintSweepNum=obsPrintSweepNum;
             this.out = out;
+            this.colWidths=makeColHeaderWidths();
+            this.colNames=makeColHeaderNames();
         }
 
         public Builder setPrintProgress(boolean printProgress) {

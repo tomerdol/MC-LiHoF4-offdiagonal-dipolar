@@ -10,14 +10,14 @@ import java.util.Arrays;
 
 public class MultipleTMonteCarloSimulation extends MonteCarloSimulation implements Closeable {
     // TODO check if these can be private now that I don't use serial & parallel classes
-    protected final boolean parallelTempetingOff;
-    protected int[] acceptanceRateCount;
-    protected int[] acceptanceRateSum;
+    private final boolean parallelTempetingOff;
+    private int[] acceptanceRateCount;
+    private int[] acceptanceRateSum;
     protected final double[] T;
-    protected SingleTMonteCarloSimulation[] simulations;
-    protected final MersenneTwister rnd;
-    protected long sweeps;
-    protected transient SimulationCheckpointer checkpointer;
+    private SingleTMonteCarloSimulation[] simulations;
+    private final MersenneTwister rnd;
+    private long sweeps;
+    private transient SimulationCheckpointer checkpointer;
 
     public SingleTMonteCarloSimulation getIthSubSimulation(int i){ return this.simulations[i]; }
 
@@ -32,6 +32,17 @@ public class MultipleTMonteCarloSimulation extends MonteCarloSimulation implemen
         run('s');
     }
 
+    private void updateAcceptanceRates(int t, boolean swapAcceptance){
+        simulations[t].getOutWriter().writeSwapAcceptance(swapAcceptance);
+        acceptanceRateCount[t]++;
+        simulations[t].incAcceptanceRateCount();
+        if (swapAcceptance){
+            acceptanceRateSum[t]++;
+            simulations[t].incAcceptanceRateSum();
+        }
+
+    }
+
     // try and swap (t)th and (t+1)th simulations
     public void trySwitch(int t){
         double thisEnergy = simulations[t].getCurrentEnergy();
@@ -39,15 +50,9 @@ public class MultipleTMonteCarloSimulation extends MonteCarloSimulation implemen
         double delta = (1/T[t] - 1/T[t + 1])*(thisEnergy - nextEnergy);
         if (!parallelTempetingOff && rnd.nextDouble() < Math.exp(delta)) {
             simulations[t].swap(simulations[t+1]);
-            simulations[t].getOutWriter().writeSwapAcceptance(true);
-            acceptanceRateCount[t]++;
-            acceptanceRateSum[t]++;
-            simulations[t].incAcceptanceRateCount();
-            simulations[t].incAcceptanceRateSum();
+            updateAcceptanceRates(t, true);
         }else{
-            simulations[t].getOutWriter().writeSwapAcceptance(false);
-            acceptanceRateCount[t]++;
-            simulations[t].incAcceptanceRateCount();
+            updateAcceptanceRates(t, false);
         }
 
 
@@ -61,9 +66,11 @@ public class MultipleTMonteCarloSimulation extends MonteCarloSimulation implemen
                 for (int i = 0; i < simulations.length; i++) {
                     simulations[i].run();
                 }
-                for (int i = 0; i < simulations.length - 1; i++) {
+                int i;
+                for (i = 0; i < simulations.length - 1; i++) {
                     trySwitch(i);
                 }
+                updateAcceptanceRates(i, true); // last temperature has no acceptance rate so it is always saved as true
 
             } else if (mode == 'p') {
                 //parallel mode
