@@ -550,14 +550,14 @@ public class Main {
         // first try and get spin size (initial guess) from manual calculation that diagonalizes the Ho C-F hamiltonian
         // using the external Bx.
         // If that fails just use value from fit. It's not that important as it's just an initial guess
-        try{
-            // pass parameters Bx=extBx, By=0, Bz=0.05, spin=1, and calc for "up"
-            Constants.spinSize = CrystalField.getMagneticMoment(extBx, 0.0, 0.05);
-        }catch(Exception e){
-            System.err.println("could not run manual calculation to get initial magnetic moment guess");
-            Constants.spinSize = 5.44802407 + 1.11982863*extBx + (-2.00747245)*Math.pow(extBx,2) + (-4.20363871)*Math.pow(extBx,3)+
-                    (5.20857114)*Math.pow(extBx,4) + (-2.22871652)*Math.pow(extBx,5) + (0.42596452)*Math.pow(extBx,6) + (-0.0307749)*Math.pow(extBx,7);
-        }
+//        try{
+        // pass parameters Bx=extBx, By=0, Bz=0.05, spin=1, and calc for "up"
+        Constants.spinSize = CrystalField.getMagneticMoment(extBx, 0.0, 0.05);
+//        }catch(Exception e){
+//            System.err.println("could not run manual calculation to get initial magnetic moment guess");
+//            Constants.spinSize = 5.44802407 + 1.11982863*extBx + (-2.00747245)*Math.pow(extBx,2) + (-4.20363871)*Math.pow(extBx,3)+
+//                    (5.20857114)*Math.pow(extBx,4) + (-2.22871652)*Math.pow(extBx,5) + (0.42596452)*Math.pow(extBx,6) + (-0.0307749)*Math.pow(extBx,7);
+//        }
 
         final double[][][] intTable = new double[3][4*Lx*Lx*Lz][4*Lx*Lx*Lz]; // create interaction table that holds all the dipolar interactions. will be full even though it's symmetric. 1st array is x,y,z term
         final double[][] exchangeIntTable = new double[4*Lx*Lx*Lz][4*Lx*Lx*Lz];
@@ -577,17 +577,6 @@ public class Main {
         }
 
         int[][] nnArray = exchangeInt(exchangeIntTable, Lx, Lz, Constants.J_ex);	// receive the nearest neighbor array and fill exchangeIntTable with the exchange interaction values
-
-
-
-        // TODO:
-        //  v 1. create lattices
-        //  v 2. create and initialize RNG
-        //  v 3. create k_tables
-        //  v 4. FieldTables
-        //  v 5. OutputWriters
-        //  6. save states (try read etc.)
-        //  7. problematic configs
 
         final double[] k_cos_table, k_sin_table;
         {   // code block: tempLattice is discarded at the end
@@ -641,8 +630,10 @@ public class Main {
         long[] seeds = LongStream.rangeClosed(seed+1, seed+T.length).toArray();
         MersenneTwister[] rnd = new MersenneTwister[T.length];
         SingleTMonteCarloSimulation[] subSimulations = new SingleTMonteCarloSimulation[T.length];
-
+        BufferedWriter outProblematicConfigs=null;
         try {
+            outProblematicConfigs = new BufferedWriter(new FileWriter("p_configs" + File.separator + "problematic_"+(Lx*Lx*Lz*4)+"_"+extBx,true));
+
             for (int i=0;i<T.length;i++){
                 FileWriter out = new FileWriter("analysis" + File.separator + folderName + File.separator + "table_" + Lx + "_" + Lz + "_" + extBx + "_" + T[i] + "_" + suppressInternalTransFields + ".txt", successReadFromFile);
                 OutputWriter outputWriter = new OutputWriter.Builder(verboseOutput, folderName, obsPrintSweepNum, out)
@@ -668,8 +659,8 @@ public class Main {
                     // initialize new simulation
                     Lattice lattice = new Lattice(Lx, Lz, extBx, suppressInternalTransFields, intTable, exchangeIntTable, nnArray, energyTable, momentTable, new ObservableExtractor(k_cos_table, k_sin_table));
                     rnd[i] = new MersenneTwister(seeds[i]);
-                    subSimulations[i] = new SingleTMonteCarloSimulation(T[i], i, lattice, 30, maxSweeps, seeds[i], rnd[i], continueFromSave,
-                            realTimeEqTest, outputWriter, saveState, maxIter, alpha);
+                    subSimulations[i] = new SingleTMonteCarloSimulation(T[i], i, T.length, lattice, 30, maxSweeps, seeds[i], rnd[i], continueFromSave,
+                            realTimeEqTest, outputWriter, saveState, maxIter, alpha, outProblematicConfigs);
                     subSimulations[i].printRunParameters(T, "# unsuccessful reading checkpoint... Starting new state.");
                 }
 
@@ -678,21 +669,31 @@ public class Main {
 
             }
             if (!successReadFromFile){
-                simulation=new MultipleTMonteCarloSimulation(T, subSimulations, maxSweeps, seed, mutualRnd, continueFromSave, realTimeEqTest, parallelTemperingOff, saveState);
+                simulation=new MultipleTMonteCarloSimulation(T, subSimulations, maxSweeps, seed, mutualRnd, continueFromSave, realTimeEqTest, parallelTemperingOff, saveState, checkpointer);
                 ((MultipleTMonteCarloSimulation) simulation).initSimulation();
                 checkpointer.writeCheckpoint((MultipleTMonteCarloSimulation) simulation);
+            }else{
+                ((MultipleTMonteCarloSimulation)simulation).setCheckpointer(checkpointer);
             }
 
             ((MultipleTMonteCarloSimulation) simulation).run(parallelMode);
 
-        }catch (IOException e) {System.err.println("error writing to file"); }
+        }catch (IOException e) {System.err.println("error writing to file: " + e.toString()); }
         finally {
             // close all outputs
             if (simulation!=null){
                 try{
                     simulation.close();
                 }catch (IOException e){
-                    System.err.println("error closing simulation and files");
+                    System.err.println("error closing simulation and files: " + e.toString());
+                }
+            }
+
+            if (outProblematicConfigs!=null){
+                try{
+                    outProblematicConfigs.close();
+                }catch (IOException problematicConfigErr){
+                    System.err.println("error closing problematic config file: " + problematicConfigErr.toString());
                 }
             }
         }

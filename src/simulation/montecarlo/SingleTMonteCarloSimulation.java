@@ -1,18 +1,26 @@
 package simulation.montecarlo;
 
 import org.apache.commons.collections4.queue.CircularFifoQueue;
+import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.math3.analysis.function.Sin;
 import org.apache.commons.math3.random.MersenneTwister;
+import simulation.mmsolve.ConvergenceException;
 import simulation.mmsolve.MagneticMomentsSolveIter;
 
 import java.io.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Formatter;
+
+import static simulation.montecarlo.MonteCarloMetropolis.*;
+import static simulation.montecarlo.MonteCarloMetropolis.failedSteps;
 
 public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements Serializable, Closeable {
     private final double T;
     private final int temperatureIndex;  // should be -1 if not part of multiple T simulation
+    private final int totalNumOfTemperatures;
     private long sweeps;
     private long currentBinCount;
     private final double[] binAvg;
@@ -21,13 +29,17 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
     private final MersenneTwister rnd;
     private transient OutputWriter outWriter;
     private double currentEnergy;
+    private int acceptanceRateCount;
+    private int acceptanceRateSum;
+    private boolean equilibrated;
     // parameters for the iterative solvers
     private transient int maxIter;
     private transient double alpha;
+    private transient final BufferedWriter outProblematicConfigs;
 
-    public SingleTMonteCarloSimulation(final double T, final int temperatureIndex, final Lattice lattice, final int numOfObservables, final long maxSweeps,
+    public SingleTMonteCarloSimulation(final double T, final int temperatureIndex, final int totalNumOfTemperatures, final Lattice lattice, final int numOfObservables, final long maxSweeps,
                                        final long seed, final MersenneTwister rnd, final boolean continueFromSave, final boolean realTimeEqTest,
-                                       final OutputWriter out, final boolean checkpoint, final int maxIter, final double alpha) {
+                                       final OutputWriter out, final boolean checkpoint, final int maxIter, final double alpha, final BufferedWriter outProblematicConfigs) {
         this.T = T;
         this.temperatureIndex=temperatureIndex;
         this.sweeps = 0;
@@ -44,10 +56,227 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
         this.checkpoint=checkpoint;
         this.alpha=alpha;
         this.maxIter=maxIter;
+        this.totalNumOfTemperatures=totalNumOfTemperatures;
+        this.outProblematicConfigs=outProblematicConfigs;
+        this.acceptanceRateCount=0;
+        this.acceptanceRateSum=0;
+        this.equilibrated=false;
 
         if (lattice.energyTable==null || lattice.momentTable==null || lattice.nnArray==null || lattice.exchangeIntTable==null || lattice.intTable==null) {
             throw new NullPointerException("The Lattice given to the SingleTMonteCarloSimulation has null some pointers. ");
         }
+    }
+
+    public void swap(SingleTMonteCarloSimulation other){
+        // ****************swap energies****************
+        double tempEnergy = this.currentEnergy;
+        this.currentEnergy = other.currentEnergy;
+        other.currentEnergy = tempEnergy;
+        // *********************************************
+
+        // ****************swap lattices****************
+        Lattice tempLattice = this.lattice;
+        this.lattice = other.lattice;
+        other.lattice = tempLattice;
+        // *********************************************
+
+    }
+
+    public void incAcceptanceRateSum() {
+        this.acceptanceRateSum++;
+    }
+
+    public void incAcceptanceRateCount() {
+        this.acceptanceRateCount++;
+    }
+
+    public boolean isEquilibrated() {
+        return equilibrated;
+    }
+
+    public double getCurrentEnergy() {
+        return currentEnergy;
+    }
+
+    /**
+     * Performs a Monte Carlo metropolis step
+     * @param lattice - spin lattice
+     * @param T - Temperature
+     * @param rnd - PRNG
+     * @return Array containing the (new) energy due to local transversal fields and the energy difference in the longitudinal energy compared to the previous configuration
+     */
+    public static deltaEnergyAndLattice metropolisStep(Lattice lattice, double T, MersenneTwister rnd, int maxIter, double alpha) throws ConvergenceException
+    {
+
+        double initLongEnergy = lattice.getEnergy();
+
+        // choose random spin
+        int flippedSpin = rnd.nextInt(lattice.getN());
+
+        lattice.flipSpin(maxIter, Constants.tol, flippedSpin, alpha);
+
+        double deltaEnergy = lattice.getEnergy() - initLongEnergy;
+
+        double prob;
+        if (deltaEnergy <= 0) {
+            prob = 1;
+        }
+        else {
+            prob = Math.exp(-(deltaEnergy )/T);
+        }
+        // accept new state with calculated probability
+        double r = rnd.nextDouble();
+
+        if (r > prob) {   // change is denied
+			/*
+            flippedSpin.flipSpin();  // the change is reversed. no need to update other longitudinal fields
+
+            updateLocalFieldsAfterFlip(lattice, flippedSpin, intTable[2]);
+            updateLocalTransFieldsAfterFlip(lattice, flippedSpin, intTable);
+
+            updateAllMagneticMoments(lattice, intTable, momentTable, maxIter, extBx);
+			*/
+
+			/*
+			for (int i=0;i<lattice.length;i++) {
+				lattice[i]=tempLattice[i];
+			}
+			*/
+
+            return null;
+
+        } else {    // change is accepted
+            // updateLocalFieldsAfterFlip(lattice, flippedSpin, intTable[2]);    // update other *longitudinal* (that's the reason for the [2]) fields
+
+        }
+
+        return new deltaEnergyAndLattice(lattice, deltaEnergy);
+        //return deltaEnergy;
+    }
+
+    public static void printProblematicConfig(Lattice lattice, int flippedSpin, BufferedWriter out){
+        synchronized (out) {
+            try {
+                singleSpin[] arr = lattice.getArray();
+                out.write("#" + flippedSpin + System.lineSeparator());
+                for (int i = 0; i < arr.length; i++) {
+                    out.write(arr[i].getSpin() + "," + arr[i].getSpinSize() + System.lineSeparator());
+                }
+
+            } catch (IOException e) {
+                System.err.println("error writing problematic config to file" + e.toString());
+            }
+        }
+    }
+
+
+    public void monteCarloSweep() {
+        // a monte carlo sweep consists of ~N steps
+        for (int step = 0; step < lattice.getN(); step++) {
+
+            if (outWriter.isPrintProgress()) {
+                int perc = (int) 10.0 * step /  lattice.getN();
+                char[] full = new char[perc];
+                char[] empty = new char[10 - perc];
+                Arrays.fill(full, '#');
+                Arrays.fill(empty, ' ');
+                String strFull = new String(full);
+                String strEmpty = new String(empty);
+                System.out.print((totalNumOfTemperatures>0 ? "[" + (temperatureIndex + 1) + "/" + totalNumOfTemperatures + "] " : "") +
+                        "[" + strFull + strEmpty + "]" + step + "/" +  lattice.getN() + "     \r");
+            }
+
+            Lattice tempLattice = new Lattice(lattice);
+            Double deltaEnergy;
+            deltaEnergyAndLattice energyAndLattice;
+            try {
+                energyAndLattice = metropolisStep(lattice, T, rnd, maxIter, alpha);
+
+                if (energyAndLattice!=null){
+                    deltaEnergy=energyAndLattice.getDeltaEnergy();
+                    lattice=energyAndLattice.getLattice();
+                }else{
+                    deltaEnergy=null;
+                }
+                successfulSteps++;
+
+                //System.out.println("step " + step + " successful");
+            } catch (ConvergenceException e){
+                printProblematicConfig(tempLattice, e.getFlippedSpin(), outProblematicConfigs);
+                deltaEnergy=null;
+                failedSteps++;
+                System.err.println("There was an error converging, had to abort metropolis step ("+step+ ", sweep="+sweeps+" T="+T+") and try another one. \n" + e.getMessage());
+            } catch (IndexOutOfBoundsException e){
+                deltaEnergy=null;
+                failedSteps++;
+                System.err.println("There was an error while calculating the derivative, had to abort metropolis step ("+step+ ", sweep="+sweeps+" T="+T+") and try another one.\n" + e.toString());
+            }
+
+            if (deltaEnergy == null) {
+                // reverse change
+                lattice=tempLattice;
+            }else{
+                tempLattice=null;
+                currentEnergy += deltaEnergy.doubleValue();
+            }
+
+        }
+    }
+
+    public void writeObservables(){
+        double m = lattice.getMagnetization();
+        double[] temp = lattice.getMagneticFields();
+        double[] tempSpinSizes = lattice.getSpinSizes();
+        double mk2 = lattice.getMK2();    // m(k)^2, used later for correlation length calculation
+
+
+
+        outWriter.writeObservablesVerbose(sweeps, m ,currentEnergy ,temp[0] ,temp[1] ,temp[2] ,temp[3] ,temp[4] ,temp[5] ,temp[6] ,temp[7] ,tempSpinSizes[0] ,tempSpinSizes[1] ,mk2);
+
+        if (sweeps>0) currentBinCount++;
+        //System.out.println(sweeps+ " , " + sweeps/2 + " , " + currentBinCount + " , " + (sweeps&1));
+
+        if (currentBinCount==sweeps/2 + 1 && (sweeps&1)==1){	// last step of current bin
+            // restart sums and counters for next bin
+            double acceptanceRateForBin;	// acceptance rate for this bin & temperature
+
+            if (acceptanceRateCount==0) {
+                acceptanceRateForBin = -1;
+            }else {
+                acceptanceRateForBin = ((double) acceptanceRateSum) / acceptanceRateCount;
+            }
+
+            // print data from previous bin and
+            outWriter.writeObservablesBin(currentBinCount, binAvg, acceptanceRateForBin);
+
+            // add bin averages to queue. only 3 bins are kept at any time.
+            equilibratingObs.get(0).add(Pair.of(binAvg[4]/currentBinCount,getStandardError(binAvg[4],binAvg[5],currentBinCount)));		// m^2
+            equilibratingObs.get(1).add(Pair.of(binAvg[6]/currentBinCount,getStandardError(binAvg[6],binAvg[7],currentBinCount)));		// E
+            equilibratingObs.get(2).add(Pair.of(binAvg[28]/currentBinCount,getStandardError(binAvg[28],binAvg[29],currentBinCount)));	// mk2
+            equilibratingObs.get(3).add(Pair.of(binAvg[0]/currentBinCount,getStandardError(binAvg[0],binAvg[1],currentBinCount)));		// |m|
+            equilibrated = checkEquilibration(equilibratingObs);
+
+            //System.out.println(sweeps + ") printed average of bin size "+currentBinCount + " starting from " + binStart);
+            for (int avgIndex=0;avgIndex<binAvg.length;avgIndex++) binAvg[avgIndex]=0;
+
+            acceptanceRateCount=0;
+            acceptanceRateSum=0;
+
+            //binStart=sweeps;
+
+            currentBinCount=0;
+
+            if (equilibrated){
+                // TODO (instead) change verbose to false and change condition to include check of verbose
+                // declare that equilibration has been reached
+                System.out.println("System equilibrated! sweeps="+sweeps+". Date&Time: "+ LocalDateTime.now());
+
+            }
+        }
+
+        addToAvg(binAvg,new double[]{Math.abs(m), m , m*m, currentEnergy , temp[0] , temp[1] , temp[2] , temp[3] , temp[4] , temp[5] , temp[6] , temp[7] , tempSpinSizes[0] , tempSpinSizes[1] , mk2});
+
+
     }
 
     public void close() throws IOException{
@@ -55,6 +284,10 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
     }
 
     public Lattice getLattice(){ return this.lattice; }
+
+    public OutputWriter getOutWriter() {
+        return outWriter;
+    }
 
     public void setOutWriter(final OutputWriter outWriter){
         this.outWriter=outWriter;
@@ -123,8 +356,14 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
         return true;
     }
 
-    public void run(){
+    public void run() {
+        monteCarloSweep();
+        writeObservables();
+        sweeps++;
 
+        if (sweeps%outWriter.getObsPrintSweepNum()==0 || sweeps==maxSweeps-1) {	// every obsPrintSweepNum sweeps or at the last one
+            outWriter.flush();
+        }
     }
 
     public void printRunParameters(double[] T, String extraMessage) throws IOException{

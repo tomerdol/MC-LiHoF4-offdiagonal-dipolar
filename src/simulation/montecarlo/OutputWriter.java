@@ -9,6 +9,8 @@ import java.util.InputMismatchException;
 import java.util.stream.IntStream;
 
 public class OutputWriter implements Closeable {
+
+
     private final boolean printProgress, printOutputToConsole;
     private final long obsPrintSweepNum;
     private final String folderName;
@@ -17,6 +19,28 @@ public class OutputWriter implements Closeable {
     private final String[] colNames;
     private final int bufferSize;
     private final FileWriter out;
+    private StringBuilder outputBuffer;
+
+    public long getObsPrintSweepNum() {
+        return obsPrintSweepNum;
+    }
+
+    public boolean isPrintProgress() {
+        return printProgress;
+    }
+
+    public void flush(){
+        try {
+            print(outputBuffer.toString(), false);
+            out.flush();
+            if (outputBuffer.length() > bufferSize)
+                System.err.println("output buffer exceeded its buffer with char count of " + outputBuffer.length() + '/' + bufferSize);
+            outputBuffer = null;
+            outputBuffer = new StringBuilder(bufferSize);
+        }catch (IOException e){
+            throw new RuntimeException("Error saving results: " + e.getMessage());
+        }
+    }
 
     public void print(String toPrint, boolean lineBreak) throws IOException {
         if (printOutputToConsole && lineBreak) {
@@ -54,6 +78,29 @@ public class OutputWriter implements Closeable {
         if (headerRow.length()>totalChrsForRow+10)
             System.err.println("header row builder not allocated enough space: " + headerRow.length() + "/" + (totalChrsForRow+10));
         return headerRow.toString();
+    }
+
+    public void writeObservablesVerbose(final long sweeps, final double m, final double currentEnergy, final double magField0, final double magField1, final double magField2,
+                                 final double magField3, final double magField4, final double magField5, final double magField6, final double magField7,
+                                 final double spinSizes0, final double spinSizes1, final double mk2){
+        if (verboseOutput) {
+            Formatter formatter = new Formatter(outputBuffer);
+            formatter.format(makeTableRowFormat(new char[]{'d', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'g'}), sweeps, m, currentEnergy, magField0, magField1, magField2, magField3, magField4, magField5, magField6, magField7, spinSizes0, spinSizes1, mk2);
+        }
+    }
+
+    public void writeObservablesBin(final long currentBinCount, final double[] binAvg, final double acceptanceRateForBin){
+        if (!verboseOutput){
+            Formatter formatter = new Formatter(outputBuffer);
+            formatter.format("% "+colWidths[0]+"d %s % "+(colWidths[colWidths.length-1]-2)+".2f%n", currentBinCount, avgArrToString(binAvg, currentBinCount, 1) , acceptanceRateForBin);
+        }
+    }
+
+    public void writeSwapAcceptance(final boolean swapAccepted){
+        if (verboseOutput){
+            outputBuffer.append(new String(new char[colWidths[colWidths.length-1]-2]).replace('\0', ' ') + (swapAccepted ? '1' : '0'));
+            outputBuffer.append(System.lineSeparator());
+        }
     }
 
     public String makeTableRowFormat(char[] colTypes){
@@ -118,6 +165,7 @@ public class OutputWriter implements Closeable {
         this.colWidths = builder.colWidths;
         this.bufferSize = builder.bufferSize;
         this.out = builder.out;
+        this.outputBuffer = new StringBuilder(bufferSize);
     }
 
     public static class Builder {
