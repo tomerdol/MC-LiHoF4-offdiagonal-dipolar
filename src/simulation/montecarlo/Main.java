@@ -480,7 +480,6 @@ public class Main {
         boolean realTimeEqTest=false;
         boolean verboseOutput=false;
         char tempParallelMode='t';
-        double temperature=-1;
 
         // create Options object
         Options options = ParseCommandLine.generateOptions();
@@ -496,17 +495,8 @@ public class Main {
 
         // then parse the interrogate the commandLine object
         try {
-            if (!commandLine.hasOption("mode") && (commandLine.hasOption("pt_off") || commandLine.hasOption("temp_schedule"))){
-                throw new ParseException("\"mode\" tag not provided, hence only a single temperature would be run and flags \"pt_off\" and \"temp_schedule\"" +
-                        "should not be given.");
-            }
-            if (!commandLine.hasOption("mode") && !commandLine.hasOption("temperature")){
-                throw new ParseException("\"mode\" tag not provided, hence only a single temperature would be run and flags \"-t\"" +
-                        "must be provided.");
-            }
 
             if (commandLine.hasOption("mode")) tempParallelMode = ((Character) commandLine.getParsedOptionValue("mode")).charValue();
-            if (commandLine.hasOption("t")) temperature = ((Number) commandLine.getParsedOptionValue("t")).doubleValue();
 
             Lx = Integer.parseInt(commandLine.getOptionValues("L")[0]);
             Lz = Integer.parseInt(commandLine.getOptionValues("L")[1]);
@@ -555,8 +545,7 @@ public class Main {
         saveState = !printOutput;	// when output is printed to the console the state should not be saved.
         final char parallelMode = tempParallelMode;
 
-        double[] T=null;
-        if (parallelMode!='t') T = receiveTemperatureSchedule(tempScheduleFileName);
+        double[] T=receiveTemperatureSchedule(tempScheduleFileName);
 
         // first try and get spin size (initial guess) from manual calculation that diagonalizes the Ho C-F hamiltonian
         // using the external Bx.
@@ -635,15 +624,8 @@ public class Main {
         if (continueFromSave) {
             simulation = checkpointer.readCheckpoint();
             if (simulation!=null) successReadFromFile=true;
-            String inconsistencies;
-            if (parallelMode=='t'){
-                // single T
-                inconsistencies=SimulationCheckpointer.verifyCheckpointCompatibility(new double[]{temperature}, parallelTemperingOff, parallelMode, simulation);
+            String inconsistencies=SimulationCheckpointer.verifyCheckpointCompatibility(T, parallelTemperingOff, parallelMode, simulation);
 
-            }else{
-                // multiple T
-                inconsistencies=SimulationCheckpointer.verifyCheckpointCompatibility(T, parallelTemperingOff, parallelMode, simulation);
-            }
             if (!inconsistencies.isEmpty()){
                 System.err.println("There were some inconsistencies between the checkpoint parameters and the current parameters: " + inconsistencies);
                 System.err.println("Exiting.");
@@ -656,73 +638,65 @@ public class Main {
 
         makeDir("analysis" + File.separator, folderName);
 
-        if (parallelMode=='t'){
-            // single temperature mode
-            try (FileWriter out = new FileWriter("analysis" + File.separator + folderName + File.separator + "table_" + Lx + "_" + Lz + "_" + extBx + "_" + temperature + "_" + suppressInternalTransFields + ".txt",successReadFromFile)) {
+        long[] seeds = LongStream.rangeClosed(seed+1, seed+T.length).toArray();
+        MersenneTwister[] rnd = new MersenneTwister[T.length];
+        SingleTMonteCarloSimulation[] subSimulations = new SingleTMonteCarloSimulation[T.length];
+
+        try {
+            for (int i=0;i<T.length;i++){
+                FileWriter out = new FileWriter("analysis" + File.separator + folderName + File.separator + "table_" + Lx + "_" + Lz + "_" + extBx + "_" + T[i] + "_" + suppressInternalTransFields + ".txt", successReadFromFile);
                 OutputWriter outputWriter = new OutputWriter.Builder(verboseOutput, folderName, obsPrintSweepNum, out)
                         .setPrintOutput(printOutput)
                         .setPrintProgress(printProgress)
                         .setBufferSize(bufferSize)
                         .build();
+
                 if (successReadFromFile){
-                    ((SingleTMonteCarloSimulation) simulation).setMaxIter(maxIter);
-                    ((SingleTMonteCarloSimulation) simulation).setAlpha(alpha);
-                    ((SingleTMonteCarloSimulation) simulation).setOutWriter(outputWriter);
-                    ((SingleTMonteCarloSimulation) simulation).getLattice().setEnergyTable(energyTable);
-                }else {
+                    // initialize simulation read from checkpoint
+                    ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).setOutWriter(outputWriter);
+                    ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).setAlpha(alpha);
+                    ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).setMaxIter(maxIter);
+                    ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).getLattice().setEnergyTable(energyTable);
+                    ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).getLattice().setExchangeIntTable(exchangeIntTable);
+                    ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).getLattice().setIntTable(intTable);
+                    ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).getLattice().setMomentTable(momentTable);
+                    ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).getLattice().setNnArray(nnArray);
+                    ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).getLattice().initIterativeSolver();
+
+                    ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).printRunParameters(T, "# successfully read saved state");
+                }else{
+                    // initialize new simulation
                     Lattice lattice = new Lattice(Lx, Lz, extBx, suppressInternalTransFields, intTable, exchangeIntTable, nnArray, energyTable, momentTable, new ObservableExtractor(k_cos_table, k_sin_table));
-                    simulation = new SingleTMonteCarloSimulation(temperature, -1, lattice, 30, maxSweeps, seed, mutualRnd, continueFromSave, realTimeEqTest, outputWriter, saveState, maxIter, alpha);
+                    rnd[i] = new MersenneTwister(seeds[i]);
+                    subSimulations[i] = new SingleTMonteCarloSimulation(T[i], i, lattice, 30, maxSweeps, seeds[i], rnd[i], continueFromSave,
+                            realTimeEqTest, outputWriter, saveState, maxIter, alpha);
+                    subSimulations[i].printRunParameters(T, "# unsuccessful reading checkpoint... Starting new state.");
                 }
 
-                // run simulation
-                simulation.run();
-            } catch (IOException e) {
-                System.err.println("Error writing to file. ");
-                e.printStackTrace();
+                outputWriter.print(outputWriter.makeTableHeader(), true);
+
+
             }
-        }else{
-            // multiple temperatures
+            if (!successReadFromFile){
+                simulation=new MultipleTMonteCarloSimulation(T, subSimulations, maxSweeps, seed, mutualRnd, continueFromSave, realTimeEqTest, parallelTemperingOff, saveState);
+                ((MultipleTMonteCarloSimulation) simulation).initSimulation();
+                checkpointer.writeCheckpoint((MultipleTMonteCarloSimulation) simulation);
+            }
 
-            long[] seeds = LongStream.rangeClosed(seed+1, seed+T.length).toArray();
-            MersenneTwister[] rnd = new MersenneTwister[T.length];
-            SingleTMonteCarloSimulation[] subSimulations = new SingleTMonteCarloSimulation[T.length];
+            ((MultipleTMonteCarloSimulation) simulation).run(parallelMode);
 
-            try {
-                for (int i=0;i<T.length;i++){
-                    FileWriter out = new FileWriter("analysis" + File.separator + folderName + File.separator + "table_" + Lx + "_" + Lz + "_" + extBx + "_" + temperature + "_" + suppressInternalTransFields + ".txt", successReadFromFile)
-                    OutputWriter outputWriter = new OutputWriter.Builder(verboseOutput, folderName, obsPrintSweepNum, out)
-                            .setPrintOutput(printOutput)
-                            .setPrintProgress(printProgress)
-                            .setBufferSize(bufferSize)
-                            .build();
-
-                }
-
-                Lattice lattice = new Lattice(Lx, Lz, extBx, suppressInternalTransFields, intTable, exchangeIntTable, nnArray, energyTable, momentTable, new ObservableExtractor(k_cos_table, k_sin_table));
-                rnd[i] = new MersenneTwister(seeds[i]);
-                subSimulations[i] = new SingleTMonteCarloSimulation(temperature, lattice, 30, maxSweeps, seeds[i], rnd[i], continueFromSave, realTimeEqTest, outputWriter);
-
-
-                if (parallelMode=='s'){
-                    // serial mode
-                    simulation = new ParallelMonteCarloSimulation(T, subSimulations, maxSweeps, seed, mutualRnd, continueFromSave, realTimeEqTest, parallelTemperingOff);
-                }else if (parallelMode=='p'){
-                    // serial mode
-                    simulation = new SerialMonteCarloSimulation(T, subSimulations, maxSweeps, seed, mutualRnd, continueFromSave, realTimeEqTest, parallelTemperingOff);
-                }
-
-            }catch (IOException e) {System.err.println("error writing to file"); }
-            finally {
-                // close all outputs
-                if (simulation!=null){
-                    try{
-                        simulation.close();
-                    }catch (IOException e){
-                        System.err.println("error closing simulation and files");
-                    }
+        }catch (IOException e) {System.err.println("error writing to file"); }
+        finally {
+            // close all outputs
+            if (simulation!=null){
+                try{
+                    simulation.close();
+                }catch (IOException e){
+                    System.err.println("error closing simulation and files");
                 }
             }
         }
+
 
     }
 

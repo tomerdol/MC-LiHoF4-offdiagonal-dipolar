@@ -1,19 +1,46 @@
 package simulation.montecarlo;
 
+import org.apache.commons.collections4.iterators.ArrayIterator;
 import org.apache.commons.math3.random.MersenneTwister;
+import simulation.mmsolve.MagneticMomentsSolveIter;
 
 import java.io.Closeable;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.Iterator;
 
-public abstract class MultipleTMonteCarloSimulation extends MonteCarloSimulation implements Closeable {
+public class MultipleTMonteCarloSimulation extends MonteCarloSimulation implements Closeable {
+    // TODO check if these can be private now that I don't use serial & parallel classes
     protected final boolean parallelTempetingOff;
     protected int[] acceptanceRateCount;
     protected int[] acceptanceRateSum;
     protected final double[] T;
     protected SingleTMonteCarloSimulation[] simulations;
     protected final MersenneTwister rnd;
+
+    public SingleTMonteCarloSimulation getIthSubSimulation(int i){ return this.simulations[i]; }
+
+    public void initSimulation(){
+        for (int i=0;i<simulations.length;i++){
+            simulations[i].initSimulation();
+        }
+    }
+
+
+    public void run(){
+        run('s');
+    }
+
+    public void run(char mode){
+        if (mode=='s'){
+            //serial mode
+
+        }else if (mode=='p'){
+            //parallel mode
+
+        }
+    }
 
     public void close() throws IOException {
         for (SingleTMonteCarloSimulation subSimulation : simulations){

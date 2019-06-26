@@ -3,6 +3,7 @@ package simulation.montecarlo;
 import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.math3.random.MersenneTwister;
+import simulation.mmsolve.MagneticMomentsSolveIter;
 
 import java.io.*;
 import java.time.LocalDateTime;
@@ -19,6 +20,7 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
     private Lattice lattice;
     private final MersenneTwister rnd;
     private transient OutputWriter outWriter;
+    private double currentEnergy;
     // parameters for the iterative solvers
     private transient int maxIter;
     private transient double alpha;
@@ -125,7 +127,7 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
 
     }
 
-    public void printRunParameters(double[] T) throws IOException{
+    public void printRunParameters(double[] T, String extraMessage) throws IOException{
         // print some information to the begining of the file:
         outWriter.print("#" + LocalDateTime.now(), true);
         outWriter.print("#temperature_schedule: "+ Arrays.toString(T), true);
@@ -139,7 +141,30 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
                 checkpoint, outWriter.getFolderName(),
                 alpha, outWriter.isVerboseOutput()),true);
         outWriter.print("#" + Constants.locationsToString(), true);
+        outWriter.print("#seed=" + seed, true);
+        outWriter.print(extraMessage, true);
 
+    }
+
+    public void initSimulation(){
+        boolean convergedConfig=false;
+        int index=0;
+        while (!convergedConfig) {
+            lattice.randomizeConfig(rnd); // randomizes the spins and sets initial spin sizes as spinSize in the corresponding direction
+
+            lattice.updateAllLocalFields();
+            lattice.updateAllMagneticMoments(maxIter, Constants.tol, alpha);
+
+            if (lattice.magneticMomentConvergence() > Constants.tol){
+                convergedConfig=false;
+            }else{
+                convergedConfig=true;
+            }
+
+            if (!convergedConfig) System.out.println("initial setup convergence index (T [num]="+T+" ["+temperatureIndex+']'+"): " + ++index);
+        }
+
+        currentEnergy = lattice.getEnergy();
     }
 
     public static ArrayList<CircularFifoQueue<Pair<Double,Double>>> generateEquilibrationQueues(int numOfBins, int numOfObservables){

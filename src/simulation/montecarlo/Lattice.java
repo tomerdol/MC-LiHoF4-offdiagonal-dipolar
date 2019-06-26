@@ -85,8 +85,12 @@ public class Lattice implements Serializable {
         this.measure = measure;
     }
 
-    public void setIterativeSolver(MagneticMomentsSolveIter iterativeSolver) {
-        this.iterativeSolver = iterativeSolver;
+    public void initIterativeSolver() {
+        this.iterativeSolver = new MagneticMomentsSolveIter();
+    }
+
+    public MagneticMomentsSolveIter getIterativeSolver() {
+        return iterativeSolver;
     }
 
     public int getN() {
@@ -120,6 +124,7 @@ public class Lattice implements Serializable {
             if (lattice[i].getSpin()!=0){
                 if (rnd.nextBoolean()) lattice[i].setSpin(1);
                 else lattice[i].setSpin(-1);
+                lattice[i].setSpinSize(Constants.spinSize*lattice[i].getSpin());
             }
         }
     }
@@ -152,7 +157,9 @@ public class Lattice implements Serializable {
         }
     }
 
-
+    public void updateAllMagneticMoments(int maxIter, double tol, double alpha){
+        iterativeSolver.updateAllMagneticMoments(maxIter, tol, alpha, true);
+    }
     public singleSpin[] solveSelfConsistentCalc(int maxIter, double tol, int flipSpin, int method, int[][] nnArray, double alpha) throws ConvergenceException {
         if (method>=1 && method<=3){
             int[] bfsOrder=null;

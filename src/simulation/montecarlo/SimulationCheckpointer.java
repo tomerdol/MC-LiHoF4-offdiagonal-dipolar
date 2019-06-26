@@ -5,6 +5,8 @@ import org.apache.commons.lang3.SerializationUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.Arrays;
 
 public class SimulationCheckpointer {
@@ -24,8 +26,8 @@ public class SimulationCheckpointer {
      * Reads the checkpoint file of a simulation
      * @return monte carlo simulation object read from the file or null if reading was unsuccessful
      */
-    public MonteCarloSimulation readCheckpoint(){
-        MonteCarloSimulation simulation = null;
+    public MultipleTMonteCarloSimulation readCheckpoint(){
+        MultipleTMonteCarloSimulation simulation = null;
         boolean successReadFromFile = false;
 
         if (fSaveState.exists()){
@@ -39,6 +41,15 @@ public class SimulationCheckpointer {
             }
         }
         return simulation;
+    }
+
+    public void writeCheckpoint(MultipleTMonteCarloSimulation simulation){
+        try (FileOutputStream fos = new FileOutputStream(fSaveState, false)){
+            SerializationUtils.serialize(simulation, fos);
+        }catch (IOException e){
+            System.err.println("Error writing checkpoint file. simulation is not being saved!");
+            e.printStackTrace();
+        }
     }
 
     /**

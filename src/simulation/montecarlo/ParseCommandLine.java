@@ -156,7 +156,7 @@ public class ParseCommandLine {
         final Option parallelMode = Option.builder("mode")
                 .longOpt("parallel_mode")
                 .hasArg(true)
-                .required(false)
+                .required(true)
                 .type(Character.class)
                 .desc("mode of operation when simulating multiple temperatures. serial (s) or parallel (p)")
                 .build();

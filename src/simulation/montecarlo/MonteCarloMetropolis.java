@@ -142,7 +142,7 @@ public class MonteCarloMetropolis {
 			// array that hold the averages and sd's of the last 3 bins of 4 observables: m^2, E, mk2, m:
 			ArrayList<ArrayList<CircularFifoQueue<Pair<Double,Double>>>> equilibratingObservables;
 
-			for (int t=0;t<T.length;t++) {
+//			for (int t=0;t<T.length;t++) {
 //				double temperature = T[t];
 //				if (t<T.length-1) {	// last temperature is only for parallel tempering and not written to file
 //
@@ -167,25 +167,25 @@ public class MonteCarloMetropolis {
 				}
 			}
 
-			if (successReadFromFile){
-				currentEnergy=state.getCurrentEnergy();
-				sweeps=state.getSweep();
-				lattice = state.getArr();
-				rnd=state.getRnd();
-				seed=state.getSeed();
-				currentBinCount=state.getCurrentBinCount();
-				binAvg=state.getBinAvg();
-				acceptanceRateCount=state.getAcceptanceRateCount();
-				acceptanceRateSum=state.getAcceptanceRateSum();
-				equilibratingObservables=state.getEquilibratingObservables();
+//			if (successReadFromFile){
+//				currentEnergy=state.getCurrentEnergy();
+//				sweeps=state.getSweep();
+//				lattice = state.getArr();
+//				rnd=state.getRnd();
+//				seed=state.getSeed();
+//				currentBinCount=state.getCurrentBinCount();
+//				binAvg=state.getBinAvg();
+//				acceptanceRateCount=state.getAcceptanceRateCount();
+//				acceptanceRateSum=state.getAcceptanceRateSum();
+//				equilibratingObservables=state.getEquilibratingObservables();
+//
+//				for (int t=0;t<T.length-1;t++) {
+//					print("#seed=" + seed, out[t], true, printOutput);
+//					print("# successfully read saved state", out[t], true, printOutput);
+//				}
 
-				for (int t=0;t<T.length-1;t++) {
-					print("#seed=" + seed, out[t], true, printOutput);
-					print("# successfully read saved state", out[t], true, printOutput);
-				}
-
-			}else{
-				sweeps=0;
+//			}else{
+//				sweeps=0;
 /*
 				currentBinCount=new long[T.length-1];
 				binAvg = new double[T.length][30];
@@ -195,55 +195,55 @@ public class MonteCarloMetropolis {
 				//equilibratingObservables = generateEquilibrationQueues(3, T.length-1, 4);
 
 
-				for (int t=0;t<T.length;t++) {
-					if (t < T.length - 1) {
-						print("#seed=" + seed, out[t], true, printOutput);
-						print("# unsuccessful reading saved state... Starting new state.", out[t], true, printOutput);
-						if (verboseOutput)
-							print(makeTableHeader(colWidths,colNames), out[t], true, printOutput);
-						else
-							//print("      binN            <|M|>           <|M|2>              <M>             <M2>             <M2>            <M22>              <E>             <E2>         <meanBx>        <meanBx2>          <stdBx>         <stdBx2>         <meanBy>        <meanBy2>          <stdBy>" +
-							//		"         <stdBy2>         <meanBz>        <meanBz2>          <stdBz>         <stdBz2>      <maxBtrans>     <maxBtrans2>       <maxBlong>      <maxBlong2>   <meanSpinSize>  <meanSpinSize2>    <stdSpinSize>   <stdSpinSize2>            <mk2>           <mk22>      swap", out[t], true, printOutput);
-							print(makeTableHeader(colWidths,colNames), out[t], true, printOutput);
+//				for (int t=0;t<T.length;t++) {
+//					if (t < T.length - 1) {
+////						print("#seed=" + seed, out[t], true, printOutput);
+////						print("# unsuccessful reading saved state... Starting new state.", out[t], true, printOutput);
+//						if (verboseOutput)
+//							print(makeTableHeader(colWidths,colNames), out[t], true, printOutput);
+//						else
+//							//print("      binN            <|M|>           <|M|2>              <M>             <M2>             <M2>            <M22>              <E>             <E2>         <meanBx>        <meanBx2>          <stdBx>         <stdBx2>         <meanBy>        <meanBy2>          <stdBy>" +
+//							//		"         <stdBy2>         <meanBz>        <meanBz2>          <stdBz>         <stdBz2>      <maxBtrans>     <maxBtrans2>       <maxBlong>      <maxBlong2>   <meanSpinSize>  <meanSpinSize2>    <stdSpinSize>   <stdSpinSize2>            <mk2>           <mk22>      swap", out[t], true, printOutput);
+//							print(makeTableHeader(colWidths,colNames), out[t], true, printOutput);
 
-					}
+//					}
 
-					boolean convergedConfig=false;
-					int index=0;
-					while (!convergedConfig) {
-
-						lattice[t] = randomizeConfig(lattice[t], rnd);
-						// set initial spin sizes:
-						for (int i=0;i<lattice[t].length;i++) lattice[t][i].setSpinSize(Constants.spinSize*lattice[t][i].getSpin());
-
-						updateAllLocalFields(lattice[t], intTable[2]);    // only longitudinal fields
-						updateAllLocalTransFields(lattice[t], intTable, extBx, suppressInternalTransFields);
-						MagneticMomentsSolveIter.updateAllMagneticMoments(lattice[t], intTable, momentTable, 2*maxIter, extBx, Constants.tol, alpha, suppressInternalTransFields, true);
-
-						if (MagneticMomentsSolveIter.magneticMomentConvergence(lattice[t], momentTable, extBx) > Constants.tol){
-							convergedConfig=false;
-						}else{
-							convergedConfig=true;
-						}
-
-						if (!convergedConfig) System.out.println("initial setup convergence index (T [num]="+T[t]+" ["+t+']'+"): " + ++index);
-					}
+//					boolean convergedConfig=false;
+//					int index=0;
+//					while (!convergedConfig) {
+//
+//						lattice[t] = randomizeConfig(lattice[t], rnd);
+//						// set initial spin sizes:
+//						for (int i=0;i<lattice[t].length;i++) lattice[t][i].setSpinSize(Constants.spinSize*lattice[t][i].getSpin());
+//
+//						updateAllLocalFields(lattice[t], intTable[2]);    // only longitudinal fields
+//						updateAllLocalTransFields(lattice[t], intTable, extBx, suppressInternalTransFields);
+//						MagneticMomentsSolveIter.updateAllMagneticMoments(lattice[t], intTable, momentTable, 2*maxIter, extBx, Constants.tol, alpha, suppressInternalTransFields, true);
+//
+//						if (MagneticMomentsSolveIter.magneticMomentConvergence(lattice[t], momentTable, extBx) > Constants.tol){
+//							convergedConfig=false;
+//						}else{
+//							convergedConfig=true;
+//						}
+//
+//						if (!convergedConfig) System.out.println("initial setup convergence index (T [num]="+T[t]+" ["+t+']'+"): " + ++index);
+//					}
 					/*
 					updateAllLocalFields(lattice[t], intTable[2]);    // only longitudinal fields
 					updateAllLocalTransFields(lattice[t], intTable, extBx, suppressInternalTransFields);
 					updateAllMagneticMoments(lattice[t], intTable, momentTable, maxIter, extBx, Constants.tol, 1, suppressInternalTransFields);
 					*/
-					currentEnergy[t] = calcEnergy(lattice[t], energyTable, exchangeIntTable);
+//					currentEnergy[t] = calcEnergy(lattice[t], energyTable, exchangeIntTable);
 
-				}
+//				}
 
-				if (saveState) {
-					state.updateAll(currentEnergy, seed, sweeps, rnd, lattice, currentBinCount, binAvg, acceptanceRateCount, acceptanceRateSum, equilibratingObservables);
-					FileOutputStream fos = new FileOutputStream(fSaveState, false);    // false to overwrite previous state
-					SerializationUtils.serialize(state, fos);
-					fos.close();
-				}
-			}
+//				if (saveState) {
+//					state.updateAll(currentEnergy, seed, sweeps, rnd, lattice, currentBinCount, binAvg, acceptanceRateCount, acceptanceRateSum, equilibratingObservables);
+//					FileOutputStream fos = new FileOutputStream(fSaveState, false);    // false to overwrite previous state
+//					SerializationUtils.serialize(state, fos);
+//					fos.close();
+//				}
+//			}
 
 
 			// initialize string output buffers
