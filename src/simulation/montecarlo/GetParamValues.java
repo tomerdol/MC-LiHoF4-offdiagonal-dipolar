@@ -18,25 +18,14 @@ public class GetParamValues {
 	public static Properties getParams() {
 
 		Properties params = new Properties();
-		InputStream input = null;
 		
-		try {
-		
-			input = new FileInputStream("parameters.properties");
+		try (InputStream input = new FileInputStream("parameters.properties")){
 		
 			// load a properties file
 			params.load(input);
 		
 		} catch (IOException ex) {
 			ex.printStackTrace();
-		} finally {
-			if (input != null) {
-				try {
-					input.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
 		}
 		return params;
 	}

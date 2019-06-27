@@ -1,5 +1,6 @@
 package simulation.montecarlo;
 
+import javafx.concurrent.Task;
 import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.math3.random.MersenneTwister;
 
@@ -7,8 +8,12 @@ import java.io.Closeable;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
-public class MultipleTMonteCarloSimulation extends MonteCarloSimulation implements Closeable {
+public class MultipleTMonteCarloSimulation extends MonteCarloSimulation implements Closeable, Runnable {
     // TODO check if these can be private now that I don't use serial & parallel classes
     private final boolean parallelTempetingOff;
     private int[] acceptanceRateCount;
@@ -32,49 +37,51 @@ public class MultipleTMonteCarloSimulation extends MonteCarloSimulation implemen
         run('s');
     }
 
-    private void updateAcceptanceRates(int t, boolean swapAcceptance){
-        simulations[t].getOutWriter().writeSwapAcceptance(swapAcceptance);
-        acceptanceRateCount[t]++;
-        simulations[t].incAcceptanceRateCount();
-        if (swapAcceptance){
-            acceptanceRateSum[t]++;
-            simulations[t].incAcceptanceRateSum();
-        }
 
-    }
-
-    // try and swap (t)th and (t+1)th simulations
+    // try and swap (t)th and (t+1)th simulations.
+    // return if the boolean indicating whether the swap was performed
     public void trySwitch(int t){
         double thisEnergy = simulations[t].getCurrentEnergy();
         double nextEnergy = simulations[t+1].getCurrentEnergy();
         double delta = (1/T[t] - 1/T[t + 1])*(thisEnergy - nextEnergy);
         if (!parallelTempetingOff && rnd.nextDouble() < Math.exp(delta)) {
             simulations[t].swap(simulations[t+1]);
-            updateAcceptanceRates(t, true);
+            simulations[t].setLastSwapAcceptance(true);
         }else{
-            updateAcceptanceRates(t, false);
+            simulations[t].setLastSwapAcceptance(false);
         }
-
-
     }
 
-    public void run(char mode) {
+    public void run(final char mode) {
+
         while (sweeps<maxSweeps) {
             if (mode == 's') {
                 //serial mode
 
                 for (int i = 0; i < simulations.length; i++) {
                     simulations[i].run();
+                    if (i<simulations.length-1){
+                        trySwitch(i);
+                    }
                 }
+            } else if (mode == 'p') {
+                //parallel mode
+                ExecutorService executor= Executors.newFixedThreadPool(simulations.length);
+                for (int i=0;i<simulations.length;i++){
+                    executor.execute(simulations[i]);
+                }
+
+                executor.shutdown();
+                try {
+                    executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+                } catch (InterruptedException e) {
+                    System.err.println("error joining threads.");
+                }
+
                 int i;
                 for (i = 0; i < simulations.length - 1; i++) {
                     trySwitch(i);
                 }
-                updateAcceptanceRates(i, true); // last temperature has no acceptance rate so it is always saved as true
-
-            } else if (mode == 'p') {
-                //parallel mode
-
             }
             sweeps++;
             if (checkpoint) {
@@ -99,8 +106,6 @@ public class MultipleTMonteCarloSimulation extends MonteCarloSimulation implemen
 
     public MultipleTMonteCarloSimulation(final double[] T, final SingleTMonteCarloSimulation[] subSimulations, final long maxSweeps, final long seed, final MersenneTwister rnd, final boolean continueFromSave, final boolean realTimeEqTest, final boolean parallelTempetingOff, final boolean checkpoint, final SimulationCheckpointer checkpointer){
         this.parallelTempetingOff=parallelTempetingOff;
-        this.acceptanceRateCount=new int[T.length];
-        this.acceptanceRateSum=new int[T.length];
         this.maxSweeps=maxSweeps;
         this.seed=seed;
         this.rnd=rnd;

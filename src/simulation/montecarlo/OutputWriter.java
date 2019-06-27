@@ -29,10 +29,14 @@ public class OutputWriter implements Closeable {
         return printProgress;
     }
 
+    public boolean isPrintOutputToConsole() {
+        return printOutputToConsole;
+    }
+
     public void flush(){
         try {
             print(outputBuffer.toString(), false);
-            out.flush();
+            if (!printOutputToConsole) out.flush();
             if (outputBuffer.length() > bufferSize)
                 System.err.println("output buffer exceeded its buffer with char count of " + outputBuffer.length() + '/' + bufferSize);
             outputBuffer = null;
@@ -55,7 +59,7 @@ public class OutputWriter implements Closeable {
     }
 
     public void close() throws IOException{
-        out.close();
+        this.out.close();
     }
 
 
@@ -82,10 +86,11 @@ public class OutputWriter implements Closeable {
 
     public void writeObservablesVerbose(final long sweeps, final double m, final double currentEnergy, final double magField0, final double magField1, final double magField2,
                                  final double magField3, final double magField4, final double magField5, final double magField6, final double magField7,
-                                 final double spinSizes0, final double spinSizes1, final double mk2){
+                                 final double spinSizes0, final double spinSizes1, final double mk2, final boolean lastSwapAccepted){
         if (verboseOutput) {
             Formatter formatter = new Formatter(outputBuffer);
-            formatter.format(makeTableRowFormat(new char[]{'d', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'g'}), sweeps, m, currentEnergy, magField0, magField1, magField2, magField3, magField4, magField5, magField6, magField7, spinSizes0, spinSizes1, mk2);
+            formatter.format(makeTableRowFormat(new char[]{'d', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'c'}), sweeps, m, currentEnergy, magField0, magField1, magField2, magField3, magField4, magField5, magField6, magField7, spinSizes0, spinSizes1, mk2, (lastSwapAccepted ? '1' : '0'));
+            outputBuffer.append(System.lineSeparator());
         }
     }
 
@@ -106,13 +111,15 @@ public class OutputWriter implements Closeable {
     public String makeTableRowFormat(char[] colTypes){
         if (colWidths.length!=colTypes.length)
             throw new InputMismatchException("array of column types should be the same length as array of column widths. colWidths.length=" + colWidths.length + ", colTypes.length="+colTypes.length);
-        StringBuilder rowFormat = new StringBuilder(colTypes.length*9);
-        for (int i=0;i<colTypes.length-1;i++){	// the last column is printed separately
+        StringBuilder rowFormat = new StringBuilder(colTypes.length*10);
+        for (int i=0;i<colTypes.length;i++){	// the last column is printed separately
             // % 10d
             if (colTypes[i]=='g')
                 rowFormat.append("% "+(colWidths[i]-1)+'.'+(colWidths[i]-8)+colTypes[i]+' ');
             else if (colTypes[i]=='d')
-                rowFormat.append("% "+(colWidths[i])+colTypes[i]+' ');
+                rowFormat.append("%"+(colWidths[i])+colTypes[i]+' ');
+            else if (colTypes[i]=='c')
+                rowFormat.append("%"+(colWidths[i])+colTypes[i]+' ');
             else
                 throw new IllegalArgumentException("column types can be only 'd' or 'g'");
         }

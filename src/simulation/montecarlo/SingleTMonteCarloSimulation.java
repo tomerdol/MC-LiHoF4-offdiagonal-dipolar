@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 
-public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements Serializable, Closeable {
+public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements Serializable, Closeable, Runnable {
     private final double T;
     private final int temperatureIndex;  // should be -1 if not part of multiple T simulation
     private final int totalNumOfTemperatures;
@@ -29,6 +29,7 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
     private int acceptanceRateCount;
     private int acceptanceRateSum;
     private boolean equilibrated;
+    private boolean lastSwapAccepted;
     // parameters for the iterative solvers
     private transient int maxIter;
     private transient double alpha;
@@ -58,6 +59,7 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
         this.acceptanceRateCount=0;
         this.acceptanceRateSum=0;
         this.equilibrated=false;
+        this.lastSwapAccepted=false;
 
         if (lattice.energyTable==null || lattice.momentTable==null || lattice.nnArray==null || lattice.exchangeIntTable==null || lattice.intTable==null) {
             throw new NullPointerException("The Lattice given to the SingleTMonteCarloSimulation has null some pointers. ");
@@ -95,6 +97,15 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
         return currentEnergy;
     }
 
+    public boolean wasLastSwapAccepted() { return lastSwapAccepted; }
+
+    public void setLastSwapAcceptance(final boolean swapAccepted) {
+        this.lastSwapAccepted=swapAccepted;
+        if (swapAccepted){
+            this.incAcceptanceRateSum();
+        }
+        this.incAcceptanceRateCount();
+    }
     /**
      * Performs a Monte Carlo metropolis step
      * @param lattice - spin lattice
@@ -228,7 +239,7 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
 
 
 
-        outWriter.writeObservablesVerbose(sweeps, m ,currentEnergy ,temp[0] ,temp[1] ,temp[2] ,temp[3] ,temp[4] ,temp[5] ,temp[6] ,temp[7] ,tempSpinSizes[0] ,tempSpinSizes[1] ,mk2);
+        outWriter.writeObservablesVerbose(sweeps, m ,currentEnergy ,temp[0] ,temp[1] ,temp[2] ,temp[3] ,temp[4] ,temp[5] ,temp[6] ,temp[7] ,tempSpinSizes[0] ,tempSpinSizes[1] ,mk2, lastSwapAccepted);
 
         if (sweeps>0) currentBinCount++;
         //System.out.println(sweeps+ " , " + sweeps/2 + " , " + currentBinCount + " , " + (sweeps&1));
@@ -277,7 +288,7 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
     }
 
     public void close() throws IOException{
-        outWriter.close();
+        this.outWriter.close();
     }
 
     public Lattice getLattice(){ return this.lattice; }
@@ -359,6 +370,7 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
         sweeps++;
 
         if (sweeps%outWriter.getObsPrintSweepNum()==0 || sweeps==maxSweeps) {	// every obsPrintSweepNum sweeps or at the last one
+            if (outWriter.isPrintOutputToConsole()) System.out.println("T="+T);
             outWriter.flush();
         }
     }

@@ -476,9 +476,7 @@ public class Lattice implements Serializable {
      */
     static singleSpin[] receiveIsingLattice(int fileNumber, double dilution, int Lx, int Lz, double h, MersenneTwister rnd) throws IOException {
         singleSpin[] arr = null;
-        BufferedReader in = null;
-        try {
-            in = new BufferedReader(new FileReader("configurations" + File.separator + "config_"+Lx+"_"+Lz+"_"+dilution+"_"+h+"_"+fileNumber+".txt"));
+        try (BufferedReader in = new BufferedReader(new FileReader("configurations" + File.separator + "config_"+Lx+"_"+Lz+"_"+dilution+"_"+h+"_"+fileNumber+".txt"))){;
             String str;
             String[] params;
             int i=0;
@@ -510,12 +508,10 @@ public class Lattice implements Serializable {
                 }
                 i++;
             }
-            in.close();
+
         } catch (IOException e) {
             System.err.println("bad input file!");
             throw new RuntimeException();
-        } finally{
-            if (in!=null) in.close();
         }
 
         return arr;

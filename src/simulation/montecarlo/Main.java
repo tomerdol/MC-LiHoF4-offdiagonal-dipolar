@@ -683,11 +683,13 @@ public class Main {
             ((MultipleTMonteCarloSimulation) simulation).run(parallelMode);
 
         }catch (IOException e) {System.err.println("error writing to file: " + e.toString()); }
-        finally {
+        catch (RuntimeException e2) {
+            System.err.println("some other exception");
+        }finally {
             // close all outputs
             if (simulation!=null){
                 try{
-                    simulation.close();
+                    ((MultipleTMonteCarloSimulation)simulation).close();
                 }catch (IOException e){
                     System.err.println("error closing simulation and files: " + e.toString());
                 }
