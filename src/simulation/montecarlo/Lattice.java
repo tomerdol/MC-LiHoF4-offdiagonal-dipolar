@@ -39,7 +39,7 @@ public class Lattice implements Serializable {
         this.iterativeSolver = new MagneticMomentsSolveIter();
 
         this.lattice=generateIsingLattice(Lx,Lz);
-        if (intTable!=null && exchangeIntTable!=null && energyTable!=null && momentTable!=null && nnArray!=null && measure!=null)
+        if (intTable!=null && exchangeIntTable!=null && energyTable!=null && momentTable!=null && measure!=null)
             this.updateAllLocalFields();
     }
 
@@ -133,6 +133,13 @@ public class Lattice implements Serializable {
                 else lattice[i].setSpin(-1);
                 lattice[i].setSpinSize(Constants.spinSize*lattice[i].getSpin());
             }
+        }
+    }
+
+    public void checkerBoard(){
+        for (int i=0; i<lattice.length;i++){
+            lattice[i].setSpin(i%2==0 ? 1 : -1);
+            lattice[i].setSpinSize(Constants.spinSize*lattice[i].getSpin());
         }
     }
 

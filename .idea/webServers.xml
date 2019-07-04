@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="afc5cf25-fef3-4a99-ab9d-76fa67c09341" name="newphysnet1.bgu.ac.il" url="http://newphysnet1.bgu.ac.il">
+        <fileTransfer host="newphysnet1.bgu.ac.il" port="22" rootFolder="/users/physics/tomerdol" accessType="SFTP">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+          <option name="port" value="22" />
+        </fileTransfer>
+      </webServer>
+      <webServer id="d9222dec-6066-4226-bc26-cc1cfeca1e2b" name="cluster" url="http://sge212">
+        <fileTransfer host="sge212" port="22" rootFolder="/gpfs0/smoshe/users/tomerdol/home" accessType="SFTP">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+          <option name="port" value="22" />
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>

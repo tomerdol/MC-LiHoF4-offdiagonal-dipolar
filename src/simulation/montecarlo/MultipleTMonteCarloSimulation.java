@@ -7,11 +7,13 @@ import org.apache.commons.math3.random.MersenneTwister;
 import java.io.Closeable;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.*;
+import java.util.stream.Collectors;
 
 public class MultipleTMonteCarloSimulation extends MonteCarloSimulation implements Closeable, Runnable {
     // TODO check if these can be private now that I don't use serial & parallel classes
@@ -53,42 +55,53 @@ public class MultipleTMonteCarloSimulation extends MonteCarloSimulation implemen
     }
 
     public void run(final char mode) {
-
+        ExecutorService executor=null;
+        if (mode=='p') {
+            executor = Executors.newFixedThreadPool(simulations.length);
+        }
         while (sweeps<maxSweeps) {
             if (mode == 's') {
                 //serial mode
 
                 for (int i = 0; i < simulations.length; i++) {
                     simulations[i].run();
-                    if (i<simulations.length-1){
-                        trySwitch(i);
-                    }
+                }
+                for (int i=0; i < simulations.length-1; i++){
+                    trySwitch(i);
                 }
             } else if (mode == 'p') {
                 //parallel mode
-                ExecutorService executor= Executors.newFixedThreadPool(simulations.length);
-                for (int i=0;i<simulations.length;i++){
-                    executor.execute(simulations[i]);
-                }
-
-                executor.shutdown();
+                List<Callable<Object>> jobs = Arrays.stream(simulations).map(Executors::callable).collect( Collectors.toList() );
                 try {
-                    executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
-                } catch (InterruptedException e) {
-                    System.err.println("error joining threads.");
+                    executor.invokeAll(jobs);
+                }catch (InterruptedException e){
+                    throw new RuntimeException("one of the monte carlo sweep threads encountered an error: " + e.getMessage());
                 }
-
-                int i;
-                for (i = 0; i < simulations.length - 1; i++) {
+                for (int i = 0; i < simulations.length - 1; i++) {
                     trySwitch(i);
                 }
             }
             sweeps++;
-            if (checkpoint) {
-                checkpointer.writeCheckpoint(this);
+            if (sweeps%simulations[0].getOutWriter().getObsPrintSweepNum()==0 || sweeps==maxSweeps) {    // every obsPrintSweepNum sweeps or at the last one
+                if (checkpoint) {
+                    checkpointer.writeCheckpoint(this);
+                }
+                System.out.println(LocalDateTime.now());
             }
 
             if (simulations[0].getOutWriter().isPrintProgress()) System.out.println(String.format("%.2f",100.0*sweeps/maxSweeps) + "% complete                ");
+        }
+        if (mode=='p') {
+            executor.shutdown();
+            try {
+                if (!executor.awaitTermination(10, TimeUnit.MINUTES)) {
+                    System.err.println("threads did not finish for 10 minutes. shutting down thread pool. ");
+                    executor.shutdownNow();
+                }
+            } catch (InterruptedException e) {
+                System.err.println("error closing threads. shutting down thread pool. ");
+                executor.shutdownNow();
+            }
         }
     }
 

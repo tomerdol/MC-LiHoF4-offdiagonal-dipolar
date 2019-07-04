@@ -55,9 +55,9 @@ public class GenerateLattice {
 	            		if (rnd_spin!=null && rnd_spin.nextDouble()<dilution){
 	            			int s=1;
 	            			//if (rnd_spin.nextBoolean()) s=-1;
-//	            			arr[i*Lx*Lz*4+j*Lz*4+k*4+l]=new singleSpin(s,rnd_spin.nextGaussian()*h, i*Lx*Lz*4+j*Lz*4+k*4+l, 0);
+	            			arr[i*Lx*Lz*4+j*Lz*4+k*4+l]=new singleSpin(1,i*Lx*Lz*4+j*Lz*4+k*4+l);
 	            		}else{
-//		                	arr[i*Lx*Lz*4+j*Lz*4+k*4+l]=new singleSpin(0, 0, i*Lx*Lz*4+j*Lz*4+k*4+l, 0);
+		                	arr[i*Lx*Lz*4+j*Lz*4+k*4+l]=new singleSpin(0,i*Lx*Lz*4+j*Lz*4+k*4+l);
 	            		}
             		}
             	}

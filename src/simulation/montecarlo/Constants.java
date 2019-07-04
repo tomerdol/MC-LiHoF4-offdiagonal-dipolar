@@ -7,6 +7,8 @@ import java.util.Properties;
  * Constants to be used throughout the program. They are read from a file (parameters.properties) by the class {@link GetParamValues GetParamValues}
  */
 public class Constants {
+    // TODO consider dividing these to natural constants that will be final & static and to simulation constants that will be
+    //  final instance variables so that a Constants object will be passed to the MonteCarloSimulation object
     public static final double a ,c, mu_0, mu_B, g_L, k_B, J_ex;
     public static double spinSize, tol; // TODO: move these to MonteCarloSimulation (and J_ex)
     public static final int num_in_cell;

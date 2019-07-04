@@ -119,7 +119,7 @@ public class OutputWriter implements Closeable {
             else if (colTypes[i]=='d')
                 rowFormat.append("%"+(colWidths[i])+colTypes[i]+' ');
             else if (colTypes[i]=='c')
-                rowFormat.append("%"+(colWidths[i])+colTypes[i]+' ');
+                rowFormat.append("%"+(colWidths[i]-1)+colTypes[i]+' ');
             else
                 throw new IllegalArgumentException("column types can be only 'd' or 'g'");
         }

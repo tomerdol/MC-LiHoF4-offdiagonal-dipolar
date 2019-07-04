@@ -53,7 +53,7 @@ public class Main {
 
     public static void receiveIntTable(double[][][] intTable, int Lx, int Lz){
         final double c = -Constants.mu_0*Constants.mu_B*Constants.g_L*0.25/Math.PI;	// coefficient dipolar spin-spin interaction. The minus sign is because
-        // we use Ewald to calc the effective field and not the interaction
+                                                                                        // we use Ewald to calc the effective field and not the interaction
 
         int fileLx=0, fileLz=0;
         final int N=Lx*Lx*Lz*4;
@@ -80,8 +80,13 @@ public class Main {
                     if ((str = in.readLine()) != null){
                         String[] xyzInteractions = str.split(",");
                         for (int k=0;k<xyzInteractions.length;k++) {
-                            intTable[k][i][j] = c*Double.parseDouble(xyzInteractions[k]);
-                            intTable[k][j][i] = c*Double.parseDouble(xyzInteractions[k]);
+
+                            intTable[k][i][j] = c * Double.parseDouble(xyzInteractions[k]);
+                            intTable[k][j][i] = c * Double.parseDouble(xyzInteractions[k]);
+                            if (k==2){  // for the zz interactions we multiply by half to avoid double counting.
+                                intTable[k][i][j] *= 0.5;
+                                intTable[k][j][i] *= 0.5;
+                            }
                         }
 
                     } else {
@@ -468,7 +473,7 @@ public class Main {
         boolean suppressInternalTransFields=false;
         boolean continueFromSave=false;
         int maxIter=80;
-        int bufferSize=4500;	// buffer size for output (char count) - should be enough for ~15 sweeps. might need update if more observables are printed after each MCS.
+        int bufferSize=0;
         String tempScheduleFileName = "temperature_schedule_t.txt";
         boolean receivedSeed = false;
         long seed=0;	// should never happen;
@@ -614,15 +619,17 @@ public class Main {
 
         if (continueFromSave) {
             simulation = checkpointer.readCheckpoint();
-            if (simulation!=null) successReadFromFile=true;
-            String inconsistencies=SimulationCheckpointer.verifyCheckpointCompatibility(T, parallelTemperingOff, parallelMode, simulation);
+            if (simulation!=null) {
+                successReadFromFile=true;
+                String inconsistencies = SimulationCheckpointer.verifyCheckpointCompatibility(T, parallelTemperingOff, parallelMode, simulation);
 
-            if (!inconsistencies.isEmpty()){
-                System.err.println("There were some inconsistencies between the checkpoint parameters and the current parameters: " + inconsistencies);
-                System.err.println("Exiting.");
-                System.exit(1);
+                if (!inconsistencies.isEmpty()) {
+                    System.err.println("There were some inconsistencies between the checkpoint parameters and the current parameters: " + inconsistencies);
+                    System.err.println("Exiting.");
+                    System.exit(1);
 
-                successReadFromFile=false;  // maybe later the simulation can be run with the new parameters.
+                    successReadFromFile = false;  // maybe later the simulation can be run with the new parameters.
+                }
             }
 
         }
@@ -634,6 +641,7 @@ public class Main {
         SingleTMonteCarloSimulation[] subSimulations = new SingleTMonteCarloSimulation[T.length];
         BufferedWriter outProblematicConfigs=null;
         try {
+            makeDir("","p_configs");
             outProblematicConfigs = new BufferedWriter(new FileWriter("p_configs" + File.separator + "problematic_"+(Lx*Lx*Lz*4)+"_"+extBx,true));
 
             for (int i=0;i<T.length;i++){
@@ -680,12 +688,11 @@ public class Main {
                 ((MultipleTMonteCarloSimulation)simulation).setCheckpointer(checkpointer);
             }
 
+
             ((MultipleTMonteCarloSimulation) simulation).run(parallelMode);
 
         }catch (IOException e) {System.err.println("error writing to file: " + e.toString()); }
-        catch (RuntimeException e2) {
-            System.err.println("some other exception");
-        }finally {
+        finally {
             // close all outputs
             if (simulation!=null){
                 try{

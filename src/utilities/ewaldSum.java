@@ -1,9 +1,7 @@
 package utilities;
 import org.apache.commons.math3.special.Erf;
 
-import simulation.montecarlo.Constants;
-import simulation.montecarlo.GetParamValues;
-import simulation.montecarlo.singleSpin;
+import simulation.montecarlo.*;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -53,26 +51,42 @@ public class ewaldSum {
 	}
 
 	// more advanced convergence tests. this is meant to find optimal values for alpha, real_cutoff, k_cutoff
-	public static void convergenceTests2(singleSpin[] arr, int Lz, int Lx, int real_cutoff, int k_cutoff){
+	public static void convergenceTests2(int Lz, int Lx, int real_cutoff, int max_k_cutoff){
 		// get 2 close spins
-		int i=(int)(arr.length*0.5);
-		int j=i+2;
+//		int i=(int)(arr.length*0.5);
+//		int j=i+2;
 		double alpha;
+
+		final double[][][] intTable = new double[3][4*Lx*Lx*Lz][4*Lx*Lx*Lz];
+		final double[][] exchangeIntTable = new double[4*Lx*Lx*Lz][4*Lx*Lx*Lz];	// all zeros
+
 
 		//System.out.println("alpha\txz\tyz\tzz");
 		System.out.println("alpha\t1\t2\t3\t4\t5\t6\t7\t8\t9\t10\t11\t12");
-		System.out.println(i +" " + j);
-		for (alpha = 1.0 / Lz; alpha < 5 / Lz; alpha += 0.1 / Lz) {
+//		System.out.println(i +" " + j);
+		for (alpha = 0.1 / Lz; alpha < 5.0 / Lz; alpha += 0.1 / Lz) {
 			System.out.print(alpha*Lz);
 			//for(real_cutoff=1;real_cutoff<=12;real_cutoff++) {
-			for(k_cutoff=1;k_cutoff<=12;k_cutoff++) {
-				double[] ewald_result = calcSum3D(arr[i], arr[j], Lz, Lx, alpha, real_cutoff, k_cutoff);
-				System.out.print("\t" + ewald_result[1]);
+			for(int k_cutoff=1;k_cutoff<=max_k_cutoff;k_cutoff++) {
+				Lattice lattice = new Lattice(Lx, Lz, 0.0, false, intTable, exchangeIntTable, null, null, null, null);
+				fillIntTable(lattice.getArray(), Lz, Lx, alpha, real_cutoff, k_cutoff, intTable);
+				lattice.checkerBoard();
+				lattice.updateAllLocalFields();
+				System.out.print("\t" + (calcEnergy(lattice)/(Lx*Lx*Lz*4)));
 				//System.out.println((alpha * Lz) + "\t" + ewald_result[0] + "\t" + ewald_result[1] + "\t" + ewald_result[2]);
 			}
 			System.out.println();
 		}
 
+	}
+
+	public static double calcEnergy(Lattice lattice){
+		double energy=0;
+		singleSpin[] arr = lattice.getArray();
+		for(int i=0;i<arr.length;i++){
+			energy += CrystalField.getEnergy(arr[i].getLocalBx(), arr[i].getLocalBy(), arr[i].getLocalBz(), arr[i].getSpin());
+		}
+		return energy;
 	}
 
 
@@ -86,12 +100,9 @@ public class ewaldSum {
 		double alpha = GetParamValues.getDoubleParam(params, "alpha");
 		params=null;
 		
-		int Lx;	// lattice x-y size
-		int Lz;	// lattice z size
-        
-        Lx=6;
-        Lz=6;
-
+		int Lx=0;	// lattice x-y size
+		int Lz=0;	// lattice z size
+		int max_k_cutoff=0;
         // for convergence tests
         //int direct_cutoff = 1;
 		//double ellipsoidRatio = 10;
@@ -100,7 +111,7 @@ public class ewaldSum {
         try {
         	Lx = Integer.parseInt(args[0]);
         	Lz = Integer.parseInt(args[1]);
-
+			max_k_cutoff = Integer.parseInt(args[2]);
         	// for convergence tests
         	//real_cutoff = Integer.parseInt(args[2]);
 			//k_cutoff = Integer.parseInt(args[3]);
@@ -108,13 +119,17 @@ public class ewaldSum {
 			//ellipsoidRatio = Double.parseDouble(args[5]);
         }
         catch (ArrayIndexOutOfBoundsException e){
-            System.out.println("ArrayIndexOutOfBoundsException caught");
+            System.err.println("ArrayIndexOutOfBoundsException caught " + e.toString());
         }
-        catch (NumberFormatException e){}
+        catch (NumberFormatException e){
+			System.err.println("Argument not a valid number " + e.toString());
+		}
 
-        try {
-        	
-            BufferedWriter out = new BufferedWriter(new FileWriter("interactions" + File.separator + "intTable_"+Lx+"_"+Lz+".txt"));
+		convergenceTests2(Lz, Lx, real_cutoff, max_k_cutoff);
+
+        System.exit(0);
+
+        try (BufferedWriter out = new BufferedWriter(new FileWriter("interactions" + File.separator + "intTable_"+Lx+"_"+Lz+".txt"))){
             
             //print lattice sizes
             out.write("Lx="+Lx);
@@ -143,10 +158,7 @@ public class ewaldSum {
 
             // fill interactions table and print it to the file 'out'
             fillIntTable(arr,Lz,Lx,alpha/(c*Lz),real_cutoff,k_cutoff,out);
-            
 
-            out.flush();
-            out.close();
         }
         catch (IOException e) { System.out.println("bad file"); }
 
@@ -162,6 +174,36 @@ public class ewaldSum {
 
     }
 
+	public static void fillIntTable(singleSpin[] arr, int Lz, int Lx, double alpha, int real_cutoff, int k_cutoff, final double[][][] intTable){
+		final double c = -Constants.mu_0*Constants.mu_B*Constants.g_L*0.25/Math.PI;	// coefficient dipolar spin-spin interaction. The minus sign is because
+		for (int i=0;i<arr.length;i++){
+			for (int j=i;j<arr.length;j++){
+				// self interaction in unnecessary for this project
+				double[] interaction = new double[3];
+				if (i!=j)
+					interaction = ewaldSum.calcSum3D(arr[i], arr[j], Lz, Lx, alpha, real_cutoff, k_cutoff);
+
+				/*
+				if (i==j){	// subtract self interaction arising from the reciprocal lattice summation
+					interaction -= 4*Math.pow(alpha, 3)/(3*Math.sqrt(Math.PI));
+				}
+				*/
+
+
+				//System.out.println(Double.toString(-D*interaction));
+				for (int k=0;k<interaction.length;k++) {
+					double value = c * interaction[k];
+					value = Math.floor(value * 1.0e7) / 1.0e7;	// truncate at 7 digits
+					intTable[k][i][j] = value;
+					intTable[k][j][i] = value;
+					if (k==2){  // for the zz interactions we multiply by half to avoid double counting.
+						intTable[k][i][j] *= 0.5;
+						intTable[k][j][i] *= 0.5;
+					}
+				}
+			}
+		}
+	}
 	
 	public static void fillIntTable(singleSpin[] arr, int Lz, int Lx, double alpha, int real_cutoff, int k_cutoff, BufferedWriter out) throws IOException{
 
@@ -189,6 +231,7 @@ public class ewaldSum {
 	
 
 	// bottom line: this is the right implementation of ewald sum for this project
+	// returns the zx, zy, zz interations in a size 3 array: {zx, zy, zz}
 	public static double[] calcSum3D(singleSpin i, singleSpin j, int Lz, int Lx, double alpha, int realN_cutoff, int reciprocalN_cutoff){
 		
 		double realSumZ=0, realSumX=0, realSumY=0, reciprocalSumZ=0, reciprocalSumX=0, reciprocalSumY=0;

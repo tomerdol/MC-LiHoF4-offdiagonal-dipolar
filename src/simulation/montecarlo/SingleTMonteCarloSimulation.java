@@ -391,6 +391,7 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
         outWriter.print("#" + Constants.locationsToString(), true);
         outWriter.print("#seed=" + seed, true);
         outWriter.print(extraMessage, true);
+        outWriter.flush();
 
     }
 

@@ -85,7 +85,7 @@ public class ObservableExtractor {
             //energy += arr[i].getSpin()*arr[i].getSpinSize()*c*arr[i].getLocalBz();
         }
 
-        return 0.5*energy + calcExchangeEnergy(lattice);
+        return energy + calcExchangeEnergy(lattice);
     }
 
     public static double calcExchangeEnergy(Lattice lattice) {

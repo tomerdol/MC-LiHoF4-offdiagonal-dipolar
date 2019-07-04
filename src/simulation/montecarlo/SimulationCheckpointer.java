@@ -106,7 +106,7 @@ public class SimulationCheckpointer {
     public static boolean verifyNumOfTemperaturesCompatibility(final char parallelMode, final MonteCarloSimulation simulation) {
         if (simulation==null) throw new NullPointerException("Received Null simulation. cannot verify T compatibility.");
 
-        return ((simulation instanceof SingleTMonteCarloSimulation && parallelMode!='t') ||
-                (simulation instanceof MultipleTMonteCarloSimulation && parallelMode=='t'));
+        return ((simulation instanceof SingleTMonteCarloSimulation && parallelMode=='t') ||
+                (simulation instanceof MultipleTMonteCarloSimulation && parallelMode!='t'));
     }
 }
