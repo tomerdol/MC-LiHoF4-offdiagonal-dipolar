@@ -1,15 +1,15 @@
 package utilities;
 
+import org.apache.commons.math3.random.MersenneTwister;
+import simulation.montecarlo.CrystalField;
+import simulation.montecarlo.GetParamValues;
+import simulation.montecarlo.singleSpin;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Properties;
-
-import org.apache.commons.math3.random.MersenneTwister;
-
-import simulation.montecarlo.GetParamValues;
-import simulation.montecarlo.singleSpin;
 
 
 public class GenerateLattice {
@@ -25,6 +25,8 @@ public class GenerateLattice {
 	 * @return An array of spins that represent a Lx*Lx*Lz lattice of LiHo_{x}Y_{1-x}F_4
 	 */
 	public static singleSpin[] generate_ising_lattice(int Lx, int Lz, double a, double c, double dilution, double h, MersenneTwister rnd_spin) {
+		final double spinSize = CrystalField.getMagneticMoment(0.0, 0.0, 0.05);
+
         int i, j, k, l;
         // create the array that will hold the lattice. the array's cells correspond
         // to the unit cells of the LiHo{x}Y{x-1}F4.
@@ -55,9 +57,9 @@ public class GenerateLattice {
 	            		if (rnd_spin!=null && rnd_spin.nextDouble()<dilution){
 	            			int s=1;
 	            			//if (rnd_spin.nextBoolean()) s=-1;
-	            			arr[i*Lx*Lz*4+j*Lz*4+k*4+l]=new singleSpin(1,i*Lx*Lz*4+j*Lz*4+k*4+l);
+	            			arr[i*Lx*Lz*4+j*Lz*4+k*4+l]=new singleSpin(1,i*Lx*Lz*4+j*Lz*4+k*4+l, spinSize);
 	            		}else{
-		                	arr[i*Lx*Lz*4+j*Lz*4+k*4+l]=new singleSpin(0,i*Lx*Lz*4+j*Lz*4+k*4+l);
+		                	arr[i*Lx*Lz*4+j*Lz*4+k*4+l]=new singleSpin(0,i*Lx*Lz*4+j*Lz*4+k*4+l, spinSize);
 	            		}
             		}
             	}

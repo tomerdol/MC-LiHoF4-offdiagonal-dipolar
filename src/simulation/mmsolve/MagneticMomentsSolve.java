@@ -1,14 +1,10 @@
 package simulation.mmsolve;
 
 
-import simulation.montecarlo.*;
 import org.apache.commons.math3.linear.MatrixDimensionMismatchException;
 import org.apache.commons.math3.linear.SingularMatrixException;
 
-import java.util.Random;
-
 public class MagneticMomentsSolve {
-
 
     static void printMean(double[] arr){
         double mean=0;
@@ -16,7 +12,7 @@ public class MagneticMomentsSolve {
         System.out.println(mean/arr.length);
     }
 
-    public static double [] gauss_seidel(fi_xi f, double xx[], double alpha, int iter) throws ConvergenceException {
+    public static double [] gauss_seidel(fi_xi f, double xx[], double alpha, int iter, final double tol) throws ConvergenceException {
         int n=xx.length;
         //double xx[]=new double[n];
         double xx1[]=new double[n];
@@ -38,7 +34,7 @@ public class MagneticMomentsSolve {
             //System.out.println(" k = "+k+" delta = "+delta);
             //System.out.println(checkConverge(xx,f));
 
-            if(delta< Constants.tol*1.0e-1) break;
+            if(delta< tol*1.0e-1) break;
         }
         //if (k==iter) System.out.println("reached max iteration");
         return xx;
@@ -61,11 +57,11 @@ public class MagneticMomentsSolve {
         return new double[n];
     }
 
-    public static double[] broyden(fi_xi vecFunc, final double[] x) throws ConvergenceException {
-        return broyden(vecFunc, x, false, false);
+    public static double[] broyden(fi_xi vecFunc, final double[] x, final double tol) throws ConvergenceException {
+        return broyden(vecFunc, x, tol, false, false);
     }
 
-    public static double[] broyden(fi_xi vecFunc, final double[] x, boolean initialJacobianIdentity, boolean changeJacobianIdentity) throws ConvergenceException {
+    public static double[] broyden(fi_xi vecFunc, final double[] x, final double tol, boolean initialJacobianIdentity, boolean changeJacobianIdentity) throws ConvergenceException {
         // Given an initial guess x[0..n-1] for a root in n dimensions, find the root by Broyden’s
         // method embedded in a globally convergent strategy. The vector of functions to be zeroed
         // called fvec[0..n-1] in the routine below, is returned by the user-supplied function or functor
@@ -75,7 +71,7 @@ public class MagneticMomentsSolve {
         // different initial guess.
         int MAXITS=250;
         double EPSILON = Math.ulp(1.0);
-        double TOLF=Constants.tol, TOLX=EPSILON, STPMX=100.0, TOLMIN=Math.pow(Constants.tol,3/2);
+        double TOLF=tol, TOLX=EPSILON, STPMX=100.0, TOLMIN=Math.pow(tol,3/2);
         // Here MAXITS is the maximum number of iterations; EPS is the machine precision; TOLF
         // is the convergence criterion on function values; TOLX is the convergence criterion on delta_x;
         // STPMX is the scaled maximum step length allowed in line searches; and TOLMIN is used to
@@ -253,7 +249,7 @@ public class MagneticMomentsSolve {
 
     }
 
-    public static double[] newt(fi_xi vecfunc, final double[] x)
+    public static double[] newt(fi_xi vecfunc, final double[] x, final double tol)
             throws ConvergenceException {
         // Given an initial guess x[0..n-1] for a root in n dimensions, find the
         // root by a globally convergent Newton’s method. The vector of
@@ -265,7 +261,7 @@ public class MagneticMomentsSolve {
         // below. In this case try restarting from a different initial guess.
         final double EPSILON=Math.ulp(1.0);
         final int MAXITS = 200;
-        final double TOLF = Constants.tol, TOLMIN = Math.pow(Constants.tol,3/2), STPMX = 100.0;
+        final double TOLF = tol, TOLMIN = Math.pow(tol,3/2), STPMX = 100.0;
         final double TOLX = EPSILON; // numeric_limits<double>::epsilon();
         // Here MAXITS is the maximum number of iterations; TOLF sets the
         // convergence criterion on function values; TOLMIN sets the criterion

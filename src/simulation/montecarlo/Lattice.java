@@ -25,6 +25,7 @@ public class Lattice implements Serializable {
 
     private singleSpin[] lattice;
 
+
     public Lattice(int Lx, int Lz, double extBx, boolean suppressInternalTransFields, double spinSize, double[][][] intTable, double[][] exchangeIntTable, int[][] nnArray, FieldTable energyTable, FieldTable momentTable, final ObservableExtractor measure){
         this.N=Lx*Lx*Lz*4;
         this.Lx=Lx;
@@ -39,7 +40,7 @@ public class Lattice implements Serializable {
         this.nnArray=nnArray;
         this.measure=measure;
         this.iterativeSolver = new MagneticMomentsSolveIter();
-        this.lattice=generateIsingLattice(Lx,Lz);
+        this.lattice=generateIsingLattice(Lx,Lz,spinSize);
         if (intTable!=null && exchangeIntTable!=null && energyTable!=null && momentTable!=null && measure!=null)
             this.updateAllLocalFields();
     }
@@ -236,23 +237,23 @@ public class Lattice implements Serializable {
 
             // newton's method
             if (method==4){
-                x = simulation.mmsolve.MagneticMomentsSolve.newt(funcToSolve, x);
+                x = simulation.mmsolve.MagneticMomentsSolve.newt(funcToSolve, x, tol);
             }
             // broyden's method, Jacobian is identity and not changing
             else if (method==5){
-                x = simulation.mmsolve.MagneticMomentsSolve.broyden(funcToSolve, x, true, false);
+                x = simulation.mmsolve.MagneticMomentsSolve.broyden(funcToSolve, x, tol, true, false);
             }
             // broyden's method, Jacobian is initialized and not changing
             else if (method==6){
-                x = simulation.mmsolve.MagneticMomentsSolve.broyden(funcToSolve, x, false, false);
+                x = simulation.mmsolve.MagneticMomentsSolve.broyden(funcToSolve, x, tol,false, false);
             }
             // broyden's method, Jacobian is initialized and changed to identity upon fail
             else if (method==7){
-                x = simulation.mmsolve.MagneticMomentsSolve.broyden(funcToSolve, x, false, true);
+                x = simulation.mmsolve.MagneticMomentsSolve.broyden(funcToSolve, x, tol,false, true);
             }
             // broyden's method, Jacobian is identity and initialized upon fail
             else if (method==8){
-                x = simulation.mmsolve.MagneticMomentsSolve.broyden(funcToSolve, x, true, true);
+                x = simulation.mmsolve.MagneticMomentsSolve.broyden(funcToSolve, x, tol,true, true);
             }
 
             for (int j=0;j<lattice.length;j++) lattice[j].setSpinSize(x[j]);
@@ -485,6 +486,8 @@ public class Lattice implements Serializable {
      * @throws IOException
      */
     static singleSpin[] receiveIsingLattice(int fileNumber, double dilution, int Lx, int Lz, double h, MersenneTwister rnd) throws IOException {
+        final double spinSize = CrystalField.getMagneticMoment(0.0, 0.0, 0.05);
+
         singleSpin[] arr = null;
         try (BufferedReader in = new BufferedReader(new FileReader("configurations" + File.separator + "config_"+Lx+"_"+Lz+"_"+dilution+"_"+h+"_"+fileNumber+".txt"))){;
             String str;
@@ -506,11 +509,11 @@ public class Lattice implements Serializable {
                 try{
                     if (Integer.parseInt(params[3])!=0){	// meaning that there is a spin there
                         if (rnd.nextBoolean())	// spin +1
-                            arr[i]=new singleSpin(1,0);
+                            arr[i]=new singleSpin(1,0, spinSize);
                         else	// spin -1
-                            arr[i]=new singleSpin(-1,0);
+                            arr[i]=new singleSpin(-1,0, spinSize);
                     }else{ // initialize spin but with s=0
-                        arr[i]=new singleSpin(0, 0);
+                        arr[i]=new singleSpin(0, 0, spinSize);
                     }
                 }catch(NumberFormatException nfe){
                     System.err.println("error reading line "+i+" in file "+ fileNumber+". numeric value expected.");
@@ -534,7 +537,7 @@ public class Lattice implements Serializable {
      * @return An array of spins that represent a Lx*Lx*Lz lattice of LiHo_{x}F_4
      * with all local fields set to zero and all spin sizes set to the (positive) default spin size (from parameter file).
      */
-    public static singleSpin[] generateIsingLattice(int Lx, int Lz) {
+    public static singleSpin[] generateIsingLattice(int Lx, int Lz, final double spinSize) {
         int i, j, k, l;
         // create the array that will hold the lattice. the array's cells correspond
         // to the unit cells of the LiHo{x}Y{x-1}F4.
@@ -562,7 +565,7 @@ public class Lattice implements Serializable {
                     // a lattice is created with all spins +1
                     for (l = 0; l < 4; l++)
                     {
-                        arr[i*Lx*Lz*4+j*Lz*4+k*4+l]=new singleSpin(1,i*Lx*Lz*4+j*Lz*4+k*4+l);
+                        arr[i*Lx*Lz*4+j*Lz*4+k*4+l]=new singleSpin(1,i*Lx*Lz*4+j*Lz*4+k*4+l, spinSize);
                     }
                 }
             }

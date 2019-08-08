@@ -52,7 +52,11 @@ public class singleSpin implements Serializable{
 
 
 	public singleSpin(int s0, int n0){
-		this(s0,n0,0,0,0,s0*Constants.spinSize);	// Bx,By should be initialized later and spinSize is an initial guess
+		this(s0,n0,0,0,0,0);	// Bx,By,Bz and spinSize should be initialized later
+	}
+
+	public singleSpin(int s0, int n0, double spinSize){
+		this(s0,n0,0,0,0,s0*(spinSize));	// Bx,By,Bz should be initialized later and spinSize is an initial guess
 	}
 
 	// copy constructor
