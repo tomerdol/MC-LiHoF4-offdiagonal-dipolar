@@ -1,8 +1,9 @@
 package simulation.montecarlo;
 
 import org.apache.commons.math3.random.MersenneTwister;
-import simulation.mmsolve.*;
-
+import simulation.mmsolve.ConvergenceException;
+import simulation.mmsolve.fi_xi;
+import simulation.mmsolve.func;
 
 import java.io.*;
 import java.util.Arrays;
@@ -25,7 +26,7 @@ public class Lattice implements Serializable {
 
     private singleSpin[] lattice;
 
-
+    @CreatesInconsistency("If intTable, exchangeIntTable, energyTable, momentTable or measure are null")
     public Lattice(int Lx, int Lz, double extBx, boolean suppressInternalTransFields, double spinSize, double[][][] intTable, double[][] exchangeIntTable, int[][] nnArray, FieldTable energyTable, FieldTable momentTable, final ObservableExtractor measure){
         this.N=Lx*Lx*Lz*4;
         this.Lx=Lx;
@@ -128,8 +129,8 @@ public class Lattice implements Serializable {
         return copyLattice(this.lattice);
     }
 
+    @CreatesInconsistency
     // randomize the spin configurations
-    // TODO: find some general purpose flag to mark methods that ruin spinSize consistency, field consistency etc.
     public void randomizeConfig(MersenneTwister rnd){
         for (int i=0; i<lattice.length;i++){
             if (lattice[i].getSpin()!=0){
@@ -140,6 +141,7 @@ public class Lattice implements Serializable {
         }
     }
 
+    @CreatesInconsistency
     public void checkerBoard(){
         for (int i=0; i<lattice.length;i++){
             lattice[i].setSpin(i%2==0 ? 1 : -1);
