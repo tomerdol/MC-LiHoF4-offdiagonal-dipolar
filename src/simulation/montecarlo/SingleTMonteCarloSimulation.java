@@ -28,6 +28,7 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
     private double currentEnergy;
     private int acceptanceRateCount;
     private int acceptanceRateSum;
+    private boolean[] equilibratedObs;
     private boolean equilibrated;
     private boolean lastSwapAccepted;
 
@@ -62,6 +63,7 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
         this.acceptanceRateCount=0;
         this.acceptanceRateSum=0;
         this.equilibrated=false;
+        this.equilibratedObs = new boolean[4];
         this.lastSwapAccepted=false;
         this.spinSize=spinSize;
         this.tol=tol;
@@ -268,7 +270,11 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
             equilibratingObs.get(1).add(Pair.of(binAvg[6]/currentBinCount,getStandardError(binAvg[6],binAvg[7],currentBinCount)));		// E
             equilibratingObs.get(2).add(Pair.of(binAvg[28]/currentBinCount,getStandardError(binAvg[28],binAvg[29],currentBinCount)));	// mk2
             equilibratingObs.get(3).add(Pair.of(binAvg[0]/currentBinCount,getStandardError(binAvg[0],binAvg[1],currentBinCount)));		// |m|
-            equilibrated = checkEquilibration(equilibratingObs);
+
+            for (int i=0;i<4;i++) {
+                equilibratedObs[i] = checkEquilibration(equilibratingObs.get(i));
+            }
+            equilibrated = isAllTrue(equilibratedObs);
 
             //System.out.println(sweeps + ") printed average of bin size "+currentBinCount + " starting from " + binStart);
             for (int avgIndex=0;avgIndex<binAvg.length;avgIndex++) binAvg[avgIndex]=0;
@@ -281,9 +287,8 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
             currentBinCount=0;
 
             if (equilibrated){
-                // TODO (instead) change verbose to false and change condition to include check of verbose
                 // declare that equilibration has been reached
-                System.out.println("System equilibrated! sweeps="+sweeps+". Date&Time: "+ LocalDateTime.now());
+                System.out.println("System equilibrated! T="+T+", sweeps="+sweeps+". Date&Time: "+ LocalDateTime.now());
 
             }
         }
@@ -336,31 +341,43 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
     }
 
     // check whether the given array of averages and standard deviations agree within error bars
-    // TODO: change this so that it only checks whether measurements have overlapping sd errors
     public static boolean checkEquilibration(ArrayList<CircularFifoQueue<Pair<Double,Double>>> arr){
         if (arr.size()==0)
             return false;
 
         boolean equilibrated=true;
         for (CircularFifoQueue<Pair<Double, Double>> binsOfObservable : arr) {
-            if (!binsOfObservable.isAtFullCapacity() || !equilibrated){
-                // queue has less than 3 bins
-                equilibrated=false;
-            } else {
-                double upperBound = binsOfObservable.get(0).getLeft() + binsOfObservable.get(0).getRight(), lowerBound = binsOfObservable.get(0).getLeft() - binsOfObservable.get(0).getRight();
-                for (Pair<Double, Double> bin : binsOfObservable) {
-                    upperBound = Math.min(upperBound, bin.getLeft() + bin.getRight());
-                    lowerBound = Math.max(lowerBound, bin.getLeft() - bin.getRight());
-                }
-                equilibrated = upperBound > lowerBound;
-                for (Pair<Double, Double> bin : binsOfObservable) {
-                    if (bin.getLeft() > upperBound || bin.getLeft() < lowerBound) {
-                        equilibrated = false;
-                    }
-                }
-            }
+            equilibrated &= checkEquilibration(binsOfObservable);
         }
 
+        return equilibrated;
+    }
+
+    // check whether the given queue of a single observable's averages and standard deviations agree within error bars
+    public static boolean checkEquilibration(CircularFifoQueue<Pair<Double, Double>> binsOfObservable){
+        boolean equilibrated=true;
+        if (!binsOfObservable.isAtFullCapacity()){
+            // queue has less than 3 bins
+            equilibrated=false;
+        } else {
+            double upperBound = binsOfObservable.get(0).getLeft() + binsOfObservable.get(0).getRight(), lowerBound = binsOfObservable.get(0).getLeft() - binsOfObservable.get(0).getRight();
+            for (Pair<Double, Double> bin : binsOfObservable) {
+                upperBound = Math.min(upperBound, bin.getLeft() + bin.getRight());
+                lowerBound = Math.max(lowerBound, bin.getLeft() - bin.getRight());
+            }
+            equilibrated = upperBound > lowerBound;
+            if (equilibrated && binsOfObservable.maxSize()>2) {
+                boolean monotonicallyInc = binsOfObservable.get(0).getLeft() < binsOfObservable.get(1).getLeft();
+                boolean monotonicallyDec = binsOfObservable.get(0).getLeft() > binsOfObservable.get(1).getLeft();
+                for (int i=2;i<binsOfObservable.size();i++) {
+                    monotonicallyInc &= binsOfObservable.get(i-1).getLeft() < binsOfObservable.get(i).getLeft();
+                    monotonicallyDec &= binsOfObservable.get(i-1).getLeft() > binsOfObservable.get(i).getLeft();
+                }
+
+                // condition is that the bins not be monotonic
+                equilibrated = !(monotonicallyDec || monotonicallyInc);
+            }
+        }
         return equilibrated;
     }
 
