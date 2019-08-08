@@ -1,22 +1,19 @@
 package simulation.montecarlo;
 
-import javafx.concurrent.Task;
-import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.math3.random.MersenneTwister;
 
 import java.io.Closeable;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class MultipleTMonteCarloSimulation extends MonteCarloSimulation implements Closeable, Runnable {
-    // TODO check if these can be private now that I don't use serial & parallel classes
     private final boolean parallelTempetingOff;
     private int[] acceptanceRateCount;
     private int[] acceptanceRateSum;
@@ -25,6 +22,7 @@ public class MultipleTMonteCarloSimulation extends MonteCarloSimulation implemen
     private final MersenneTwister rnd;
     private long sweeps;
     private transient SimulationCheckpointer checkpointer;
+    public final double spinSize, tol, J_ex;
 
     public SingleTMonteCarloSimulation getIthSubSimulation(int i){ return this.simulations[i]; }
 
@@ -117,7 +115,9 @@ public class MultipleTMonteCarloSimulation extends MonteCarloSimulation implemen
         this.checkpointer=checkpointer;
     }
 
-    public MultipleTMonteCarloSimulation(final double[] T, final SingleTMonteCarloSimulation[] subSimulations, final long maxSweeps, final long seed, final MersenneTwister rnd, final boolean continueFromSave, final boolean realTimeEqTest, final boolean parallelTempetingOff, final boolean checkpoint, final SimulationCheckpointer checkpointer){
+    public MultipleTMonteCarloSimulation(final double[] T, final SingleTMonteCarloSimulation[] subSimulations, final long maxSweeps, final long seed, final MersenneTwister rnd,
+                                         final boolean continueFromSave, final boolean realTimeEqTest, final boolean parallelTempetingOff, final boolean checkpoint,
+                                         final SimulationCheckpointer checkpointer, final double spinSize, final double tol, final double J_ex){
         this.parallelTempetingOff=parallelTempetingOff;
         this.maxSweeps=maxSweeps;
         this.seed=seed;
@@ -129,6 +129,9 @@ public class MultipleTMonteCarloSimulation extends MonteCarloSimulation implemen
         this.checkpoint=checkpoint;
         this.sweeps=0;
         this.checkpointer=checkpointer;
+        this.spinSize=spinSize;
+        this.tol=tol;
+        this.J_ex=J_ex;
     }
 
     public void printRunParameters(){

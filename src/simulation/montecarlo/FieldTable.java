@@ -78,6 +78,14 @@ final public class FieldTable {
         else throw new RuntimeException("trans_field table not read");
     }
 
+    /**
+     * Get the range covered by the table along some axis
+     * @return a size-2 array of the {min,max} values covered by the table
+     */
+    public double[] getTableRange(int axis){
+        return new double[]{ values[axis][0], values[axis][values.length-1]};
+    }
+
 
     /**
      * Turns an array of strings into an array of doubles

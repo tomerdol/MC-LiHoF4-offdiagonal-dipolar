@@ -3,11 +3,11 @@ import org.apache.commons.math3.special.Erf;
 
 import simulation.montecarlo.*;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
+import java.text.DecimalFormat;
 import java.util.Properties;
+
+import static simulation.montecarlo.Main.makeDir;
 
 public class ewaldSum {
 
@@ -16,8 +16,6 @@ public class ewaldSum {
 		// get 2 close spins
 		int i=(int)(arr.length*0.5);
 		int j=i+1;
-
-		double D=a*a*a*0.214;
 
 		double ewald_result = calcSum3D(arr[i],arr[j],Lz,Lx,alpha,real_cutoff,k_cutoff)[0];
 		System.out.println("ratio\tewald\tdirect(1)\tdirect(2)\tdirect(3)\tdirect(4)\tdirect(5)\tdirect(6)\tdirect(7)\tdirect(8)\tdirect(9)\tdirect(10)");
@@ -53,8 +51,32 @@ public class ewaldSum {
 	// more advanced convergence tests. this is meant to find optimal values for alpha, real_cutoff, k_cutoff
 	public static void convergenceTests2(int Lz, int Lx, int real_cutoff, int max_k_cutoff){
 		// get 2 close spins
-//		int i=(int)(arr.length*0.5);
-//		int j=i+2;
+		int i=(int)(Lx/2);
+		int j=(int)(Lx/2);
+		int k=(int)(Lz/2);
+		int testSpin=(i)*Lx*Lz*4+(j)*Lz*4+(k)*4+0;
+		int neighbor1=-1, neighbor2=-1, neighbor3=-1, neighbor4=-1;
+
+		neighbor1=i*Lx*Lz*4+j*Lz*4+k*4+1;
+		if (i==0)
+			neighbor2=(Lx-1)*Lx*Lz*4+j*Lz*4+k*4+1;
+		else
+			neighbor2=(i-1)*Lx*Lz*4+j*Lz*4+k*4+1;
+		if (k==0)
+			neighbor3=i*Lx*Lz*4+j*Lz*4+(Lz-1)*4+3;
+		else
+			neighbor3=i*Lx*Lz*4+j*Lz*4+(k-1)*4+3;
+
+		if (j==0 && k==0)
+			neighbor4=i*Lx*Lz*4+(Lx-1)*Lz*4+(Lz-1)*4+3;
+		else if(j==0){
+			neighbor4=i*Lx*Lz*4+(Lx-1)*Lz*4+(k-1)*4+3;
+		}
+		else if(k==0){
+			neighbor4=i*Lx*Lz*4+(j-1)*Lz*4+(Lz-1)*4+3;
+		}else{
+			neighbor4=i*Lx*Lz*4+(j-1)*Lz*4+(k-1)*4+3;
+		}
 		double alpha;
 
 		final double[][][] intTable = new double[3][4*Lx*Lx*Lz][4*Lx*Lx*Lz];
@@ -68,7 +90,7 @@ public class ewaldSum {
 			System.out.print(alpha*Lz);
 			//for(real_cutoff=1;real_cutoff<=12;real_cutoff++) {
 			for(int k_cutoff=1;k_cutoff<=max_k_cutoff;k_cutoff++) {
-				Lattice lattice = new Lattice(Lx, Lz, 0.0, false, intTable, exchangeIntTable, null, null, null, null);
+				Lattice lattice = new Lattice(Lx, Lz, 0.0, false, 5.51,intTable, exchangeIntTable, null, null, null, null);
 				fillIntTable(lattice.getArray(), Lz, Lx, alpha, real_cutoff, k_cutoff, intTable);
 				lattice.checkerBoard();
 				lattice.updateAllLocalFields();
@@ -78,6 +100,97 @@ public class ewaldSum {
 			System.out.println();
 		}
 
+	}
+
+	public static void convergenceTests3(int Lz, int Lx, int real_cutoff, int k_cutoff){
+		// get 2 close spins
+		int i=(int)(Lx/2);
+		int j=(int)(Lx/2);
+		int k=(int)(Lz/2);
+		int testSpin=(i)*Lx*Lz*4+(j)*Lz*4+(k)*4+0;
+		int neighbor1=-1, neighbor2=-1, neighbor3=-1, neighbor4=-1;
+
+		neighbor1=i*Lx*Lz*4+j*Lz*4+k*4+1;
+		if (i==0)
+			neighbor2=(Lx-1)*Lx*Lz*4+j*Lz*4+k*4+1;
+		else
+			neighbor2=(i-1)*Lx*Lz*4+j*Lz*4+k*4+1;
+		if (k==0)
+			neighbor3=i*Lx*Lz*4+j*Lz*4+(Lz-1)*4+3;
+		else
+			neighbor3=i*Lx*Lz*4+j*Lz*4+(k-1)*4+3;
+
+		if (j==0 && k==0)
+			neighbor4=i*Lx*Lz*4+(Lx-1)*Lz*4+(Lz-1)*4+3;
+		else if(j==0){
+			neighbor4=i*Lx*Lz*4+(Lx-1)*Lz*4+(k-1)*4+3;
+		}
+		else if(k==0){
+			neighbor4=i*Lx*Lz*4+(j-1)*Lz*4+(Lz-1)*4+3;
+		}else{
+			neighbor4=i*Lx*Lz*4+(j-1)*Lz*4+(k-1)*4+3;
+		}
+		double alpha;
+
+		final double[][][] intTable = new double[3][4*Lx*Lx*Lz][4*Lx*Lx*Lz];
+		final double[][] exchangeIntTable = new double[4*Lx*Lx*Lz][4*Lx*Lx*Lz];	// all zeros
+
+		Lattice lattice = new Lattice(Lx, Lz, 0.0, false, 5.51, intTable, exchangeIntTable, null, null, null, null);
+		singleSpin[] arr = lattice.getArray();
+		System.out.println("#real_cutoff="+real_cutoff);
+		System.out.println("#reciprocal_cutoff="+k_cutoff);
+		System.out.println("alpha\t0x\t0y\t0z\t1x\t1y\t1z\t2x\t2y\t2z\t3x\t3y\t3z\t4x\t4y\t4z");
+		DecimalFormat df = new DecimalFormat("0.0000000000");
+		for (alpha = 0.1 / Lz; alpha < 5.0 / Lz; alpha += 0.1 / Lz) {
+			System.out.print(df.format(alpha*Lz)+"\t");
+
+			double[] interaction0=ewaldSum.calcSum3D(arr[testSpin], arr[testSpin], Lz, Lx, alpha, real_cutoff, k_cutoff);
+			System.out.print(df.format(interaction0[0])+"\t"+df.format(interaction0[1])+"\t"+df.format(interaction0[2])+"\t");
+			double[] interaction1=ewaldSum.calcSum3D(arr[testSpin], arr[neighbor1], Lz, Lx, alpha, real_cutoff, k_cutoff);
+			System.out.print(df.format(interaction1[0])+"\t"+df.format(interaction1[1])+"\t"+df.format(interaction1[2])+"\t");
+			double[] interaction2=ewaldSum.calcSum3D(arr[testSpin], arr[neighbor2], Lz, Lx, alpha, real_cutoff, k_cutoff);
+			System.out.print(df.format(interaction2[0])+"\t"+df.format(interaction2[1])+"\t"+df.format(interaction2[2])+"\t");
+			double[] interaction3=ewaldSum.calcSum3D(arr[testSpin], arr[neighbor3], Lz, Lx, alpha, real_cutoff, k_cutoff);
+			System.out.print(df.format(interaction3[0])+"\t"+df.format(interaction3[1])+"\t"+df.format(interaction3[2])+"\t");
+			double[] interaction4=ewaldSum.calcSum3D(arr[testSpin], arr[neighbor4], Lz, Lx, alpha, real_cutoff, k_cutoff);
+			System.out.print(df.format(interaction4[0])+"\t"+df.format(interaction4[1])+"\t"+df.format(interaction4[2]));
+
+			System.out.println();
+		}
+
+
+	}
+
+	public static void multipleSizeTestsWithvariableKcutoff(int[] Lz, int real_cutoff, int[] k_cutoffs){
+
+		for (int i=0;i<Lz.length;i++) {
+			try {
+				makeDir("C:\\Users\\Tomer\\OneDrive - post.bgu.ac.il\\thesis\\ewald_convergence\\", "L=" + Lz[i]);
+				for (int j=0;j<k_cutoffs.length;j++) {
+					PrintStream fileOut = new PrintStream("C:\\Users\\Tomer\\OneDrive - post.bgu.ac.il\\thesis\\ewald_convergence\\L=" + Lz[i] + "\\" +k_cutoffs[j]+"_"+real_cutoff+".txt");
+					System.setOut(fileOut);
+					convergenceTests3(Lz[i],Lz[i],real_cutoff,k_cutoffs[j]);
+				}
+			} catch (FileNotFoundException e){
+				e.printStackTrace();
+			}
+		}
+	}
+
+	public static void multipleSizeTestsWithvariableRealcutoff(int[] Lz, int[] real_cutoffs, int k_cutoff){
+
+		for (int i=0;i<Lz.length;i++) {
+			try {
+				makeDir("C:\\Users\\Tomer\\OneDrive - post.bgu.ac.il\\thesis\\ewald_convergence\\", "L=" + Lz[i]);
+				for (int j=0;j<real_cutoffs.length;j++) {
+					PrintStream fileOut = new PrintStream("C:\\Users\\Tomer\\OneDrive - post.bgu.ac.il\\thesis\\ewald_convergence\\L=" + Lz[i] + "\\" +k_cutoff+"_"+real_cutoffs[j]+".txt");
+					System.setOut(fileOut);
+					convergenceTests3(Lz[i],Lz[i],real_cutoffs[j],k_cutoff);
+				}
+			} catch (FileNotFoundException e){
+				e.printStackTrace();
+			}
+		}
 	}
 
 	public static double calcEnergy(Lattice lattice){
@@ -102,7 +215,8 @@ public class ewaldSum {
 		
 		int Lx=0;	// lattice x-y size
 		int Lz=0;	// lattice z size
-		int max_k_cutoff=0;
+		k_cutoff=0;
+		real_cutoff=0;
         // for convergence tests
         //int direct_cutoff = 1;
 		//double ellipsoidRatio = 10;
@@ -111,7 +225,8 @@ public class ewaldSum {
         try {
         	Lx = Integer.parseInt(args[0]);
         	Lz = Integer.parseInt(args[1]);
-			max_k_cutoff = Integer.parseInt(args[2]);
+			k_cutoff = Integer.parseInt(args[2]);
+			real_cutoff = Integer.parseInt(args[3]);
         	// for convergence tests
         	//real_cutoff = Integer.parseInt(args[2]);
 			//k_cutoff = Integer.parseInt(args[3]);
@@ -124,10 +239,11 @@ public class ewaldSum {
         catch (NumberFormatException e){
 			System.err.println("Argument not a valid number " + e.toString());
 		}
+		//multipleSizeTestsWithvariableKcutoff(new int[]{3,4,5,6,7,9,10},2,new int[]{2,3,4,5,6,7,8,9,10,11,12});
+		//multipleSizeTestsWithvariableRealcutoff(new int[]{3,4,5,6,7,9,10},new int[]{2,3,4,5,6,7,8,9,10,11,12},6);
+		//convergenceTests3(Lz, Lx, real_cutoff, k_cutoff);
 
-		convergenceTests2(Lz, Lx, real_cutoff, max_k_cutoff);
-
-        System.exit(0);
+        //System.exit(0);
 
         try (BufferedWriter out = new BufferedWriter(new FileWriter("interactions" + File.separator + "intTable_"+Lx+"_"+Lz+".txt"))){
             
@@ -178,17 +294,8 @@ public class ewaldSum {
 		final double c = -Constants.mu_0*Constants.mu_B*Constants.g_L*0.25/Math.PI;	// coefficient dipolar spin-spin interaction. The minus sign is because
 		for (int i=0;i<arr.length;i++){
 			for (int j=i;j<arr.length;j++){
-				// self interaction in unnecessary for this project
 				double[] interaction = new double[3];
-				if (i!=j)
-					interaction = ewaldSum.calcSum3D(arr[i], arr[j], Lz, Lx, alpha, real_cutoff, k_cutoff);
-
-				/*
-				if (i==j){	// subtract self interaction arising from the reciprocal lattice summation
-					interaction -= 4*Math.pow(alpha, 3)/(3*Math.sqrt(Math.PI));
-				}
-				*/
-
+				interaction = ewaldSum.calcSum3D(arr[i], arr[j], Lz, Lx, alpha, real_cutoff, k_cutoff);
 
 				//System.out.println(Double.toString(-D*interaction));
 				for (int k=0;k<interaction.length;k++) {
@@ -206,24 +313,15 @@ public class ewaldSum {
 	}
 	
 	public static void fillIntTable(singleSpin[] arr, int Lz, int Lx, double alpha, int real_cutoff, int k_cutoff, BufferedWriter out) throws IOException{
-
+		DecimalFormat df = new DecimalFormat("0.0000000000");
 		for (int i=0;i<arr.length;i++){
 			for (int j=i;j<arr.length;j++){
-				// self interaction in unnecessary for this project
 				double[] interaction = new double[3];
-				if (i!=j)
-					interaction = ewaldSum.calcSum3D(arr[i], arr[j], Lz, Lx, alpha, real_cutoff, k_cutoff);
-
-				/*
-				if (i==j){	// subtract self interaction arising from the reciprocal lattice summation
-					interaction -= 4*Math.pow(alpha, 3)/(3*Math.sqrt(Math.PI));
-				}
-				*/
-
+				interaction = ewaldSum.calcSum3D(arr[i], arr[j], Lz, Lx, alpha, real_cutoff, k_cutoff);
 				
 				//System.out.println(Double.toString(-D*interaction));
 
-				out.write(String.format("%."+7+"G", interaction[0])+","+String.format("%."+7+"G", interaction[1])+","+String.format("%."+7+"G", interaction[2]));	// print 7 significant digits
+				out.write(df.format(interaction[0])+","+df.format(interaction[1])+","+df.format(interaction[2]));	// print 10 significant digits
 				out.newLine();
 			}	
 		}
@@ -288,9 +386,12 @@ public class ewaldSum {
 
 		double[] ret = new double[3];
 
+		// self interaction correction term to be omitted from the zz interaction for i==j:
+		double selfInteraction = i.getN()==j.getN() ? 4*Math.pow(alpha,3)/(3*Math.sqrt(Math.PI)) : 0;
+
 		ret[0] = realSumX + (4*Math.PI/(actual_height*actual_length*actual_length))*reciprocalSumX;	//zx interaction
 		ret[1] = realSumY + (4*Math.PI/(actual_height*actual_length*actual_length))*reciprocalSumY;	//zy interaction
-		ret[2] = realSumZ + (4*Math.PI/(actual_height*actual_length*actual_length))*reciprocalSumZ;	//zz interaction
+		ret[2] = realSumZ + (4*Math.PI/(actual_height*actual_length*actual_length))*reciprocalSumZ - selfInteraction;	//zz interaction
 		return ret;
 	
 	}

@@ -1,6 +1,5 @@
 package simulation.montecarlo;
 
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.SerializationUtils;
 
 import java.io.File;
@@ -61,9 +60,14 @@ public class SimulationCheckpointer {
      * @param simulation
      * @return string containing the incompatibilities between checkpoint parameters and current parameters.
      */
-    public static String verifyCheckpointCompatibility(final double[] T, final boolean parallelTemperingOff, final char parallelMode, MonteCarloSimulation simulation){
+    public static String verifyCheckpointCompatibility(final double[] T, final boolean parallelTemperingOff, final char parallelMode, final double spinSize,
+                                                       final double tol, final double J_ex, MonteCarloSimulation simulation){
         String ret="";
         if (!verifyNumOfTemperaturesCompatibility(parallelMode, simulation)) ret+="single vs. multiple temperatures, ";
+
+        if (!verifyJexCompatibility(J_ex, simulation)) ret+="J_ex, ";
+        if (!verifySpinSizeCompatibility(spinSize, simulation)) ret+="spinSize, ";
+        if (!verifyTolCompatibility(tol, simulation)) ret+="tol, ";
 
         if (!ret.isEmpty()){
             if (parallelMode=='t'){
@@ -80,6 +84,35 @@ public class SimulationCheckpointer {
 
         return ret;
 
+    }
+
+    public static boolean verifyJexCompatibility(final double J_ex, final MonteCarloSimulation simulation){
+        if (simulation==null) throw new NullPointerException("Received Null simulation. cannot verify temperatures' compatibility.");
+        if (simulation instanceof MultipleTMonteCarloSimulation)
+            return J_ex==((MultipleTMonteCarloSimulation)simulation).J_ex;
+        if (simulation instanceof SingleTMonteCarloSimulation)
+            return J_ex==((SingleTMonteCarloSimulation)simulation).J_ex;
+        throw new IllegalArgumentException("simulation arg is neither an instance of SingleTMonteCarloSimulation nor of MultipleTMonteCarloSimulation");
+    }
+
+    public static boolean verifySpinSizeCompatibility(final double spinSize, final MonteCarloSimulation simulation){
+        if (simulation==null) throw new NullPointerException("Received Null simulation. cannot verify temperatures' compatibility.");
+
+        if (simulation instanceof MultipleTMonteCarloSimulation)
+            return spinSize==((MultipleTMonteCarloSimulation)simulation).spinSize;
+        if (simulation instanceof SingleTMonteCarloSimulation)
+            return spinSize==((SingleTMonteCarloSimulation)simulation).spinSize;
+        throw new IllegalArgumentException("simulation arg is neither an instance of SingleTMonteCarloSimulation nor of MultipleTMonteCarloSimulation");
+    }
+
+    public static boolean verifyTolCompatibility(final double tol, final MonteCarloSimulation simulation){
+        if (simulation==null) throw new NullPointerException("Received Null simulation. cannot verify temperatures' compatibility.");
+
+        if (simulation instanceof MultipleTMonteCarloSimulation)
+            return tol==((MultipleTMonteCarloSimulation)simulation).tol;
+        if (simulation instanceof SingleTMonteCarloSimulation)
+            return tol==((SingleTMonteCarloSimulation)simulation).tol;
+        throw new IllegalArgumentException("simulation arg is neither an instance of SingleTMonteCarloSimulation nor of MultipleTMonteCarloSimulation");
     }
 
     public static boolean verifyTemperaturesCompatibility(final double[] T, final MultipleTMonteCarloSimulation simulation){

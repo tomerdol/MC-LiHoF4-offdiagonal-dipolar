@@ -1,14 +1,14 @@
 package simulation.montecarlo;
 
 import org.apache.commons.collections4.queue.CircularFifoQueue;
-import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.commons.math3.analysis.function.Sin;
 import org.apache.commons.math3.random.MersenneTwister;
 import simulation.mmsolve.ConvergenceException;
-import simulation.mmsolve.MagneticMomentsSolveIter;
 
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.Closeable;
+import java.io.IOException;
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,6 +30,8 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
     private int acceptanceRateSum;
     private boolean equilibrated;
     private boolean lastSwapAccepted;
+
+    public final double spinSize, tol, J_ex;
     // parameters for the iterative solvers
     private transient int maxIter;
     private transient double alpha;
@@ -37,7 +39,8 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
 
     public SingleTMonteCarloSimulation(final double T, final int temperatureIndex, final int totalNumOfTemperatures, final Lattice lattice, final int numOfObservables, final long maxSweeps,
                                        final long seed, final MersenneTwister rnd, final boolean continueFromSave, final boolean realTimeEqTest,
-                                       final OutputWriter out, final boolean checkpoint, final int maxIter, final double alpha, final BufferedWriter outProblematicConfigs) {
+                                       final OutputWriter out, final boolean checkpoint, final int maxIter, final double alpha, final BufferedWriter outProblematicConfigs,
+                                       final double spinSize, final double tol, final double J_ex) {
         this.T = T;
         this.temperatureIndex=temperatureIndex;
         this.sweeps = 0;
@@ -60,6 +63,9 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
         this.acceptanceRateSum=0;
         this.equilibrated=false;
         this.lastSwapAccepted=false;
+        this.spinSize=spinSize;
+        this.tol=tol;
+        this.J_ex=J_ex;
 
         if (lattice.energyTable==null || lattice.momentTable==null || lattice.nnArray==null || lattice.exchangeIntTable==null || lattice.intTable==null) {
             throw new NullPointerException("The Lattice given to the SingleTMonteCarloSimulation has null some pointers. ");
@@ -113,7 +119,7 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
      * @param rnd - PRNG
      * @return Array containing the (new) energy due to local transversal fields and the energy difference in the longitudinal energy compared to the previous configuration
      */
-    public static deltaEnergyAndLattice metropolisStep(Lattice lattice, double T, MersenneTwister rnd, int maxIter, double alpha) throws ConvergenceException
+    public static deltaEnergyAndLattice metropolisStep(Lattice lattice, double T, MersenneTwister rnd, int maxIter, double alpha, final double tol) throws ConvergenceException
     {
 
         double initLongEnergy = lattice.getEnergy();
@@ -121,7 +127,7 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
         // choose random spin
         int flippedSpin = rnd.nextInt(lattice.getN());
 
-        lattice.flipSpin(maxIter, Constants.tol, flippedSpin, alpha);
+        lattice.flipSpin(maxIter, tol, flippedSpin, alpha);
 
         double deltaEnergy = lattice.getEnergy() - initLongEnergy;
 
@@ -198,7 +204,7 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
             Double deltaEnergy;
             deltaEnergyAndLattice energyAndLattice;
             try {
-                energyAndLattice = metropolisStep(lattice, T, rnd, maxIter, alpha);
+                energyAndLattice = metropolisStep(lattice, T, rnd, maxIter, alpha, tol);
 
                 if (energyAndLattice!=null){
                     deltaEnergy=energyAndLattice.getDeltaEnergy();
@@ -375,21 +381,21 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
         }
     }
 
-    public void printRunParameters(double[] T, String extraMessage, String tempScheduleFileName, boolean parallelTemperingOff) throws IOException{
+    public void printRunParameters(double[] T, String extraMessage, long mutualSeed, String tempScheduleFileName, boolean parallelTemperingOff) throws IOException{
         // print some information to the begining of the file:
         outWriter.print("#" + LocalDateTime.now(), true);
         outWriter.print("#temperature_schedule: "+ Arrays.toString(T), true);
         outWriter.print("#T="+ this.T + ":" + temperatureIndex, true);
         //print constants:
         outWriter.print("#" + Constants.constantsToString(), true);
-        outWriter.print(String.format("# Lx=%s, Ly=%s, Lz=%s, extBx=%s, maxSweeps=%s, suppressInternalTransFields=%s, " +
+        outWriter.print(String.format("# Lx=%s, Ly=%s, Lz=%s, J_ex=%f, spinSize=%.8f, tol=%4.1e, extBx=%s, maxSweeps=%s, suppressInternalTransFields=%s, " +
                         "continueFromSave=%s, maxIter=%s, bufferSize=%s, tempScheduleFileName=%s, parallelTemperingOff=%s, " +
-                        "checkpoint=%s, folderName=%s, alpha=%s, verboseOutput=%s ",lattice.getLx(),lattice.getLx(),lattice.getLz(),lattice.getExtBx(), maxSweeps,lattice.isSuppressInternalTransFields(),
+                        "checkpoint=%s, folderName=%s, alpha=%s, verboseOutput=%s ",lattice.getLx(),lattice.getLx(),lattice.getLz(),J_ex,spinSize,tol,lattice.getExtBx(), maxSweeps,lattice.isSuppressInternalTransFields(),
                 continueFromSave, maxIter, outWriter.getBufferSize(),
                 tempScheduleFileName, parallelTemperingOff, checkpoint, outWriter.getFolderName(),
                 alpha, outWriter.isVerboseOutput()),true);
         outWriter.print("#" + Constants.locationsToString(), true);
-        outWriter.print("#seed=" + seed, true);
+        outWriter.print("#seed=" + mutualSeed + " (" + seed + ")", true);
         outWriter.print(extraMessage, true);
         outWriter.flush();
 
@@ -402,9 +408,9 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
             lattice.randomizeConfig(rnd); // randomizes the spins and sets initial spin sizes as spinSize in the corresponding direction
 
             lattice.updateAllLocalFields();
-            lattice.updateAllMagneticMoments(maxIter, Constants.tol, alpha);
+            lattice.updateAllMagneticMoments(maxIter, tol, alpha);
 
-            if (lattice.magneticMomentConvergence() > Constants.tol){
+            if (lattice.magneticMomentConvergence() > tol){
                 convergedConfig=false;
             }else{
                 convergedConfig=true;

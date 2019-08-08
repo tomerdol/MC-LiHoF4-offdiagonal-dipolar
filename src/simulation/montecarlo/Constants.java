@@ -9,8 +9,7 @@ import java.util.Properties;
 public class Constants {
     // TODO consider dividing these to natural constants that will be final & static and to simulation constants that will be
     //  final instance variables so that a Constants object will be passed to the MonteCarloSimulation object
-    public static final double a ,c, mu_0, mu_B, g_L, k_B, J_ex;
-    public static double spinSize, tol; // TODO: move these to MonteCarloSimulation (and J_ex)
+    public static final double a ,c, mu_0, mu_B, g_L, k_B;
     public static final int num_in_cell;
     public static final double[][] location;
 
@@ -24,12 +23,8 @@ public class Constants {
         mu_B=GetParamValues.getDoubleParam(params, "mu_B");	// Bohr Magneton
         k_B=GetParamValues.getDoubleParam(params,"k_B");    // Boltzmann constant
         g_L=GetParamValues.getDoubleParam(params, "g_L");	    // g-factor
-        spinSize=GetParamValues.getDoubleParam(params, "s");	// s_z size
-        // minimum percentage to verify ground state:
-        tol = GetParamValues.getDoubleParam(params, "tol");
 
         num_in_cell = GetParamValues.getIntParam(params, "num_in_cell");    // number of spins in unit cell
-        J_ex = GetParamValues.getDoubleParam(params, "J_ex");
         location = new double[num_in_cell][3];	// 3D coordinate location for each of the 4 atoms
 
         // fill location:
@@ -41,7 +36,7 @@ public class Constants {
     }
 
     public static String constantsToString(){
-        return String.format("a=%6.3e|c=%6.3e|J_ex=%f|k_B=%8.5e|mu_0=%8.5e|mu_B=%8.5e|g_L=%f|spinSize=%.8f|tol=%4.1e|num_in_cell=%d|",a,c,J_ex,k_B,mu_0,mu_B,g_L,spinSize,tol,num_in_cell);
+        return String.format("a=%6.3e|c=%6.3e|k_B=%8.5e|mu_0=%8.5e|mu_B=%8.5e|g_L=%f|num_in_cell=%d|",a,c,k_B,mu_0,mu_B,g_L,num_in_cell);
     }
 
     public static String locationsToString(){

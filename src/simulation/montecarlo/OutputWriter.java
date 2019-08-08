@@ -147,15 +147,6 @@ public class OutputWriter implements Closeable {
         return str.toString();
     }
 
-
-    public static void makeDir(String path, String dirName){
-        dirName = path.concat(dirName);
-        File directory = new File(dirName);
-        if (! directory.exists()){
-            directory.mkdir();
-        }
-    }
-
     public int getBufferSize(){ return this.bufferSize; }
 
     public String getFolderName() { return this.folderName; }

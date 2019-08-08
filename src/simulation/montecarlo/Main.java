@@ -4,15 +4,15 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.collections4.queue.CircularFifoQueue;
-import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.math3.random.JDKRandomGenerator;
 import org.apache.commons.math3.random.MersenneTwister;
+import org.apache.commons.math3.random.RandomGenerator;
+import utilities.GenerateSeeds;
 
 import java.io.*;
 import java.util.ArrayList;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.LongStream;
+import java.util.Properties;
 
 public class Main {
 
@@ -39,10 +39,10 @@ public class Main {
         long seed;
 
         long time = System.currentTimeMillis();
-        // time (long) is divided into 2 integers, fileNumber and  sge taskID are all used to seed the MT so that there is no correlation between tasks
-        rnd.setSeed(new int[]{(int) (time >> 32), (int) time, taskID});
-        // generator warm up:
-        for (int index = 0; index < 20; index++) rnd.nextInt();
+        RandomGenerator tmpRnd = new JDKRandomGenerator();
+        tmpRnd.setSeed(new int[]{(int)time, taskID});
+
+        RandomGenerator rndMT19937 = new MersenneTwister(tmpRnd.nextLong());
 
         seed = Math.abs(rnd.nextLong());    // save seed
         //seed=1402684116000210553L;
@@ -76,7 +76,6 @@ public class Main {
 
             for (int i=0;i<N;i++){
                 for (int j=i;j<N;j++){
-                    // notice that we set self interaction to 0. this is because the self interaction contribution to the total energy is always the same (so it's not important)
                     if ((str = in.readLine()) != null){
                         String[] xyzInteractions = str.split(",");
                         for (int k=0;k<xyzInteractions.length;k++) {
@@ -485,6 +484,16 @@ public class Main {
         boolean realTimeEqTest=false;
         boolean verboseOutput=false;
         char tempParallelMode='t';
+        double tempJ_ex;
+        double spinSize;
+        double tol;
+
+        // get Properties object that reads parameters from file
+        Properties params = GetParamValues.getParams();
+        // get default values from file
+        // these values may be overwritten by command line arguments
+        tempJ_ex = GetParamValues.getDoubleParam(params, "J_ex");
+        tol = GetParamValues.getDoubleParam(params, "tol");
 
         // create Options object
         Options options = ParseCommandLine.generateOptions();
@@ -510,7 +519,7 @@ public class Main {
 
             // get approximate values based on L (lower L means faster progress, so higher write frequency)
             // this is just the default values. if another is given as command-line argument that is the value used
-            obsPrintSweepNum = GetParamValues.getLongParam(GetParamValues.getParams(),"obsPrintSweepNum"+Lz);
+            obsPrintSweepNum = GetParamValues.getLongParam(params,"obsPrintSweepNum"+Lz);
 
             extBx = ((Number) commandLine.getParsedOptionValue("extBx")).doubleValue();
             maxSweeps = ((Number) commandLine.getParsedOptionValue("max_sweeps")).longValue();
@@ -523,6 +532,12 @@ public class Main {
             if (commandLine.hasOption("seed")){
                 receivedSeed=true;
                 seed = ((Number) commandLine.getParsedOptionValue("seed")).longValue();
+            }else{
+                // if no seed is given then this must be a continuing simulation
+                if (!continueFromSave){
+                    throw new RuntimeException("No seed was given. This is only possible if the simulation is being continued from a checkpoint, in " +
+                            "which case the \"continue_from_save\" option should be set to \"yes\". ");
+                }
             }
             parallelTemperingOff = commandLine.hasOption("pt_off");
             printProgress = commandLine.hasOption("p");
@@ -532,23 +547,28 @@ public class Main {
             if (commandLine.hasOption("alpha")) alpha = ((Number) commandLine.getParsedOptionValue("alpha")).doubleValue();
             realTimeEqTest = commandLine.hasOption("test_eq");
 
-            if (commandLine.hasOption("tol")) Constants.tol= ((Number) commandLine.getParsedOptionValue("tol")).doubleValue();
+            if (commandLine.hasOption("tol")) tol = ((Number) commandLine.getParsedOptionValue("tol")).doubleValue();
+            if (commandLine.hasOption("Jex")) tempJ_ex = ((Number) commandLine.getParsedOptionValue("Jex")).doubleValue();
 
         }
         catch (ArrayIndexOutOfBoundsException e){
             System.err.println("ArrayIndexOutOfBoundsException caught");
             e.printStackTrace();
+            System.exit(1);
         }
         catch (NumberFormatException e){
             System.err.println("Non numeric arguments caught.");
             e.printStackTrace();
+            System.exit(1);
         }
         catch (ParseException p){
             ParseCommandLine.err(args, p);
+            System.exit(1);
         }
 
         saveState = !printOutput;	// when output is printed to the console the state should not be saved.
         final char parallelMode = tempParallelMode;
+        final double J_ex=tempJ_ex;
 
         double[] T=receiveTemperatureSchedule(tempScheduleFileName);
 
@@ -557,7 +577,7 @@ public class Main {
         // If that fails just use value from fit. It's not that important as it's just an initial guess
 //        try{
         // pass parameters Bx=extBx, By=0, Bz=0.05, spin=1, and calc for "up"
-        Constants.spinSize = CrystalField.getMagneticMoment(extBx, 0.0, 0.05);
+        spinSize = CrystalField.getMagneticMoment(extBx, 0.0, 0.05);
 //        }catch(Exception e){
 //            System.err.println("could not run manual calculation to get initial magnetic moment guess");
 //            Constants.spinSize = 5.44802407 + 1.11982863*extBx + (-2.00747245)*Math.pow(extBx,2) + (-4.20363871)*Math.pow(extBx,3)+
@@ -581,13 +601,13 @@ public class Main {
             }
         }
 
-        int[][] nnArray = exchangeInt(exchangeIntTable, Lx, Lz, Constants.J_ex);	// receive the nearest neighbor array and fill exchangeIntTable with the exchange interaction values
+        int[][] nnArray = exchangeInt(exchangeIntTable, Lx, Lz, J_ex);	// receive the nearest neighbor array and fill exchangeIntTable with the exchange interaction values
 
         final double[] k_cos_table, k_sin_table;
         {   // code block: tempLattice is discarded at the end
 
             // temporary lattice objecct used to create k_tables
-            Lattice tempLattice = new Lattice(Lx, Lz, extBx, suppressInternalTransFields, null, null, null, null, null, null);
+            Lattice tempLattice = new Lattice(Lx, Lz, extBx, suppressInternalTransFields, spinSize,null, null, null, null, null, null);
 
             // initialize sin, cos tables for mk^2 calculation (correlation length)
             k_cos_table = new double[tempLattice.getN()];
@@ -600,12 +620,16 @@ public class Main {
 
         ObservableExtractor measure = new ObservableExtractor(k_cos_table, k_sin_table);
 
-        MersenneTwister mutualRnd = new MersenneTwister();
+        MersenneTwister mutualRnd = null;
+        long[] seeds=null;
+        MersenneTwister[] rnd = null;
         if (!receivedSeed) {
-            seed = initializeRNG(mutualRnd, taskID);
+            seed = 0;   // this is a flag that should be checked later
         } else {
             if (seed!=0) {
-                mutualRnd.setSeed(seed);
+                mutualRnd = new MersenneTwister(seed);
+                seeds = GenerateSeeds.generateSeeds(mutualRnd, T.length);
+                rnd = new MersenneTwister[T.length];
             }
             else {
                 System.err.println("PRNG seed was not initialized for some reason!");
@@ -621,7 +645,7 @@ public class Main {
             simulation = checkpointer.readCheckpoint();
             if (simulation!=null) {
                 successReadFromFile=true;
-                String inconsistencies = SimulationCheckpointer.verifyCheckpointCompatibility(T, parallelTemperingOff, parallelMode, simulation);
+                String inconsistencies = SimulationCheckpointer.verifyCheckpointCompatibility(T, parallelTemperingOff, parallelMode, spinSize, tol, J_ex, simulation);
 
                 if (!inconsistencies.isEmpty()) {
                     System.err.println("There were some inconsistencies between the checkpoint parameters and the current parameters: " + inconsistencies);
@@ -636,8 +660,7 @@ public class Main {
 
         makeDir("analysis" + File.separator, folderName);
 
-        long[] seeds = LongStream.rangeClosed(seed+1, seed+T.length).toArray();
-        MersenneTwister[] rnd = new MersenneTwister[T.length];
+
         SingleTMonteCarloSimulation[] subSimulations = new SingleTMonteCarloSimulation[T.length];
         BufferedWriter outProblematicConfigs=null;
         try {
@@ -666,14 +689,14 @@ public class Main {
                     ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).getLattice().initIterativeSolver();
 
 
-                    ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).printRunParameters(T, "# successfully read saved state", tempScheduleFileName, parallelTemperingOff);
+                    ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).printRunParameters(T, "# successfully read saved state", simulation.getSeed(), tempScheduleFileName, parallelTemperingOff);
                 }else{
                     // initialize new simulation
-                    Lattice lattice = new Lattice(Lx, Lz, extBx, suppressInternalTransFields, intTable, exchangeIntTable, nnArray, energyTable, momentTable, measure);
+                    Lattice lattice = new Lattice(Lx, Lz, extBx, suppressInternalTransFields, spinSize, intTable, exchangeIntTable, nnArray, energyTable, momentTable, measure);
                     rnd[i] = new MersenneTwister(seeds[i]);
                     subSimulations[i] = new SingleTMonteCarloSimulation(T[i], i, T.length, lattice, 30, maxSweeps, seeds[i], rnd[i], continueFromSave,
-                            realTimeEqTest, outputWriter, saveState, maxIter, alpha, outProblematicConfigs);
-                    subSimulations[i].printRunParameters(T, "# unsuccessful reading checkpoint... Starting new state.", tempScheduleFileName, parallelTemperingOff);
+                            realTimeEqTest, outputWriter, saveState, maxIter, alpha, outProblematicConfigs, spinSize, tol, J_ex);
+                    subSimulations[i].printRunParameters(T, "# unsuccessful reading checkpoint... Starting new state.", seed, tempScheduleFileName, parallelTemperingOff);
                 }
 
                 outputWriter.print(outputWriter.makeTableHeader(), true);
@@ -681,7 +704,7 @@ public class Main {
 
             }
             if (!successReadFromFile){
-                simulation=new MultipleTMonteCarloSimulation(T, subSimulations, maxSweeps, seed, mutualRnd, continueFromSave, realTimeEqTest, parallelTemperingOff, saveState, checkpointer);
+                simulation=new MultipleTMonteCarloSimulation(T, subSimulations, maxSweeps, seed, mutualRnd, continueFromSave, realTimeEqTest, parallelTemperingOff, saveState, checkpointer, spinSize, tol, J_ex);
                 ((MultipleTMonteCarloSimulation) simulation).initSimulation();
                 checkpointer.writeCheckpoint((MultipleTMonteCarloSimulation) simulation);
             }else{

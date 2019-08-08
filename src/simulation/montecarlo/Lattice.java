@@ -13,6 +13,7 @@ public class Lattice implements Serializable {
     private final int N, Lx, Lz;
     private final double extBx;
     private final boolean suppressInternalTransFields;
+    private final double spinSize;
     // after deserialization these must be set:
     transient double[][][] intTable=null;
     transient double[][] exchangeIntTable=null;
@@ -24,12 +25,13 @@ public class Lattice implements Serializable {
 
     private singleSpin[] lattice;
 
-    public Lattice(int Lx, int Lz, double extBx, boolean suppressInternalTransFields, double[][][] intTable, double[][] exchangeIntTable, int[][] nnArray, FieldTable energyTable, FieldTable momentTable, final ObservableExtractor measure){
+    public Lattice(int Lx, int Lz, double extBx, boolean suppressInternalTransFields, double spinSize, double[][][] intTable, double[][] exchangeIntTable, int[][] nnArray, FieldTable energyTable, FieldTable momentTable, final ObservableExtractor measure){
         this.N=Lx*Lx*Lz*4;
         this.Lx=Lx;
         this.Lz=Lz;
         this.extBx=extBx;
         this.suppressInternalTransFields=suppressInternalTransFields;
+        this.spinSize = spinSize;
         this.intTable=intTable;
         this.exchangeIntTable=exchangeIntTable;
         this.energyTable=energyTable;
@@ -37,7 +39,6 @@ public class Lattice implements Serializable {
         this.nnArray=nnArray;
         this.measure=measure;
         this.iterativeSolver = new MagneticMomentsSolveIter();
-
         this.lattice=generateIsingLattice(Lx,Lz);
         if (intTable!=null && exchangeIntTable!=null && energyTable!=null && momentTable!=null && measure!=null)
             this.updateAllLocalFields();
@@ -49,6 +50,7 @@ public class Lattice implements Serializable {
         this.Lz=other.Lz;
         this.extBx=other.extBx;
         this.suppressInternalTransFields=other.suppressInternalTransFields;
+        this.spinSize=other.spinSize;
         this.intTable=other.intTable;
         this.exchangeIntTable=other.exchangeIntTable;
         this.energyTable=other.energyTable;
@@ -56,6 +58,7 @@ public class Lattice implements Serializable {
         this.nnArray=other.nnArray;
         this.measure=other.measure;
         this.iterativeSolver = new MagneticMomentsSolveIter();
+
 
         lattice = new singleSpin[other.lattice.length];
         for (int i=0;i<other.lattice.length;i++){
@@ -131,7 +134,7 @@ public class Lattice implements Serializable {
             if (lattice[i].getSpin()!=0){
                 if (rnd.nextBoolean()) lattice[i].setSpin(1);
                 else lattice[i].setSpin(-1);
-                lattice[i].setSpinSize(Constants.spinSize*lattice[i].getSpin());
+                lattice[i].setSpinSize(spinSize*lattice[i].getSpin());
             }
         }
     }
@@ -139,7 +142,7 @@ public class Lattice implements Serializable {
     public void checkerBoard(){
         for (int i=0; i<lattice.length;i++){
             lattice[i].setSpin(i%2==0 ? 1 : -1);
-            lattice[i].setSpinSize(Constants.spinSize*lattice[i].getSpin());
+            lattice[i].setSpinSize(spinSize*lattice[i].getSpin());
         }
     }
 
@@ -220,12 +223,12 @@ public class Lattice implements Serializable {
             else if (method>=9 && method<=13){
                 // method numbers in the range 8<=method<=12 use a random initial guess
                 Random rnd = new Random();  // TODO: make sure this is reproducible (seed/use other RNG)
-                for (int j = 0; j < x.length; j++) x[j] = Constants.spinSize * rnd.nextDouble() * (rnd.nextBoolean() ? 1 : -1);
+                for (int j = 0; j < x.length; j++) x[j] = spinSize * rnd.nextDouble() * (rnd.nextBoolean() ? 1 : -1);
                 method-=5;
             }
             else if (method>=14 && method <=18){
                 // method numbers in the range 13<=method<=17 use a "good" initial guess
-                for (int j = 0; j < x.length; j++) x[j] = Constants.spinSize * lattice[j].getSpin();
+                for (int j = 0; j < x.length; j++) x[j] = spinSize * lattice[j].getSpin();
                 method-=10;
             }
 
@@ -343,7 +346,7 @@ public class Lattice implements Serializable {
             if (lattice[i].getSpin()!=0){
                 double Bz=0, Bx = extBx, By = 0;
                 for(j=0;j<lattice.length;j++){
-                    if (lattice[j].getSpin()!=0 && i!=j){
+                    if (lattice[j].getSpin()!=0){
                         Bz += lattice[j].getSpinSize()*intTable[2][i][j];
                         if (!suppressInternalTransFields){
                             Bx += (lattice[j].getSpinSize()) * intTable[0][i][j];
@@ -406,7 +409,7 @@ public class Lattice implements Serializable {
             // removing the contribution of i there before the change and
             // adding the updated contribution
             for(j=0;j<lattice.length;j++){
-                if (lattice[j].getSpin()!=0 && i!=j){
+                if (lattice[j].getSpin()!=0){
                     // remove interaction with prevSpinSize and add interaction with current spinSize
                     if (!suppressInternalTransFields) {
                         lattice[j].setLocalBx(lattice[j].getLocalBx() + (deltaSpinSize) * intTable[0][i][j]);
@@ -431,7 +434,7 @@ public class Lattice implements Serializable {
             double Bx=extBx, By=0, Bz=0;
             // add up all contributions to local field from other spins at spin i
             for(j=0;j<lattice.length;j++){
-                if (lattice[j].getSpin()!=0 && i!=j){
+                if (lattice[j].getSpin()!=0){
                     // calculate interaction
                     if (!suppressInternalTransFields) {
                         Bx += (lattice[j].getSpinSize() * intTable[0][i][j]);
@@ -692,7 +695,7 @@ public class Lattice implements Serializable {
                 // change local fields (longitudinal & transverse) at all other spins by
                 // removing the contribution of i there
                 for (j = 0; j < lattice.length; j++) {
-                    if (lattice[j].getSpin() != 0 && spinToRemove != j) {
+                    if (lattice[j].getSpin() != 0) {
                         // remove interaction with prevSpinSize and add interaction with current spinSize
                         if (!suppressInternalTransFields) {
                             lattice[j].setLocalBx(lattice[j].getLocalBx() - magneticMomentToRemove * intTable[0][lattice[spinToRemove].getN()][lattice[j].getN()]);
@@ -710,12 +713,10 @@ public class Lattice implements Serializable {
 
             for (i = 0; i < lattice.length; i++) {
                 if (lattice[i].getSpin() != 0) {
-                    if (i != flipSpin) {
-                        lattice[i].setLocalBz(lattice[i].getLocalBz() + magneticMoment * intTable[2][lattice[i].getN()][lattice[flipSpin].getN()]);
-                        if (!suppressInternalTransFields) {
-                            lattice[i].setLocalBx(lattice[i].getLocalBx() + magneticMoment * intTable[0][lattice[i].getN()][lattice[flipSpin].getN()]);
-                            lattice[i].setLocalBy(lattice[i].getLocalBy() + magneticMoment * intTable[1][lattice[i].getN()][lattice[flipSpin].getN()]);
-                        }
+                    lattice[i].setLocalBz(lattice[i].getLocalBz() + magneticMoment * intTable[2][lattice[i].getN()][lattice[flipSpin].getN()]);
+                    if (!suppressInternalTransFields) {
+                        lattice[i].setLocalBx(lattice[i].getLocalBx() + magneticMoment * intTable[0][lattice[i].getN()][lattice[flipSpin].getN()]);
+                        lattice[i].setLocalBy(lattice[i].getLocalBy() + magneticMoment * intTable[1][lattice[i].getN()][lattice[flipSpin].getN()]);
                     }
                 }
             }
@@ -829,13 +830,6 @@ public class Lattice implements Serializable {
                 } else {    // last step
                     lattice[flipSpin].flipSpin();
                     lattice[flipSpin].setSpinSize(magneticMoment);
-                    /* TODO: many things ruined here!!!! this works on the original singleSpin[] and not the current.
-                     *   Options: 1. move everything into Lattice and change the singleSpin[] lattice as we solve. (copies and backtracks then re-point the singleSpin[] lattice field)
-                     *   2. Work on the Lattice object and copy IT each time. in this case it may be easier to set the array to public.
-                     *   3. separate the array and the data and have a latticeData sub object that is passed around. then rewrite update methods that work with singleSpin[] arr
-                     *   4. Go back to project6 and have all the references be static and set by some initializer class.
-                     *   5. something else.
-                     */
                     updateAllMagneticMoments(bfsOrder, maxIter, tol, alpha, false);
 
                     //System.out.print(" (last step) - "+(MonteCarloMetropolis.updateFieldsAndCheckMagneticMomentConvergence(lattice, intTable, momentTable, extBx, suppressInternalTransFields)<tol ? "success ("+MonteCarloMetropolis.updateFieldsAndCheckMagneticMomentConvergence(lattice, intTable, momentTable, extBx, suppressInternalTransFields)+"), " : "failure ("+MonteCarloMetropolis.updateFieldsAndCheckMagneticMomentConvergence(lattice, intTable, momentTable, extBx, suppressInternalTransFields)+"), "));

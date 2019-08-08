@@ -166,13 +166,25 @@ public class ParseCommandLine {
                 .type(Number.class)
                 .desc("temperature for monte carlo simulation. must be provided for single temperature simulation (if \"mode\" is not specified)")
                 .build();
-
-
+        final Option Jex = Option.builder("Jex")
+                .longOpt("J_ex")
+                .hasArg(true)
+                .required(false)
+                .type(Number.class)
+                .desc("Exchange interaction. If not provided the value will be read from parameters.properties")
+                .build();
+        final Option spinSize = Option.builder("spinSize")
+                .longOpt("spin_size")
+                .hasArg(true)
+                .required(false)
+                .type(Number.class)
+                .desc("Initial spin size. If not provided the value will be read from parameters.properties")
+                .build();
 
         // taskID and seed are mutually exclusive
-        final OptionGroup seed_task = new OptionGroup();
-        seed_task.addOption(taskID);
-        seed_task.addOption(seed);
+        //final OptionGroup seed_task = new OptionGroup();
+        //seed_task.addOption(taskID);
+        //seed_task.addOption(seed);
 
         // output and progress are mutually exclusive
         final OptionGroup prog_output = new OptionGroup();
@@ -193,7 +205,8 @@ public class ParseCommandLine {
         options.addOption(tempSchedule);
         options.addOption(parallelTemperingOff);
         options.addOption(obsPrintSweepNum);
-        options.addOptionGroup(seed_task);
+        //options.addOptionGroup(seed_task);
+        options.addOption(seed);
         options.addOptionGroup(prog_output);
         options.addOption(folderName);
         options.addOption(method);
@@ -203,6 +216,8 @@ public class ParseCommandLine {
         options.addOption(tol);
         options.addOption(parallelMode);
         options.addOption(temperature);
+        options.addOption(spinSize);
+        options.addOption(Jex);
 
         return options;
     }
