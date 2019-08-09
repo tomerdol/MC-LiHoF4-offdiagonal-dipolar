@@ -8,7 +8,6 @@ import simulation.mmsolve.func;
 import java.io.*;
 import java.util.Arrays;
 import java.util.Properties;
-import java.util.Random;
 
 public class Lattice implements Serializable {
     private final int N, Lx, Lz;
@@ -150,7 +149,7 @@ public class Lattice implements Serializable {
     }
 
 
-    public void flipSpin(int maxIter, double tol, int flipSpin, double alpha) throws ConvergenceException {
+    public void flipSpin(int maxIter, double tol, int flipSpin, double alpha, MersenneTwister rnd) throws ConvergenceException {
         singleSpin[] tempLattice = Lattice.copyLattice(lattice);    // save original lattice. This is before the spin is actually flipped.
 
         boolean success=false;
@@ -162,7 +161,7 @@ public class Lattice implements Serializable {
         int methodIndex;
         for (methodIndex=0;!success && methodIndex<methodsToTry.length;methodIndex++){
             try {
-                lattice = solveSelfConsistentCalc(maxIter, tol, flipSpin, methodsToTry[methodIndex], nnArray, alpha);
+                lattice = solveSelfConsistentCalc(maxIter, tol, flipSpin, methodsToTry[methodIndex], nnArray, alpha, rnd);
                 success=true;
             } catch (ConvergenceException e){
                 errorMessage += e.toString() + "\n";
@@ -180,7 +179,7 @@ public class Lattice implements Serializable {
     public void updateAllMagneticMoments(int maxIter, double tol, double alpha){
         iterativeSolver.updateAllMagneticMoments(maxIter, tol, alpha, true);
     }
-    public singleSpin[] solveSelfConsistentCalc(int maxIter, double tol, int flipSpin, int method, int[][] nnArray, double alpha) throws ConvergenceException {
+    public singleSpin[] solveSelfConsistentCalc(int maxIter, double tol, int flipSpin, int method, int[][] nnArray, double alpha, MersenneTwister rnd) throws ConvergenceException {
         if (method>=1 && method<=3){
             int[] bfsOrder=null;
             if (nnArray!=null) {
@@ -225,7 +224,6 @@ public class Lattice implements Serializable {
             }
             else if (method>=9 && method<=13){
                 // method numbers in the range 8<=method<=12 use a random initial guess
-                Random rnd = new Random();  // TODO: make sure this is reproducible (seed/use other RNG)
                 for (int j = 0; j < x.length; j++) x[j] = spinSize * rnd.nextDouble() * (rnd.nextBoolean() ? 1 : -1);
                 method-=5;
             }

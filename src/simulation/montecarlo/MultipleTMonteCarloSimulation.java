@@ -4,6 +4,7 @@ import org.apache.commons.math3.random.MersenneTwister;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -83,8 +84,7 @@ public class MultipleTMonteCarloSimulation extends MonteCarloSimulation implemen
                 if (checkpoint) {
                     checkpointer.writeCheckpoint(this);
                 }
-                // TODO print some diagnostics
-                //System.out.println(LocalDateTime.now());
+                System.out.println(LocalDateTime.now());
             }
 
             if (simulations[0].getOutWriter().isPrintProgress()) System.out.println(String.format("%.2f",100.0*sweeps/maxSweeps) + "% complete                ");

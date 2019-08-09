@@ -129,7 +129,7 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
         // choose random spin
         int flippedSpin = rnd.nextInt(lattice.getN());
 
-        lattice.flipSpin(maxIter, tol, flippedSpin, alpha);
+        lattice.flipSpin(maxIter, tol, flippedSpin, alpha, rnd);
 
         double deltaEnergy = lattice.getEnergy() - initLongEnergy;
 
