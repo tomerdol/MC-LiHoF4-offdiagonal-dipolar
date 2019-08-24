@@ -288,6 +288,7 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
 
             if (equilibrated){
                 // declare that equilibration has been reached
+                // TODO test the equilibration against the python script. It seems to happen a little faster than expected
                 System.out.println("System equilibrated! T="+T+", sweeps="+sweeps+". Date&Time: "+ LocalDateTime.now());
 
             }
