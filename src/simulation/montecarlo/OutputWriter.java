@@ -1,7 +1,6 @@
 package simulation.montecarlo;
 
 import java.io.Closeable;
-import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Formatter;
@@ -85,11 +84,11 @@ public class OutputWriter implements Closeable {
     }
 
     public void writeObservablesVerbose(final long sweeps, final double m, final double currentEnergy, final double magField0, final double magField1, final double magField2,
-                                 final double magField3, final double magField4, final double magField5, final double magField6, final double magField7,
+                                 final double magField3, final double magField4, final double magField5, final double magField6, final double magField7, final double magField8,
                                  final double spinSizes0, final double spinSizes1, final double mk2, final boolean lastSwapAccepted){
         if (verboseOutput) {
             Formatter formatter = new Formatter(outputBuffer);
-            formatter.format(makeTableRowFormat(new char[]{'d', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'c'}), sweeps, m, currentEnergy, magField0, magField1, magField2, magField3, magField4, magField5, magField6, magField7, spinSizes0, spinSizes1, mk2, (lastSwapAccepted ? '1' : '0'));
+            formatter.format(makeTableRowFormat(new char[]{'d', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'c'}), sweeps, m, currentEnergy, magField0, magField1, magField2, magField3, magField4, magField5, magField6, magField7, magField8, spinSizes0, spinSizes1, mk2, (lastSwapAccepted ? '1' : '0'));
             outputBuffer.append(System.lineSeparator());
         }
     }
@@ -218,11 +217,11 @@ public class OutputWriter implements Closeable {
             // set output table parameters
             String[] colNames;
             if (verboseOutput) {
-                colNames = new String[]{"index", "Magnetization", "Energy", "meanBx", "stdBx", "meanBy", "stdBy", "meanBz", "stdBz", "maxBtrans", "maxBlong", "meanSpinSize", "stdSpinSize", "mk2", "swap"};
+                colNames = new String[]{"index", "Magnetization", "Energy", "meanBx", "stdBx", "meanBy", "stdBy", "meanBz", "stdBz", "maxBtrans", "maxBlong", "percBz", "meanSpinSize", "stdSpinSize", "mk2", "swap"};
             }else{
                 colNames = new String[]{"binN", "<|M|>", "<|M|2>", "<M>", "<M2>", "<M2>", "<M22>", "<E>", "<E2>", "<meanBx>", "<meanBx2>",
                         "<stdBx>", "<stdBx2>", "<meanBy>", "<meanBy2>","<stdBy>", "<stdBy2>", "<meanBz>", "<meanBz2>", "<stdBz>", "<stdBz2>", "<maxBtrans>",
-                        "<maxBtrans2>", "<maxBlong>", "<maxBlong2>", "<meanSpinSize>",  "<meanSpinSize2>", "<stdSpinSize>", "<stdSpinSize2>", "<mk2>", "<mk22>", "swap"};
+                        "<maxBtrans2>", "<maxBlong>", "<maxBlong2>", "<percBz>", "<percBz2>", "<meanSpinSize>",  "<meanSpinSize2>", "<stdSpinSize>", "<stdSpinSize2>", "<mk2>", "<mk22>", "swap"};
             }
             return colNames;
         }
@@ -231,9 +230,9 @@ public class OutputWriter implements Closeable {
             // set output table parameters
             int[] colWidths;
             if (verboseOutput) {
-                colWidths = new int[]{10, 17, 19, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 5};
+                colWidths = new int[]{10, 17, 19, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 5};
             }else{
-                colWidths = new int[]{10, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 10};
+                colWidths = new int[]{10, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 10};
             }
             return colWidths;
         }

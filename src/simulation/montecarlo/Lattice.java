@@ -769,7 +769,6 @@ public class Lattice implements Serializable {
 
                 // too many iterations, so this is not going anywhere (unless this was the last step):
                 if ((i > 100 || numOfStepsLeft > Math.pow(2, 5)) && numOfStepsLeft >= 0) {
-                    numOfStepsLeft = -1;  // this ends the loop
                     lattice[flipSpin].flipSpin();   // this does nothing. it is only so that magneticMomentConvergence that is called
                     // for the error information is run correctly.
                     ConvergenceException e = new ConvergenceException.Builder("Too many homotopic step taken without convergence. numOfStepsLeft=" + numOfStepsLeft +
@@ -777,6 +776,8 @@ public class Lattice implements Serializable {
                             .setIndex(i)
                             .setConvergenceDistance(magneticMomentConvergence())
                             .build();
+
+                    numOfStepsLeft = -1;  // this ends the loop (just in case the throw is removed)
                     throw e;
                 }
             }

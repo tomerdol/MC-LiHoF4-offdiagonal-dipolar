@@ -247,7 +247,7 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
 
 
 
-        outWriter.writeObservablesVerbose(sweeps, m ,currentEnergy ,temp[0] ,temp[1] ,temp[2] ,temp[3] ,temp[4] ,temp[5] ,temp[6] ,temp[7] ,tempSpinSizes[0] ,tempSpinSizes[1] ,mk2, lastSwapAccepted);
+        outWriter.writeObservablesVerbose(sweeps, m ,currentEnergy ,temp[0] ,temp[1] ,temp[2] ,temp[3] ,temp[4] ,temp[5] ,temp[6] ,temp[7] ,temp[8], tempSpinSizes[0] ,tempSpinSizes[1] ,mk2, lastSwapAccepted);
 
         if (sweeps>0) currentBinCount++;
         //System.out.println(sweeps+ " , " + sweeps/2 + " , " + currentBinCount + " , " + (sweeps&1));
@@ -426,7 +426,7 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
             lattice.randomizeConfig(rnd); // randomizes the spins and sets initial spin sizes as spinSize in the corresponding direction
 
             lattice.updateAllLocalFields();
-            lattice.updateAllMagneticMoments(maxIter, tol, alpha);
+            lattice.updateAllMagneticMoments(2*maxIter, tol, alpha);
 
             if (lattice.magneticMomentConvergence() > tol){
                 convergedConfig=false;
