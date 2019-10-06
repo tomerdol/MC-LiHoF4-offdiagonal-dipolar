@@ -525,8 +525,8 @@ final public class FieldTable {
             if (Math.abs(bz)>0.029) {
                 ret = findInTable(bx, by, bz, prevBIndices);
             }else{
-                //ret = findInTable(bx, by, bz, prevBIndices);
-                ret = manualCalcValue(bx, by, bz, this.name.substring(0, name.length() - 9).equals("magnetic_moment_up_broyden"));
+                ret = findInTable(bx, by, bz, prevBIndices);
+//                ret = manualCalcValue(bx, by, bz, this.name.substring(0, name.length() - 9).equals("magnetic_moment_up_broyden"));
             }
         } catch(IndexOutOfBoundsException e){
             //bx, by or bz are outside the range of the table
