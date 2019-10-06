@@ -61,13 +61,14 @@ public class SimulationCheckpointer {
      * @return string containing the incompatibilities between checkpoint parameters and current parameters.
      */
     public static String verifyCheckpointCompatibility(final double[] T, final boolean parallelTemperingOff, final char parallelMode, final double spinSize,
-                                                       final double tol, final double J_ex, MonteCarloSimulation simulation){
+                                                       final double tol, final double J_ex, final long seed, MonteCarloSimulation simulation){
         String ret="";
         if (!verifyNumOfTemperaturesCompatibility(parallelMode, simulation)) ret+="single vs. multiple temperatures, ";
 
         if (!verifyJexCompatibility(J_ex, simulation)) ret+="J_ex, ";
         if (!verifySpinSizeCompatibility(spinSize, simulation)) ret+="spinSize, ";
         if (!verifyTolCompatibility(tol, simulation)) ret+="tol, ";
+        if (!verifySeedCompatibility(seed, simulation)) ret+="seed, ";
 
         if (!ret.isEmpty()){
             if (parallelMode=='t'){
@@ -86,8 +87,17 @@ public class SimulationCheckpointer {
 
     }
 
+    public static boolean verifySeedCompatibility(final long seed, final MonteCarloSimulation simulation){
+        if (simulation==null) throw new NullPointerException("Received Null simulation. cannot verify seed compatibility.");
+        if (simulation instanceof MultipleTMonteCarloSimulation)
+            return seed==simulation.getSeed();
+        if (simulation instanceof SingleTMonteCarloSimulation)
+            return seed==simulation.getSeed();
+        throw new IllegalArgumentException("simulation arg is neither an instance of SingleTMonteCarloSimulation nor of MultipleTMonteCarloSimulation");
+    }
+
     public static boolean verifyJexCompatibility(final double J_ex, final MonteCarloSimulation simulation){
-        if (simulation==null) throw new NullPointerException("Received Null simulation. cannot verify temperatures' compatibility.");
+        if (simulation==null) throw new NullPointerException("Received Null simulation. cannot verify Jex compatibility.");
         if (simulation instanceof MultipleTMonteCarloSimulation)
             return J_ex==((MultipleTMonteCarloSimulation)simulation).J_ex;
         if (simulation instanceof SingleTMonteCarloSimulation)
@@ -96,7 +106,7 @@ public class SimulationCheckpointer {
     }
 
     public static boolean verifySpinSizeCompatibility(final double spinSize, final MonteCarloSimulation simulation){
-        if (simulation==null) throw new NullPointerException("Received Null simulation. cannot verify temperatures' compatibility.");
+        if (simulation==null) throw new NullPointerException("Received Null simulation. cannot verify spinSize compatibility.");
 
         if (simulation instanceof MultipleTMonteCarloSimulation)
             return spinSize==((MultipleTMonteCarloSimulation)simulation).spinSize;
@@ -106,7 +116,7 @@ public class SimulationCheckpointer {
     }
 
     public static boolean verifyTolCompatibility(final double tol, final MonteCarloSimulation simulation){
-        if (simulation==null) throw new NullPointerException("Received Null simulation. cannot verify temperatures' compatibility.");
+        if (simulation==null) throw new NullPointerException("Received Null simulation. cannot verify tol compatibility.");
 
         if (simulation instanceof MultipleTMonteCarloSimulation)
             return tol==((MultipleTMonteCarloSimulation)simulation).tol;

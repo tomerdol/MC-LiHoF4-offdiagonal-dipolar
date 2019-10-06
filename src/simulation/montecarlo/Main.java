@@ -645,7 +645,7 @@ public class Main {
             simulation = checkpointer.readCheckpoint();
             if (simulation!=null) {
                 successReadFromFile=true;
-                String inconsistencies = SimulationCheckpointer.verifyCheckpointCompatibility(T, parallelTemperingOff, parallelMode, spinSize, tol, J_ex, simulation);
+                String inconsistencies = SimulationCheckpointer.verifyCheckpointCompatibility(T, parallelTemperingOff, parallelMode, spinSize, tol, J_ex, seed, simulation);
 
                 if (!inconsistencies.isEmpty()) {
                     System.err.println("There were some inconsistencies between the checkpoint parameters and the current parameters: " + inconsistencies);
@@ -668,7 +668,7 @@ public class Main {
             outProblematicConfigs = new BufferedWriter(new FileWriter("p_configs" + File.separator + "problematic_"+(Lx*Lx*Lz*4)+"_"+extBx,true));
 
             for (int i=0;i<T.length;i++){
-                FileWriter out = new FileWriter("analysis" + File.separator + folderName + File.separator + "table_" + Lx + "_" + Lz + "_" + extBx + "_" + T[i] + "_" + suppressInternalTransFields + ".txt", successReadFromFile);
+                FileWriter out = new FileWriter("analysis" + File.separator + folderName + File.separator + "table_" + Lx + "_" + Lz + "_" + extBx + "_" + T[i] + "_" + suppressInternalTransFields + "_" + seed + ".txt", successReadFromFile);
                 OutputWriter outputWriter = new OutputWriter.Builder(verboseOutput, folderName, obsPrintSweepNum, out)
                         .setPrintOutput(printOutput)
                         .setPrintProgress(printProgress)
