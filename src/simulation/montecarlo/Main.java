@@ -637,7 +637,7 @@ public class Main {
             }
         }
 
-        SimulationCheckpointer checkpointer = new SimulationCheckpointer(folderName, Lx, Lz, extBx, suppressInternalTransFields);
+        SimulationCheckpointer checkpointer = new SimulationCheckpointer(folderName, Lx, Lz, extBx, suppressInternalTransFields, seed);
         boolean successReadFromFile = false;
         MonteCarloSimulation simulation = null;
 
