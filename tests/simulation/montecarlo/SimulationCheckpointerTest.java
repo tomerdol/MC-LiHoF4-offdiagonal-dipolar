@@ -6,7 +6,8 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class SimulationCheckpointerTest {
-    SimulationCheckpointer checkpointer = new SimulationCheckpointer("test", 4, 4, 0.0, true);
+    SimulationCheckpointer checkpointer =
+            new SimulationCheckpointer("test", 4, 4, 0.0, true, 123456789);
 
     @Before
     public void setUp() throws Exception {

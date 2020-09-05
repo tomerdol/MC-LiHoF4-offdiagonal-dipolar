@@ -2,6 +2,21 @@
 <project version="4">
   <component name="PublishConfigData" serverName="newphysnet1.bgu.ac.il" overwriteAll="false">
     <serverData>
+      <paths name="bin_test">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/bin_test" local="$PROJECT_DIR$" web="/" />
+          </mappings>
+          <excludedPaths>
+            <excludedPath local="true" path="$PROJECT_DIR$/analysis" />
+            <excludedPath local="true" path="$PROJECT_DIR$/configurations" />
+            <excludedPath local="true" path="$PROJECT_DIR$/interactions" />
+            <excludedPath local="true" path="$PROJECT_DIR$/p_configs" />
+            <excludedPath local="true" path="$PROJECT_DIR$/scripts" />
+            <excludedPath local="true" path="$PROJECT_DIR$/states" />
+          </excludedPaths>
+        </serverdata>
+      </paths>
       <paths name="cluster">
         <serverdata>
           <mappings>

@@ -18,6 +18,14 @@
           <option name="port" value="22" />
         </fileTransfer>
       </webServer>
+      <webServer id="0581aa5c-bdaf-499a-bf82-063633a76085" name="bin_test" url="http://sge212">
+        <fileTransfer host="sge212" port="22" rootFolder="/gpfs0/smoshe/users/tomerdol/home" accessType="SFTP">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+          <option name="port" value="22" />
+        </fileTransfer>
+      </webServer>
     </option>
   </component>
 </project>
