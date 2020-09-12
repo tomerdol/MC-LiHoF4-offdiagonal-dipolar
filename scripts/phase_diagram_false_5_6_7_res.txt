@@ -1,0 +1,2 @@
+Tc	Tc_err	Bx	Simulation_name
+1.5950936696936802	0.0007266346899858005	0.0	parallel_test
