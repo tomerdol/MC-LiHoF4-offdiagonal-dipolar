@@ -37,6 +37,13 @@
           </advancedOptions>
         </fileTransfer>
       </webServer>
+      <webServer id="65dd5c99-d6f4-400b-9bcd-064baa7fe95d" name="stable" url="http://sge250.bgu.ac.il">
+        <fileTransfer rootFolder="/gpfs0/smoshe/users/tomerdol/home" accessType="SFTP" host="sge250.bgu.ac.il" port="22" sshConfigId="5d3872d5-a07d-4c49-9ca4-bef47991dcc9" sshConfig="cluster">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
     </option>
   </component>
 </project>
