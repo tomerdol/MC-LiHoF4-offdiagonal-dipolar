@@ -20,7 +20,7 @@ def parse_arguments():
     parser.add_argument( "--h_ex_list", nargs='+', type=float, help = "List of external magnetic field values, Bex." , required=True)
     parser.add_argument( "-m", "--mech", nargs='+', choices=['true','false'], help = ("Whether internal fields are suppressed or not. \'false\' means "
     "that they aren't so the mechanism is on, and \'true\' means that they are and the mechanism is off." ), required=True)
-    parser.add_argument( "-f", "--folder_list", nargs='+', type=str, help = "List of folders in \'analysis\' in which results should be found. " , required=True)
+    parser.add_argument( "-f", "--folder_list", nargs='+', type=str, help = "List of folders in \'data/results\' in which results should be found. " , required=True)
     parser.add_argument( "-o", "--overwrite_tmp", action='store_true', default=False, help = ("Overwrite parsed files in /tmp. If not given, existing files will "
     "be used (which probably means older results)."))
     parser.add_argument( "-s", "--scaling_func", choices=['binder','corr_length'], help = "Scaling function to use for finite-size scaling analysis. Possible choices are \'binder\' for the Binder ratio or \'corr_length\' for the finite-size correlation length divided by the linear system size. Default is \'corr_length\'." , required=False, default='corr_length')
@@ -91,7 +91,7 @@ def plot_previous_data(ax):
     
     return ax
     
-def copy_files_to_tmp(T, cols_to_copy, L, Bex, folderName, mech, folder='../analysis'):
+def copy_files_to_tmp(T, cols_to_copy, L, Bex, folderName, mech, folder='../data/results'):
     path='/tmp/'+folderName
     try:
         os.mkdir(path)
@@ -125,7 +125,7 @@ def add_overwrite_col(overwrite_tmp, simulations):
         #group[0]=Bex; group[1]=L; group[2]=folderName; group[3]=mech
         matching_row = table[(table[:,6] == group[2]) & (table[:,1] == str(group[1])) & (table[:,2] == str(group[0])) & (table[:,3] == str(group[3]))]
         
-        path_to_saved_equilib_file='../analysis/'+str(group[2])+'/binned_data/equilib_data_'+str(group[1])+'_'+str(group[1])+'_'+str(group[0])+'_'+str(group[3])+'.txt'
+        path_to_saved_equilib_file='../data/results/'+str(group[2])+'/binned_data/equilib_data_'+str(group[1])+'_'+str(group[1])+'_'+str(group[0])+'_'+str(group[3])+'.txt'
         file_exists = os.path.exists(path_to_saved_equilib_file) and os.path.getsize(path_to_saved_equilib_file) > 0
         
         overwrite_tmp_dict[group] = not file_exists or (overwrite_tmp and not (len(matching_row)>0 and matching_row[0][0] == 'done'))
@@ -259,8 +259,8 @@ def main():
         f.close()
     
         #save fig
-        fig.savefig('./graphs/phase_diagram_%s_%s.png'%(mech,'_'.join(map(str,all_L))))
-    os.system("rsync -avzhe ssh ./graphs/ tomerdol@newphysnet1:~/graphs/")
+        fig.savefig('../figures/phase_diagram_%s_%s.png'%(mech,'_'.join(map(str,all_L))))
+    #os.system("rsync -avzhe ssh ../figures/ tomerdol@newphysnet1:~/graphs/")
     
 if __name__ == "__main__":
     import matplotlib

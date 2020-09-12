@@ -22,7 +22,7 @@ def main():
     fig, ax = plt.subplots()
     
     for L in all_L:
-        fname = "./R/sample_energy_"+str(L)+"_"+str(h_ex_list[0])+"_"+str(folderName_list[0])+"_"+str(mech_list[0])+".txt"
+        fname = "./data/analysis/sample_energy_"+str(L)+"_"+str(h_ex_list[0])+"_"+str(folderName_list[0])+"_"+str(mech_list[0])+".txt"
         array=np.genfromtxt(fname, skip_header=1)
         ax.plot(array[:,0],array[:,2],'o-',label='L='+str(L))
         arr_x.append(array[:,0])
@@ -34,7 +34,7 @@ def main():
     plt.ylabel(r'$\xi_{L} / L$')
     plt.xlabel('T')
     plt.legend(loc='best')
-    fig.savefig('./R/graphs/plot_%s_%s_%s.png'%(h_ex_list[0],folderName_list[0],mech_list[0]))
+    fig.savefig('./figures/plot_%s_%s_%s.png'%(h_ex_list[0],folderName_list[0],mech_list[0]))
     
     print(initial_tc)
 

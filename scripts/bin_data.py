@@ -82,7 +82,7 @@ def mkdir(path):
 
 
 def read_binned(sim, use_latest=True):
-    path='../analysis/'+sim.folderName+'/binned_data/table_'+str(sim.L)+'_'+str(sim.L)+'_'+str(sim.Bex)+'_'+str(sim.T)+'_'+str(sim.mech)+'_'+'*'+'.txt'
+    path='../data/results/'+sim.folderName+'/binned_data/table_'+str(sim.L)+'_'+str(sim.L)+'_'+str(sim.Bex)+'_'+str(sim.T)+'_'+str(sim.mech)+'_'+'*'+'.txt'
     #print(glob.glob(path))
     arrays=[]
     seeds=[]
@@ -112,7 +112,7 @@ def read_binned(sim, use_latest=True):
 def read_binned_data(sim, use_latest=False, use_bin=-1):
     """ Get the binned data as a pandas DataFrame 
     """
-    path='../analysis/'+sim.folderName+'/binned_data/table_'+str(sim.L)+'_'+str(sim.L)+'_'+str(sim.Bex)+'_'+str(sim.T)+'_'+str(sim.mech)+'_'+'*'+'.txt'
+    path='../data/results/'+sim.folderName+'/binned_data/table_'+str(sim.L)+'_'+str(sim.L)+'_'+str(sim.Bex)+'_'+str(sim.T)+'_'+str(sim.mech)+'_'+'*'+'.txt'
 
     file_list = glob.glob(path) # list of all files that match the sim parameters
     arrays=[]
@@ -178,8 +178,8 @@ def main_bin(simulations):
     
 
     for sim in simulations.itertuples(index=False):
-        mkdir('../analysis/'+sim.folderName+'/binned_data')
-        path='../analysis/'+sim.folderName+'/table_'+str(sim.L)+'_'+str(sim.L)+'_'+str(sim.Bex)+'_'+str(sim.T)+'_'+str(sim.mech)+'_'+'*'+'.txt'
+        mkdir('../data/results/'+sim.folderName+'/binned_data')
+        path='../data/results/'+sim.folderName+'/table_'+str(sim.L)+'_'+str(sim.L)+'_'+str(sim.Bex)+'_'+str(sim.T)+'_'+str(sim.mech)+'_'+'*'+'.txt'
         #print(glob.glob(path))
         for fname in glob.glob(path):
             tmp_fname_bin = fname.split('/')

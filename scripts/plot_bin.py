@@ -46,7 +46,7 @@ def plot_multiple(all_L, xdata, all_ydata, err_y, h_ex):
     axes = plt.gca()
     #axes.set_ylim([0.5,1])
 
-    fig.savefig('./graphs/plot_%s.png'%h_ex)
+    fig.savefig('../figures/plot_%s.png'%h_ex)
 
 def get_binder(m2,m4):
     m2=np.mean(m2)
@@ -132,8 +132,8 @@ def main_plot(simulations, boot_num, plot_options, to_plot=''):
     axes = plt.gca()
     
     
-    fig.savefig('./graphs/plot_%s_%s_%s_%s.png'%(to_plot,'_'.join(map(str,simulations['Bex'].unique().tolist())),'_'.join(map(str,simulations['mech'].unique().tolist())),'_'.join(map(str,simulations['L'].unique().tolist()))), dpi=300)
-    fig.savefig('./graphs/plot_%s_%s_%s_%s.eps'%(to_plot,'_'.join(map(str,simulations['Bex'].unique().tolist())),'_'.join(map(str,simulations['mech'].unique().tolist())),'_'.join(map(str,simulations['L'].unique().tolist()))))
+    fig.savefig('../figures/plot_%s_%s_%s_%s.png'%(to_plot,'_'.join(map(str,simulations['Bex'].unique().tolist())),'_'.join(map(str,simulations['mech'].unique().tolist())),'_'.join(map(str,simulations['L'].unique().tolist()))), dpi=300)
+    fig.savefig('../figures/plot_%s_%s_%s_%s.eps'%(to_plot,'_'.join(map(str,simulations['Bex'].unique().tolist())),'_'.join(map(str,simulations['mech'].unique().tolist())),'_'.join(map(str,simulations['L'].unique().tolist()))))
     plt.close()
     #return ([xdata[l] for l in sorted(xdata.keys())],all_y_curves)
     return all_y_curves
@@ -148,7 +148,7 @@ def parse_arguments():
     parser.add_argument( "--h_ex", type=float, help = "External magnetic field value, Bex." , required=True)
     parser.add_argument( "-m", "--mech", nargs='+', choices=['true','false'], help = ("Whether internal fields are suppressed or not. \'false\' means "
     "that they aren't so the mechanism is on, and \'true\' means that they are and the mechanism is off." ), required=True)
-    parser.add_argument( "-f", "--folder_list", nargs='+', type=str, help = "List of folders in \'analysis\' in which results should be found. " , required=True)
+    parser.add_argument( "-f", "--folder_list", nargs='+', type=str, help = "List of folders in \'data/results/\' in which results should be found. " , required=True)
     parser.add_argument( "--to_plot", type=str, nargs='?', default='corr_length', help = "Which observable should be plotted. Default is Correlation length / L.")
     
     args = parser.parse_args()
@@ -173,7 +173,7 @@ def main():
     plot_options = {'Name':r'$\xi_{L} / L$', 'axis_yscale':'log', 'func':get_correlation_length}
     
     main_plot(simulations, boot_num, plot_options)
-    os.system("rsync -avzhe ssh ./graphs/ tomerdol@newphysnet1:~/graphs/")
+    #os.system("rsync -avzhe ssh ../figures/ tomerdol@newphysnet1:~/graphs/")
 
 if __name__ == "__main__":
     main()

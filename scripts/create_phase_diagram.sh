@@ -47,4 +47,4 @@ done
 python3 plot_phase_diagram.py phase_diagram_true_"$fname"res.txt phase_diagram_false_"$fname"res.txt
 
 #transfer the figures
-rsync -avzhe ssh ./graphs/ tomerdol@newphysnet1:~/graphs/
+rsync -avzhe ssh ../figures/ tomerdol@newphysnet1:~/graphs/

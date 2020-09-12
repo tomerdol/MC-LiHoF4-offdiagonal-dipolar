@@ -92,7 +92,7 @@ def check_from_end(array):
     
 
 
-def check_equilib(T, to_check, L, Bex, folderName, mech, folder='../analysis'):
+def check_equilib(T, to_check, L, Bex, folderName, mech, folder='../data/results'):
     min_steps_dict={}
     all_equilibrated=True
     for l in L:

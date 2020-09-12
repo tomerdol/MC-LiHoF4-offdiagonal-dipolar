@@ -147,8 +147,8 @@ public class MonteCarloMetropolis {
 //				if (t<T.length-1) {	// last temperature is only for parallel tempering and not written to file
 //
 //					// ******************** initialize output of results ****************************
-//					makeDir("analysis" + File.separator, folderName);
-//					out[t] = new FileWriter("analysis" + File.separator + folderName + File.separator + "table_" + Lx + "_" + Lz + "_" + dilution + "_" + h + "_" + extBx + "_" + temperature + "_" + suppressInternalTransFields + "_t.txt",successReadFromFile);
+//					makeDir("data/results" + File.separator, folderName);
+//					out[t] = new FileWriter("data" + File.separator + "results" + File.separator + folderName + File.separator + "table_" + Lx + "_" + Lz + "_" + dilution + "_" + h + "_" + extBx + "_" + temperature + "_" + suppressInternalTransFields + "_t.txt",successReadFromFile);
 //					// print some information to the begining of the file:
 //					print("#" + LocalDateTime.now(), out[t], true, printOutput);
 //					print("#temperature_schedule: "+Arrays.toString(T), out[t], true, printOutput);
@@ -252,7 +252,7 @@ public class MonteCarloMetropolis {
 //				outputBuffer[t] = new StringBuilder(bufferSize);
 
 			// initialize output buffer for problematic configurations
-//			BufferedWriter outProblematicConfigs = new BufferedWriter(new FileWriter("p_configs" + File.separator + "problematic_"+lattice[0].length+"_"+extBx,true));
+//			BufferedWriter outProblematicConfigs = new BufferedWriter(new FileWriter("data" + File.separator + "p_configs" + File.separator + "problematic_"+lattice[0].length+"_"+extBx,true));
 
 			// initialize equilibration array
 //            boolean[] equilibratedT = new boolean[T.length-1];

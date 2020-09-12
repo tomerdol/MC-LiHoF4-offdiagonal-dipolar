@@ -62,7 +62,7 @@ for T in "${temp_schedule[@]}"
 do
 
 
-for file in ./analysis/temp_"$name"/table_"$L"_"$L"_"$H"_"$T"_"$mech"_*.txt
+for file in ./data/results/temp_"$name"/table_"$L"_"$L"_"$H"_"$T"_"$mech"_*.txt
 do
 # find if file exists and is larger than 5000 bytes = 5 KB
 if ! [[ $(find "$file" -type f -size +5k 2>/dev/null) ]]; then
@@ -111,7 +111,7 @@ echo T e corr_length >> $tmp_file
 for T in "${temp_schedule[@]}"
 do
 
-file="./analysis/temp_""$name""/table_""$L""_""$L""_""$H""_""$T""_""$mech""_*.txt"
+file="./data/results/temp_""$name""/table_""$L""_""$L""_""$H""_""$T""_""$mech""_*.txt"
 
 num_of_samples=$(tail -q -n 1 ${file} | awk 'END{print $1}')
 start_point=$((num_of_samples / 4))
@@ -125,7 +125,7 @@ echo $T $energy $corr_length >> $tmp_file
 echo $T $energy $corr_length
 done
 
-sort -t" " -nk1 $tmp_file > ./R/sample_energy_"$L"_"$H"_temp_"$name"_"$mech".txt
+sort -t" " -nk1 $tmp_file > ./data/analysis/sample_energy_"$L"_"$H"_temp_"$name"_"$mech".txt
 
 done
 done

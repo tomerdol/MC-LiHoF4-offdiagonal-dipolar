@@ -46,7 +46,7 @@ def to_plot_col_index(to_plot):
 
 def save_equilibration_data(sim_name, equilibrated_bin):
     #sim_name[0]=Bex; sim_name[1]=L; sim_name[2]=folderName; sim_name[3]=mech
-    path='../analysis/'+str(sim_name[2])+'/binned_data/equilib_data_'+str(sim_name[1])+'_'+str(sim_name[1])+'_'+str(sim_name[0])+'_'+str(sim_name[3])+'.txt'
+    path='../data/results/'+str(sim_name[2])+'/binned_data/equilib_data_'+str(sim_name[1])+'_'+str(sim_name[1])+'_'+str(sim_name[0])+'_'+str(sim_name[3])+'.txt'
     with open(path,'w') as outfile:
         outfile.write("%s\n" % equilibrated_bin)
         #for seed in seeds:
@@ -54,7 +54,7 @@ def save_equilibration_data(sim_name, equilibrated_bin):
     
 def read_equilibration_data(sim_name):
     #sim_name[0]=Bex; sim_name[1]=L; sim_name[2]=folderName; sim_name[3]=mech
-    path='../analysis/'+str(sim_name[2])+'/binned_data/equilib_data_'+str(sim_name[1])+'_'+str(sim_name[1])+'_'+str(sim_name[0])+'_'+str(sim_name[3])+'.txt'
+    path='../data/results/'+str(sim_name[2])+'/binned_data/equilib_data_'+str(sim_name[1])+'_'+str(sim_name[1])+'_'+str(sim_name[0])+'_'+str(sim_name[3])+'.txt'
     
     with open(path,'r') as file:
         eq_bin=file.readline()
@@ -92,7 +92,7 @@ def main_check_equilibration(simulations, to_check):
 
 def main_plot(simulations, to_plot, L, Bex, folderName, mech):
     markers=['o','s','^','D','v']	
-    with PdfPages('./graphs/plot_equilibration_%s_%s.pdf'%(Bex,mech)) as pdf:
+    with PdfPages('../figures/plot_equilibration_%s_%s.pdf'%(Bex,mech)) as pdf:
         
         for temperature_index, temperature in enumerate(simulations['T'].unique()):
             fig, axes = plt.subplots(len(to_plot),1, figsize=(7,len(to_plot)*3))
@@ -140,7 +140,7 @@ def main_plot(simulations, to_plot, L, Bex, folderName, mech):
 
         #plt.xscale('log')
         #plt.show()
-        #fig.savefig('./graphs/plot_equilibration_%s.pdf'%Bex)
+        #fig.savefig('../figures/plot_equilibration_%s.pdf'%Bex)
 
 def main():
     to_plot = ['Energy','|Magnetization|','Magnetization^2','mk2']

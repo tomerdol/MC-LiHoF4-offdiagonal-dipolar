@@ -139,8 +139,8 @@ def plot_multiple(f, all_L, param, err_pfit, xdata, all_ydata, err_y, h_ex, mech
     ax1.set_yscale("log")
     ax2.set_yscale("log")
     plt.tight_layout(pad=1.08)
-    #fig.savefig('./graphs/fit_%s_%s_%s_%s.png'%(h_ex,mech,'_'.join(map(str,all_L)),index))
-    fig.savefig('./graphs/fit_%s_%s_%s_%s.eps'%(h_ex,mech,'_'.join(map(str,all_L)),index),format='eps')
+    #fig.savefig('../figures/fit_%s_%s_%s_%s.png'%(h_ex,mech,'_'.join(map(str,all_L)),index))
+    fig.savefig('../figures/fit_%s_%s_%s_%s.eps'%(h_ex,mech,'_'.join(map(str,all_L)),index),format='eps')
 
 
 def plot_multiple_bin(f, simulations, param, err_pfit, err_y, h_ex, mech, plot_options, index=''):
@@ -187,8 +187,8 @@ def plot_multiple_bin(f, simulations, param, err_pfit, err_y, h_ex, mech, plot_o
     #fig.tight_layout(rect=[0, 0.03, 1, 0.95])
     plt.tight_layout(pad=1.08)
     
-    fig.savefig('./graphs/fit_%s_%s_%s_%s.eps'%(h_ex,mech,'_'.join(map(str,simulations['L'].unique().tolist())),index),format='eps')
-    fig.savefig('./graphs/fit_%s_%s_%s_%s.png'%(h_ex,mech,'_'.join(map(str,simulations['L'].unique().tolist())),index),dpi=300)
+    fig.savefig('../figures/fit_%s_%s_%s_%s.eps'%(h_ex,mech,'_'.join(map(str,simulations['L'].unique().tolist())),index),format='eps')
+    fig.savefig('../figures/fit_%s_%s_%s_%s.png'%(h_ex,mech,'_'.join(map(str,simulations['L'].unique().tolist())),index),dpi=300)
 
 def str_with_err(value, error):
     digits = -int(math.floor(math.log10(error)))
@@ -206,7 +206,7 @@ def get_correlation_length(m2,m4,mk2,L):
     return math.sqrt((m2/mk2)-1)/(2*L*math.sin(math.pi/L))
 
 # DEPRECATED: A newer version is in the bin directory
-def fit_main(all_L, L_equilibrated_min_value, tau_dict, boot_num, h_ex, mech, folderName, xdata, min_x, max_x, initial_xc, folder='../analysis', start_in_middle=True):
+def fit_main(all_L, L_equilibrated_min_value, tau_dict, boot_num, h_ex, mech, folderName, xdata, min_x, max_x, initial_xc, folder='../data/results', start_in_middle=True):
     all_yboot={k:[] for k in all_L}
     ps=[]
     xdata = {k:[x for x in v if x > min_x and x<max_x] for k,v in xdata.items()}
@@ -394,7 +394,7 @@ def parse_arguments():
     parser.add_argument( "--h_ex", type=float, help = "External magnetic field value, Bex." , required=True)
     parser.add_argument( "-m", "--mech", choices=['true','false'], help = ("Whether internal fields are suppressed or not. \'false\' means "
     "that they aren't so the mechanism is on, and \'true\' means that they are and the mechanism is off." ), required=True)
-    parser.add_argument( "-f", "--folder_list", nargs='+', type=str, help = "List of folders in \'analysis\' in which results should be found. " , required=True)
+    parser.add_argument( "-f", "--folder_list", nargs='+', type=str, help = "List of folders in \'data/results/\' in which results should be found. " , required=True)
     parser.add_argument( "-r", "--temperature_range", nargs=2, type=float, required=False, help = ("The temperature range to use when trying to fit."))
     #parser.add_argument( "-o", "--overwrite_tmp", action='store_true', default=False, help = ("Overwrite parsed files in /tmp. If not given, existing files will "
     #"be used (which probably means older results)."))
@@ -440,7 +440,7 @@ def main():
     
     print('\n'.join(map(str,fit_bin(simulations, boot_num, min_x, max_x, initial_xc))))
     
-    os.system("rsync -avzhe ssh ./graphs/ tomerdol@newphysnet1:~/graphs/")
+    #os.system("rsync -avzhe ssh ../figures/ tomerdol@newphysnet1:~/graphs/")
    
 if __name__ == "__main__":
     main()

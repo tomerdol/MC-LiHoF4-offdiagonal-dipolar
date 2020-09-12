@@ -139,7 +139,7 @@ x=1.0
 T=1.5
 #T=1.4998575151938878
 #T=1.7638839354959759
-fname='../analysis/'+folderName+'/table_'+str(L)+'_'+str(L)+'_'+str(h_ex)+'_'+str(T)+'_'+mech+'.txt'
+fname='../data/results/'+folderName+'/table_'+str(L)+'_'+str(L)+'_'+str(h_ex)+'_'+str(T)+'_'+mech+'.txt'
 y = pd.read_csv(fname, delim_whitespace=True, error_bad_lines=False, index_col='index', comment='#')
 print('done reading file!')
 #arr1=np.abs(y[obs].values)

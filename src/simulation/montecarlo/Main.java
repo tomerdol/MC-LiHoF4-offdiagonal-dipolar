@@ -57,7 +57,7 @@ public class Main {
 
         int fileLx=0, fileLz=0;
         final int N=Lx*Lx*Lz*4;
-        try (BufferedReader in = new BufferedReader(new FileReader("interactions" + File.separator + "intTable_"+Lx+"_"+Lz+".txt"))){
+        try (BufferedReader in = new BufferedReader(new FileReader("data" + File.separator + "interactions" + File.separator + "intTable_"+Lx+"_"+Lz+".txt"))){
             String str;
             // verify Lx and Lz make sense
             if ((str = in.readLine()) != null)
@@ -658,17 +658,17 @@ public class Main {
 
         }
 
-        makeDir("analysis" + File.separator, folderName);
+        makeDir("data" + File.separator + "results" + File.separator, folderName);
 
 
         SingleTMonteCarloSimulation[] subSimulations = new SingleTMonteCarloSimulation[T.length];
         BufferedWriter outProblematicConfigs=null;
         try {
-            makeDir("","p_configs");
-            outProblematicConfigs = new BufferedWriter(new FileWriter("p_configs" + File.separator + "problematic_"+(Lx*Lx*Lz*4)+"_"+extBx,true));
+            makeDir("data" + File.separator,"p_configs");
+            outProblematicConfigs = new BufferedWriter(new FileWriter("data" + File.separator + "p_configs" + File.separator + "problematic_"+(Lx*Lx*Lz*4)+"_"+extBx,true));
 
             for (int i=0;i<T.length;i++){
-                FileWriter out = new FileWriter("analysis" + File.separator + folderName + File.separator + "table_" + Lx + "_" + Lz + "_" + extBx + "_" + T[i] + "_" + suppressInternalTransFields + "_" + seed + ".txt", successReadFromFile);
+                FileWriter out = new FileWriter("data" + File.separator + "results" + File.separator + folderName + File.separator + "table_" + Lx + "_" + Lz + "_" + extBx + "_" + T[i] + "_" + suppressInternalTransFields + "_" + seed + ".txt", successReadFromFile);
                 OutputWriter outputWriter = new OutputWriter.Builder(verboseOutput, folderName, obsPrintSweepNum, out)
                         .setPrintOutput(printOutput)
                         .setPrintProgress(printProgress)

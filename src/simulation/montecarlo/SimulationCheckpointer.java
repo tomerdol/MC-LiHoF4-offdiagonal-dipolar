@@ -15,9 +15,9 @@ public class SimulationCheckpointer {
 
 
     public SimulationCheckpointer(final String folderName, final int Lx, final int Lz, final double extBx, final boolean suppressInternalTransFields, final long seed){
-        Main.makeDir("states" + File.separator, folderName);
+        Main.makeDir("checkpoints" + File.separator, folderName);
         this.folderName = folderName;
-        this.fSaveState = new File("states" + File.separator + folderName + File.separator + "save_state_" + Lx + "_" + Lz + "_" + extBx + "_" + suppressInternalTransFields + "_" + seed + ".txt");
+        this.fSaveState = new File("checkpoints" + File.separator + folderName + File.separator + "save_state_" + Lx + "_" + Lz + "_" + extBx + "_" + suppressInternalTransFields + "_" + seed + ".txt");
     }
 
 

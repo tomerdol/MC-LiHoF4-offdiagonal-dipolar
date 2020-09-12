@@ -25,7 +25,7 @@ for Bex in all_Bex:
     for L in all_L:
         singleL_ydata=[]
         for T in xdata:
-            fname='../analysis/'+folderName+'/table_'+str(L)+'_'+str(L)+'_'+str(Bex)+'_'+str(T)+'_'+mech+'.txt'
+            fname='../data/results/'+folderName+'/table_'+str(L)+'_'+str(L)+'_'+str(Bex)+'_'+str(T)+'_'+mech+'.txt'
             y = pd.read_csv(fname, delim_whitespace=True, error_bad_lines=False, comment='#')
             print(fname)
             try:
@@ -46,7 +46,7 @@ plt.xlabel('T')
 plt.ylabel('Acceptance rate')
 plt.xticks(rotation=90)
 fig.tight_layout()
-fig.savefig('./graphs/acceptance_rate.png')
+fig.savefig('../figures/acceptance_rate.png')
 
 
 

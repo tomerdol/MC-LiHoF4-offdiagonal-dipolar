@@ -29,7 +29,7 @@ def parse_arguments():
     parser.add_argument( "--h_ex_list", nargs='+', type=float, help = "List of external magnetic field values, Bex." , required=True)
     parser.add_argument( "-m", "--mech", choices=['true','false'], help = ("Whether internal fields are suppressed or not. \'false\' means "
     "that they aren't so the mechanism is on, and \'true\' means that they are and the mechanism is off." ), required=True)
-    parser.add_argument( "-f", "--folder_list", nargs='+', type=str, help = "List of folders in \'analysis\' in which results should be found. " , required=True)
+    parser.add_argument( "-f", "--folder_list", nargs='+', type=str, help = "List of folders in \'/data/results\' in which results should be found. " , required=True)
     parser.add_argument( "-o", "--overwrite_tmp", action='store_true', default=False, help = ("Overwrite parsed files in /tmp. If not given, existing files will "
     "be used (which probably means older results)."))
     
@@ -89,7 +89,7 @@ def plot_previous_data(ax):
     
     return ax
     
-def copy_files_to_tmp(T, cols_to_copy, L, Bex, folderName, mech, folder='../analysis'):
+def copy_files_to_tmp(T, cols_to_copy, L, Bex, folderName, mech, folder='../data/results'):
     path='/tmp/'+folderName
     try:
         os.mkdir(path)
@@ -166,11 +166,11 @@ def main():
         print('Starting equilibration tests...')
         temp_all_L=create_temp_all_L(all_L, check_exists_and_not_empty(xdata, all_L, h_ex, folderName_dict, mech), overwrite_tmp_dict)
         print('L=%s already exist in /tmp'%[item for item in all_L if item not in temp_all_L])
-        L_equilibrated_min_value=check_equilibration.check_equilib(xdata, to_check, temp_all_L, h_ex, folderName_dict, mech, folder='../analysis')
+        L_equilibrated_min_value=check_equilibration.check_equilib(xdata, to_check, temp_all_L, h_ex, folderName_dict, mech, folder='../data/results')
         print('Finished equilibration tests.')
         print('Starting autocorrelation tests...')
         test_autocorrelation.save_uncorrelated_timeseries(xdata, to_check, temp_all_L, L_equilibrated_min_value, h_ex,
-        folderName_dict, mech, folder='../analysis')
+        folderName_dict, mech, folder='../data/results')
         print('Finished autocorrelation tests.')
         L_equilibrated_min_value = {k:0 for k in all_L}
         tau_dict = {k:1 for k in all_L}
@@ -241,8 +241,8 @@ def main():
     f.close()
     
     #save fig
-    fig.savefig('./graphs/phase_diagram_%s_%s.png'%(mech,'_'.join(map(str,all_L))))
-    os.system("rsync -avzhe ssh ./graphs/ tomerdol@newphysnet1:~/graphs/")
+    fig.savefig('../figures/phase_diagram_%s_%s.png'%(mech,'_'.join(map(str,all_L))))
+    #os.system("rsync -avzhe ssh ../figures/ tomerdol@newphysnet1:~/graphs/")
     
 if __name__ == "__main__":
     main()

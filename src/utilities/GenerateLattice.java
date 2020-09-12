@@ -116,7 +116,7 @@ public class GenerateLattice {
         for (int i=startConfigNum;i<=numOfConfigurations;i++){
         	BufferedWriter out = null;
         	try {
-	            out = new BufferedWriter(new FileWriter("configurations" + File.separator + "config_"+Lx+"_"+Lz+"_"+dilution+"_"+h+"_"+i+".txt"));
+	            out = new BufferedWriter(new FileWriter("data" + File.separator + "configurations" + File.separator + "config_"+Lx+"_"+Lz+"_"+dilution+"_"+h+"_"+i+".txt"));
 	            
 	            //initialize PRNG
 	            long seed = System.currentTimeMillis();

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="PublishConfigData" serverName="dev" overwriteAll="false" showExcludedInSync="true">
+  <component name="PublishConfigData" serverName="dev" overwriteAll="false">
     <serverData>
       <paths name="bin_test">
         <serverdata>
@@ -38,9 +38,9 @@
             <mapping deploy="/LiHoF4_transverse_field_MC/dev" local="$PROJECT_DIR$" web="/" />
           </mappings>
           <excludedPaths>
-            <excludedPath local="true" path="$PROJECT_DIR$/p_configs" />
+            <excludedPath local="true" path="$PROJECT_DIR$/data/p_configs" />
             <excludedPath local="true" path="$PROJECT_DIR$/checkpoints" />
-            <excludedPath path="/LiHoF4_transverse_field_MC/dev/analysis" />
+            <excludedPath path="/LiHoF4_transverse_field_MC/dev/data/analysis" />
             <excludedPath path="/LiHoF4_transverse_field_MC/dev/data" />
             <excludedPath path="/LiHoF4_transverse_field_MC/dev/checkpoints" />
             <excludedPath path="/LiHoF4_transverse_field_MC/dev/temperature_schedules" />

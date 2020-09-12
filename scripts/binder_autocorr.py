@@ -12,7 +12,7 @@ def plot_relax_func(simulations, to_plot):
     nonlinear_relax_funcs=[]
     
     for sim in simulations.itertuples():
-        path='../analysis/'+sim.folderName+'/table_'+str(sim.L)+'_'+str(sim.L)+'_'+str(sim.Bex)+'_'+str(sim.T)+'_'+str(sim.mech)+'_'+'*'+'.txt'
+        path='../data/results/'+sim.folderName+'/table_'+str(sim.L)+'_'+str(sim.L)+'_'+str(sim.Bex)+'_'+str(sim.T)+'_'+str(sim.mech)+'_'+'*'+'.txt'
         
         file_list = glob.glob(path)
         n=len(file_list)    # number of independent runs
@@ -37,7 +37,7 @@ def plot_relax_func(simulations, to_plot):
         nonlinear_relax_func = (ind_runs_means -  ind_runs_means.iloc[-1])/(ind_runs_means.iloc[0] - ind_runs_means.iloc[-1])
         #nonlinear_relax_func = (ind_runs_means -  ind_runs_means.iloc[-10000:].mean())/(ind_runs_means.iloc[0] - ind_runs_means.iloc[-10000:].mean())
         nonlinear_relax_func['Energy'].loc[:900].cumsum().plot()
-        plt.gcf().savefig('./graphs/plot_relax_time_cumsum.png',dpi=300)
+        plt.gcf().savefig('../figures/plot_relax_time_cumsum.png',dpi=300)
         
         nonlinear_relax_func = pd.concat((nonlinear_relax_func,pd.DataFrame(sim._asdict(),index=nonlinear_relax_func.index)),axis=1)
         
@@ -60,7 +60,7 @@ def plot_relax_func(simulations, to_plot):
     
     
     
-    fig.savefig('./graphs/plot_relax_func.png',dpi=300)
+    fig.savefig('../figures/plot_relax_func.png',dpi=300)
 
 
 def plot_relax_times(simulations, to_plot):
@@ -68,7 +68,7 @@ def plot_relax_times(simulations, to_plot):
     nonlinear_relax_times = []
     # for now, assuming this just means iterate by temperature:
     for i, sim in enumerate(simulations.itertuples()):
-        path='../analysis/'+sim.folderName+'/table_'+str(sim.L)+'_'+str(sim.L)+'_'+str(sim.Bex)+'_'+str(sim.T)+'_'+str(sim.mech)+'_'+'*'+'.txt'
+        path='../data/results/'+sim.folderName+'/table_'+str(sim.L)+'_'+str(sim.L)+'_'+str(sim.Bex)+'_'+str(sim.T)+'_'+str(sim.mech)+'_'+'*'+'.txt'
         
         file_list = glob.glob(path)
         n=len(file_list)    # number of independent runs
@@ -116,7 +116,7 @@ def plot_relax_times(simulations, to_plot):
     
     
     
-    fig.savefig('./graphs/plot_relax_times.png',dpi=300)
+    fig.savefig('../figures/plot_relax_times.png',dpi=300)
 
 def main():
     to_plot = ['Energy','|m|','m2','mk2']

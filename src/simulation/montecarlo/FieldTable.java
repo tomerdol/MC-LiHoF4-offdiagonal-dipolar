@@ -32,7 +32,7 @@ final public class FieldTable {
             String line=null;
             String[] values=null;
             @SuppressWarnings("resource")
-            BufferedReader br = new BufferedReader(new FileReader("interactions" + File.separator + fileName + ".txt"));
+            BufferedReader br = new BufferedReader(new FileReader("data" + File.separator + "interactions" + File.separator + fileName + ".txt"));
 
             // first line is a header
             line = br.readLine();

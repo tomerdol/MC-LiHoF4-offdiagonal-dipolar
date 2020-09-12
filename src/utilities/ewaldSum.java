@@ -245,7 +245,7 @@ public class ewaldSum {
 
         //System.exit(0);
 
-        try (BufferedWriter out = new BufferedWriter(new FileWriter("interactions" + File.separator + "intTable_"+Lx+"_"+Lz+".txt"))){
+        try (BufferedWriter out = new BufferedWriter(new FileWriter("data" + File.separator + "interactions" + File.separator + "intTable_"+Lx+"_"+Lz+".txt"))){
             
             //print lattice sizes
             out.write("Lx="+Lx);
