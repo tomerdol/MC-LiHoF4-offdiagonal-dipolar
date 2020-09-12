@@ -1,7 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="PublishConfigData" serverName="dev" overwriteAll="false">
+  <component name="PublishConfigData" serverName="stable" overwriteAll="false">
     <serverData>
+      <paths name="beta">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/LiHoF4_transverse_field_MC/beta" local="$PROJECT_DIR$" web="/" />
+          </mappings>
+          <excludedPaths>
+            <excludedPath local="true" path="$PROJECT_DIR$/data/p_configs" />
+            <excludedPath local="true" path="$PROJECT_DIR$/checkpoints" />
+            <excludedPath path="/LiHoF4_transverse_field_MC/beta/data/analysis" />
+            <excludedPath path="/LiHoF4_transverse_field_MC/beta/data" />
+            <excludedPath path="/LiHoF4_transverse_field_MC/beta/checkpoints" />
+            <excludedPath path="/LiHoF4_transverse_field_MC/beta/temperature_schedules" />
+            <excludedPath path="/LiHoF4_transverse_field_MC/beta/output" />
+            <excludedPath local="true" path="$PROJECT_DIR$/.gitignore" />
+          </excludedPaths>
+        </serverdata>
+      </paths>
       <paths name="bin_test">
         <serverdata>
           <mappings>
@@ -61,6 +78,23 @@
             <excludedPath local="true" path="$PROJECT_DIR$/p_configs" />
             <excludedPath local="true" path="$PROJECT_DIR$/scripts" />
             <excludedPath local="true" path="$PROJECT_DIR$/states" />
+          </excludedPaths>
+        </serverdata>
+      </paths>
+      <paths name="stable">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/LiHoF4_transverse_field_MC/stable" local="$PROJECT_DIR$" web="/" />
+          </mappings>
+          <excludedPaths>
+            <excludedPath local="true" path="$PROJECT_DIR$/data/p_configs" />
+            <excludedPath local="true" path="$PROJECT_DIR$/checkpoints" />
+            <excludedPath path="/LiHoF4_transverse_field_MC/stable/data/analysis" />
+            <excludedPath path="/LiHoF4_transverse_field_MC/stable/data" />
+            <excludedPath path="/LiHoF4_transverse_field_MC/stable/checkpoints" />
+            <excludedPath path="/LiHoF4_transverse_field_MC/stable/temperature_schedules" />
+            <excludedPath path="/LiHoF4_transverse_field_MC/stable/output" />
+            <excludedPath local="true" path="$PROJECT_DIR$/.gitignore" />
           </excludedPaths>
         </serverdata>
       </paths>
