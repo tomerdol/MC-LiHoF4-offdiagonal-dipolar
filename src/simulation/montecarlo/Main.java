@@ -487,6 +487,7 @@ public class Main {
         double tempJ_ex;
         double spinSize;
         double tol;
+        double[] T=null;    // temperature array
 
         // get Properties object that reads parameters from file
         Properties params = GetParamValues.getParams();
@@ -529,6 +530,16 @@ public class Main {
             maxIter = ((Number) commandLine.getParsedOptionValue("max_iter")).intValue();
             if (commandLine.hasOption("buffer_size")) bufferSize = ((Number) commandLine.getParsedOptionValue("buffer_size")).intValue();
             if (commandLine.hasOption("temp_schedule")) tempScheduleFileName = commandLine.getOptionValue("temp_schedule");
+
+            // Read temperature schedule. throws runtime exception if unsuccessful
+            T=receiveTemperatureSchedule(tempScheduleFileName);
+            if (tempParallelMode=='s'){
+                // if we are running in serial mode the simulation is slowed down by a factor of the number of temperatures.
+                // thus we print observables T.length times more often.
+                // notice 'obsPrintSweepNum' given as command line argument overrides this behaviour
+                obsPrintSweepNum = obsPrintSweepNum/T.length;
+            }
+
             if (commandLine.hasOption("seed")){
                 receivedSeed=true;
                 seed = ((Number) commandLine.getParsedOptionValue("seed")).longValue();
@@ -570,7 +581,6 @@ public class Main {
         final char parallelMode = tempParallelMode;
         final double J_ex=tempJ_ex;
 
-        double[] T=receiveTemperatureSchedule(tempScheduleFileName);
 
         // first try and get spin size (initial guess) from manual calculation that diagonalizes the Ho C-F hamiltonian
         // using the external Bx.
@@ -687,6 +697,9 @@ public class Main {
                     ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).getLattice().setNnArray(nnArray);
                     ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).getLattice().setMeasure(measure);
                     ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).getLattice().initIterativeSolver();
+
+
+                    ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).setMaxSweeps(maxSweeps);
 
                     // print parameters and table headers (with preceding '#')
                     ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).printRunParameters(T, "# successfully read saved state"+System.lineSeparator()+'#'+outputWriter.makeTableHeader().substring(1), simulation.getSeed(), tempScheduleFileName, parallelTemperingOff);

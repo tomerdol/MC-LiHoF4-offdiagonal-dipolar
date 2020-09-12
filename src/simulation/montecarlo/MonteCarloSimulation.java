@@ -10,6 +10,17 @@ public abstract class MonteCarloSimulation implements Serializable, Runnable, Cl
     protected boolean realTimeEqTest;
     protected boolean checkpoint;
 
+    public void setMaxSweeps(long maxSweeps) {
+        this.maxSweeps = maxSweeps;
+    }
+
+    public void setContinueFromSave(boolean continueFromSave) {
+        this.continueFromSave = continueFromSave;
+    }
+
+    public void setCheckpoint(boolean checkpoint) {
+        this.checkpoint = checkpoint;
+    }
 
     public abstract void run();
 
