@@ -32,6 +32,18 @@
           </excludedPaths>
         </serverdata>
       </paths>
+      <paths name="dev">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/LiHoF4_transverse_field_MC/dev" local="$PROJECT_DIR$" web="/" />
+          </mappings>
+          <excludedPaths>
+            <excludedPath local="true" path="$PROJECT_DIR$/interactions" />
+            <excludedPath local="true" path="$PROJECT_DIR$/p_configs" />
+            <excludedPath local="true" path="$PROJECT_DIR$/checkpoints" />
+          </excludedPaths>
+        </serverdata>
+      </paths>
       <paths name="newphysnet1.bgu.ac.il">
         <serverdata>
           <mappings>

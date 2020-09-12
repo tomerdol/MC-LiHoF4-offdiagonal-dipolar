@@ -3,27 +3,31 @@
   <component name="WebServers">
     <option name="servers">
       <webServer id="afc5cf25-fef3-4a99-ab9d-76fa67c09341" name="newphysnet1.bgu.ac.il" url="http://newphysnet1.bgu.ac.il">
-        <fileTransfer host="newphysnet1.bgu.ac.il" port="22" rootFolder="/users/physics/tomerdol" accessType="SFTP">
+        <fileTransfer rootFolder="/users/physics/tomerdol" accessType="SFTP" host="newphysnet1.bgu.ac.il" port="22" sshConfigId="9f3abc1e-f2d1-40f8-a374-d5a1c782e221" sshConfig="newphysnet1.bgu.ac.il">
           <advancedOptions>
             <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
           </advancedOptions>
-          <option name="port" value="22" />
         </fileTransfer>
       </webServer>
       <webServer id="d9222dec-6066-4226-bc26-cc1cfeca1e2b" name="cluster" url="http://sge212">
-        <fileTransfer host="sge212" port="22" rootFolder="/gpfs0/smoshe/users/tomerdol/home" accessType="SFTP">
+        <fileTransfer rootFolder="/gpfs0/smoshe/users/tomerdol/home" accessType="SFTP" host="sge250.bgu.ac.il" port="22" sshConfigId="5d3872d5-a07d-4c49-9ca4-bef47991dcc9" sshConfig="cluster">
           <advancedOptions>
             <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
           </advancedOptions>
-          <option name="port" value="22" />
         </fileTransfer>
       </webServer>
       <webServer id="0581aa5c-bdaf-499a-bf82-063633a76085" name="bin_test" url="http://sge212">
-        <fileTransfer host="sge212" port="22" rootFolder="/gpfs0/smoshe/users/tomerdol/home" accessType="SFTP">
+        <fileTransfer rootFolder="/gpfs0/smoshe/users/tomerdol/home" accessType="SFTP" host="sge250.bgu.ac.il" port="22" sshConfigId="5d3872d5-a07d-4c49-9ca4-bef47991dcc9" sshConfig="cluster">
           <advancedOptions>
             <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
           </advancedOptions>
-          <option name="port" value="22" />
+        </fileTransfer>
+      </webServer>
+      <webServer id="fbd2fb4e-7e4a-449e-bf1a-f788bf59515f" name="dev" url="http://sge250.bgu.ac.il">
+        <fileTransfer rootFolder="/gpfs0/smoshe/users/tomerdol/home" accessType="SFTP" host="sge250.bgu.ac.il" port="22" sshConfigId="5d3872d5-a07d-4c49-9ca4-bef47991dcc9" sshConfig="cluster">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
         </fileTransfer>
       </webServer>
     </option>
