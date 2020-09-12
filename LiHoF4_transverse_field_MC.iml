@@ -2,7 +2,7 @@
 <module type="JAVA_MODULE" version="4">
   <component name="FacetManager">
     <facet type="Python" name="Python">
-      <configuration sdkName="" />
+      <configuration sdkName="Python 3.7" />
     </facet>
   </component>
   <component name="NewModuleRootManager" inherit-compiler-output="true">
@@ -12,7 +12,7 @@
       <sourceFolder url="file://$MODULE_DIR$/src/tests" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/scripts" isTestSource="false" />
     </content>
-    <orderEntry type="inheritedJdk" />
+    <orderEntry type="jdk" jdkName="1.8" jdkType="JavaSDK" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="lib" level="project" />
     <orderEntry type="module-library" exported="" scope="PROVIDED">
@@ -42,5 +42,9 @@
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="library" name="Python 3.7 interpreter library" level="application" />
+  </component>
+  <component name="PyDocumentationSettings">
+    <option name="renderExternalDocumentation" value="true" />
   </component>
 </module>

@@ -41,12 +41,16 @@ public class MultipleTMonteCarloSimulation extends MonteCarloSimulation implemen
     // try and swap (t)th and (t+1)th simulations.
     // return if the boolean indicating whether the swap was performed
     public void trySwitch(int t){
-        double thisEnergy = simulations[t].getCurrentEnergy();
-        double nextEnergy = simulations[t+1].getCurrentEnergy();
-        double delta = (1/T[t] - 1/T[t + 1])*(thisEnergy - nextEnergy);
-        if (!parallelTempetingOff && rnd.nextDouble() < Math.exp(delta)) {
-            simulations[t].swap(simulations[t+1]);
-            simulations[t].setLastSwapAcceptance(true);
+        if (!parallelTempetingOff) {
+            double thisEnergy = simulations[t].getCurrentEnergy();
+            double nextEnergy = simulations[t+1].getCurrentEnergy();
+            double delta = (1/T[t] - 1/T[t + 1])*(thisEnergy - nextEnergy);
+            if (rnd.nextDouble() < Math.exp(delta)) {
+                simulations[t].swap(simulations[t + 1]);
+                simulations[t].setLastSwapAcceptance(true);
+            }else{
+                simulations[t].setLastSwapAcceptance(false);
+            }
         }else{
             simulations[t].setLastSwapAcceptance(false);
         }
