@@ -5,33 +5,15 @@
       <paths name="beta">
         <serverdata>
           <mappings>
-            <mapping deploy="/LiHoF4_transverse_field_MC/beta" local="$PROJECT_DIR$" web="/" />
+            <mapping local="$PROJECT_DIR$" web="/" />
           </mappings>
-          <excludedPaths>
-            <excludedPath local="true" path="$PROJECT_DIR$/data/p_configs" />
-            <excludedPath local="true" path="$PROJECT_DIR$/checkpoints" />
-            <excludedPath path="/LiHoF4_transverse_field_MC/dev/data/analysis" />
-            <excludedPath path="/LiHoF4_transverse_field_MC/dev/data" />
-            <excludedPath path="/LiHoF4_transverse_field_MC/dev/checkpoints" />
-            <excludedPath path="/LiHoF4_transverse_field_MC/dev/temperature_schedules" />
-            <excludedPath path="/LiHoF4_transverse_field_MC/dev/output" />
-            <excludedPath local="true" path="$PROJECT_DIR$/.gitignore" />
-          </excludedPaths>
         </serverdata>
       </paths>
       <paths name="bin_test">
         <serverdata>
           <mappings>
-            <mapping deploy="/bin_test" local="$PROJECT_DIR$" web="/" />
+            <mapping local="$PROJECT_DIR$" web="/" />
           </mappings>
-          <excludedPaths>
-            <excludedPath local="true" path="$PROJECT_DIR$/analysis" />
-            <excludedPath local="true" path="$PROJECT_DIR$/configurations" />
-            <excludedPath local="true" path="$PROJECT_DIR$/interactions" />
-            <excludedPath local="true" path="$PROJECT_DIR$/p_configs" />
-            <excludedPath local="true" path="$PROJECT_DIR$/scripts" />
-            <excludedPath local="true" path="$PROJECT_DIR$/states" />
-          </excludedPaths>
         </serverdata>
       </paths>
       <paths name="cluster">
@@ -52,18 +34,8 @@
       <paths name="dev">
         <serverdata>
           <mappings>
-            <mapping deploy="/LiHoF4_transverse_field_MC/dev" local="$PROJECT_DIR$" web="/" />
+            <mapping local="$PROJECT_DIR$" web="/" />
           </mappings>
-          <excludedPaths>
-            <excludedPath local="true" path="$PROJECT_DIR$/data/p_configs" />
-            <excludedPath local="true" path="$PROJECT_DIR$/checkpoints" />
-            <excludedPath path="/LiHoF4_transverse_field_MC/dev/data/analysis" />
-            <excludedPath path="/LiHoF4_transverse_field_MC/dev/data" />
-            <excludedPath path="/LiHoF4_transverse_field_MC/dev/checkpoints" />
-            <excludedPath path="/LiHoF4_transverse_field_MC/dev/temperature_schedules" />
-            <excludedPath path="/LiHoF4_transverse_field_MC/dev/output" />
-            <excludedPath local="true" path="$PROJECT_DIR$/.gitignore" />
-          </excludedPaths>
         </serverdata>
       </paths>
       <paths name="newphysnet1.bgu.ac.il">
