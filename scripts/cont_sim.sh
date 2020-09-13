@@ -2,7 +2,7 @@
 unset module
 name="temp_parallel_test2"
 arrayMech=( "false" "true" )
-arrayL=( 6 )
+arrayL=( 6 7 8 )
 arrayH=( 0.0 0.3 )
 
 
@@ -27,6 +27,9 @@ do
     # check that the seed does not belong to an already running job
     qstat -u tomerdol | awk 'NR>2 {print $1}' | xargs -n1 qstat -j | grep -q "$seed" &> /dev/null
     if [ $? == 0 ]; then
+      jobid=$(qstat -u tomerdol | awk 'NR>2 {print $1}' | xargs -n1 qstat -j | grep -B26 ${seed} | awk 'NR==1 {print $2}')
+      echo "Seed ${seed} already running with job id ${jobid}."
+    else
       used_slots=`free_slot smoshe.q | grep sge1081 | cut -d' ' -f 2 | cut -d'/' -f 1`
       #exclude sge1081 to leave at least 30 cores available for other users
       queues="lublin.q,smoshe.q@sge1082,smoshe.q@sge190,fairshare.q"
@@ -42,9 +45,6 @@ do
 
       ((COUNT++))
       sleep 120
-    else
-      jobid=$(qstat -u tomerdol | awk 'NR>2 {print $1}' | xargs -n1 qstat -j | grep -B26 ${seed} | awk 'NR==1 {print $2}')
-      echo "Seed ${seed} already running with job id ${jobid}."
     fi
 done
 done
