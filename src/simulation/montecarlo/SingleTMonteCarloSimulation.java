@@ -36,7 +36,7 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
     // parameters for the iterative solvers
     private transient int maxIter;
     private transient double alpha;
-    private transient final BufferedWriter outProblematicConfigs;
+    private transient BufferedWriter outProblematicConfigs;
 
     public SingleTMonteCarloSimulation(final double T, final int temperatureIndex, final int totalNumOfTemperatures, final Lattice lattice, final int numOfObservables, final long maxSweeps,
                                        final long seed, final MersenneTwister rnd, final boolean continueFromSave, final boolean realTimeEqTest,
@@ -114,6 +114,11 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
         }
         this.incAcceptanceRateCount();
     }
+
+    public void setOutProblematicConfigs(final BufferedWriter outProblematicConfigs) {
+        this.outProblematicConfigs = outProblematicConfigs;
+    }
+
     /**
      * Performs a Monte Carlo metropolis step
      * @param lattice - spin lattice

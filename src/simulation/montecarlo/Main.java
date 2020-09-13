@@ -675,6 +675,8 @@ public class Main {
         BufferedWriter outProblematicConfigs=null;
         try {
             makeDir("data" + File.separator,"p_configs");
+            // this is one BufferedWriter for all temperatures (threads). The write method is synchronized on outProblematicConfigs.
+            // If there are many problematic configurations if might cause slow down (but many such configurations is problematic regardless)
             outProblematicConfigs = new BufferedWriter(new FileWriter("data" + File.separator + "p_configs" + File.separator + "problematic_"+(Lx*Lx*Lz*4)+"_"+extBx,true));
 
             for (int i=0;i<T.length;i++){
@@ -687,6 +689,8 @@ public class Main {
 
                 if (successReadFromFile){
                     // initialize simulation read from checkpoint
+                    // this is for fields of the sub-simulations.
+                    // fields that (also) exist in the wrapper MultipleTMonteCarloSimulation are initialized later
                     ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).setOutWriter(outputWriter);
                     ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).setAlpha(alpha);
                     ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).setMaxIter(maxIter);
@@ -697,9 +701,11 @@ public class Main {
                     ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).getLattice().setNnArray(nnArray);
                     ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).getLattice().setMeasure(measure);
                     ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).getLattice().initIterativeSolver();
-
-
-                    ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).setMaxSweeps(maxSweeps);
+                    ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).setMaxSweeps(maxSweeps); // this potentially updates max sweeps (in case more runs are needed than initially planned)
+                    ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).setOutProblematicConfigs(outProblematicConfigs);
+                    ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).setContinueFromSave(continueFromSave);
+                    ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).setCheckpoint(saveState);
+                    ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).setRealTimeEqTest(realTimeEqTest);
 
                     // print parameters and table headers (with preceding '#')
                     ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).printRunParameters(T, "# successfully read saved state"+System.lineSeparator()+'#'+outputWriter.makeTableHeader().substring(1), simulation.getSeed(), tempScheduleFileName, parallelTemperingOff);
@@ -717,12 +723,18 @@ public class Main {
 
 
             }
+
+            // initialization of the fields of MultipleTMonteCarloSimulation
             if (!successReadFromFile){
                 simulation=new MultipleTMonteCarloSimulation(T, subSimulations, maxSweeps, seed, mutualRnd, continueFromSave, realTimeEqTest, parallelTemperingOff, saveState, checkpointer, spinSize, tol, J_ex);
                 ((MultipleTMonteCarloSimulation) simulation).initSimulation();
                 checkpointer.writeCheckpoint((MultipleTMonteCarloSimulation) simulation);
             }else{
                 ((MultipleTMonteCarloSimulation)simulation).setCheckpointer(checkpointer);
+                ((MultipleTMonteCarloSimulation)simulation).setMaxSweeps(maxSweeps);
+                ((MultipleTMonteCarloSimulation)simulation).setContinueFromSave(continueFromSave);
+                ((MultipleTMonteCarloSimulation)simulation).setCheckpoint(saveState);
+                ((MultipleTMonteCarloSimulation)simulation).setRealTimeEqTest(realTimeEqTest);
             }
 
 

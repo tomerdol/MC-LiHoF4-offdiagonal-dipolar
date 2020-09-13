@@ -22,6 +22,10 @@ public abstract class MonteCarloSimulation implements Serializable, Runnable, Cl
         this.checkpoint = checkpoint;
     }
 
+    public void setRealTimeEqTest(boolean realTimeEqTest) {
+        this.realTimeEqTest = realTimeEqTest;
+    }
+
     public abstract void run();
 
     public long getSeed() {
