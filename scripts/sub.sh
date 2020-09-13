@@ -26,7 +26,7 @@ seeds=()
 echo "generating seeds"
 while IFS= read -r line; do
 	seeds+=( "$line" )
-done < <( java -classpath "./out/production/project7/:./lib/*" utilities.GenerateSeeds "${JOB_ID}" "$total" )
+done < <( java -classpath "./bin/production/LiHoF4_transverse_field_MC/:./lib/*" utilities.GenerateSeeds "${JOB_ID}" "$total" )
 i=0
 
 for H in "${arrayH[@]}"

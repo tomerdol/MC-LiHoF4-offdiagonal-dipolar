@@ -1,1 +1,1 @@
-java -classpath "./out/production/project7/:./lib/*" utilities.ewaldSum "$1" "$1" "$2" "$3"
+java -classpath "./bin/production/LiHoF4_transverse_field_MC/:./lib/*" utilities.ewaldSum "$1" "$1" "$2" "$3"
