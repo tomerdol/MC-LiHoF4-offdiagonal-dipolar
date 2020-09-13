@@ -12,7 +12,7 @@ do
     if [[ ${jobname:0:1} == "t" ]]; then temp="temp_"; else temp=""; fi
 
     # resubmit to intel_all.q in single mode
-    qsub -l mem_free=40G -V -S /bin/bash -cwd -N "$jobname" -o ./"$temp"output/ -e ./"$temp"output/ -q smoshe.q,lublin.q,intel_all.q met_with_t_single.sh "${args//,/ }"
+    qsub -l mem_free=40G -V -S /bin/bash -cwd -N "$jobname" -o ./output/ -e ./output/ -q smoshe.q,lublin.q,intel_all.q met_with_t_single.sh "${args//,/ }"
     qdel "$jobid"
 
     ((count++))

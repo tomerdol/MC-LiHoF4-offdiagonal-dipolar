@@ -35,8 +35,9 @@ public class SimulationCheckpointer {
                 simulation = SerializationUtils.deserialize(fis);
                 successReadFromFile=true;
             }catch(Exception e) {
-                // for any problem reading previous state, just continue from start
+                // for any problem reading previous state, just start from the beginning
                 successReadFromFile = false;
+                System.err.println("Error reading checkpoint file: " + e.toString());
             }
         }
         return simulation;
