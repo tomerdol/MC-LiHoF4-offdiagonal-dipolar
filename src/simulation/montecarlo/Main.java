@@ -463,7 +463,7 @@ public class Main {
 
 
     public static void main(String[] args){
-
+        final String VERSION = "1.0b";
         int Lx=0;	// lattice x-y size
         int Lz=0;	// lattice z size
         double extBx=-1;   // external Bx
@@ -708,7 +708,7 @@ public class Main {
                     ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).setRealTimeEqTest(realTimeEqTest);
 
                     // print parameters and table headers (with preceding '#')
-                    ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).printRunParameters(T, "# successfully read saved state"+System.lineSeparator()+'#'+outputWriter.makeTableHeader().substring(1), simulation.getSeed(), tempScheduleFileName, parallelTemperingOff);
+                    ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).printRunParameters(VERSION, T, "# successfully read saved state"+System.lineSeparator()+'#'+outputWriter.makeTableHeader().substring(1), simulation.getSeed(), tempScheduleFileName, parallelTemperingOff);
                 }else{
                     // initialize new simulation
                     Lattice lattice = new Lattice(Lx, Lz, extBx, suppressInternalTransFields, spinSize, intTable, exchangeIntTable, nnArray, energyTable, momentTable, measure);
@@ -716,7 +716,7 @@ public class Main {
                     subSimulations[i] = new SingleTMonteCarloSimulation(T[i], i, T.length, lattice, 30, maxSweeps, seeds[i], rnd[i], continueFromSave,
                             realTimeEqTest, outputWriter, saveState, maxIter, alpha, outProblematicConfigs, spinSize, tol, J_ex);
                     // print parameters and table headers
-                    subSimulations[i].printRunParameters(T, "# unsuccessful reading checkpoint... Starting new state."+System.lineSeparator()+outputWriter.makeTableHeader(), seed, tempScheduleFileName, parallelTemperingOff);
+                    subSimulations[i].printRunParameters(VERSION, T, "# unsuccessful reading checkpoint... Starting new state."+System.lineSeparator()+outputWriter.makeTableHeader(), seed, tempScheduleFileName, parallelTemperingOff);
                 }
 
                 //outputWriter.print(outputWriter.makeTableHeader(), true);
