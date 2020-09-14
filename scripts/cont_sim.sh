@@ -8,7 +8,7 @@ arrayH=( 0.0 0.3 )
 # Check input
 if [[ ! $# = 1 || ! $1 =~ ^[0-9]+$ ]]
 then
-echo "Usage $0 [# of sweeps]"
+echo "Usage: $0 [# of sweeps]"
 exit
 fi
 
