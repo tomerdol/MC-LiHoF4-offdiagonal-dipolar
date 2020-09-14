@@ -404,8 +404,9 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
         }
     }
 
-    public void printRunParameters(double[] T, String extraMessage, long mutualSeed, String tempScheduleFileName, boolean parallelTemperingOff) throws IOException{
+    public void printRunParameters(String version, double[] T, String extraMessage, long mutualSeed, String tempScheduleFileName, boolean parallelTemperingOff) throws IOException{
         // print some information to the begining of the file:
+        outWriter.print("# VERSION: " + version, true);
         outWriter.print("#" + LocalDateTime.now(), true);
         outWriter.print("#temperature_schedule: "+ Arrays.toString(T), true);
         outWriter.print("#T="+ this.T + ":" + temperatureIndex, true);
