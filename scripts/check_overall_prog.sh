@@ -1,4 +1,8 @@
 #!/bin/bash
+parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
+
+cd "$parent_path"
+
 total=0
 count=0
 echo "job-ID  prior   name       user         state submit/start at     queue                          slots  progress

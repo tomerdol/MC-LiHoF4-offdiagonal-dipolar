@@ -5,6 +5,12 @@ arrayMech=( "false" "true" )
 arrayL=( 6 7 8 )
 arrayH=( 0.0 0.3 )
 
+# Check input
+if [[ ! $# = 1 || ! $1 =~ ^[0-9]+$ ]]
+then
+echo "Usage $0 [# of sweeps]"
+exit
+fi
 
 max_sweeps=$1
 
