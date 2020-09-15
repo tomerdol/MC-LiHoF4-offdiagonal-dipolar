@@ -488,6 +488,7 @@ public class Main {
         double spinSize;
         double tol;
         double[] T=null;    // temperature array
+        String interpolationTableFileNameExtension = "";
 
         // get Properties object that reads parameters from file
         Properties params = GetParamValues.getParams();
@@ -496,10 +497,9 @@ public class Main {
         tempJ_ex = GetParamValues.getDoubleParam(params, "J_ex");
         tol = GetParamValues.getDoubleParam(params, "tol");
 
+
         // create Options object
         Options options = ParseCommandLine.generateOptions();
-        CommandLine commandLine = ParseCommandLine.generateCommandLine(options, args);
-
         // first check if help was called
         for (String s : args) {
             if (s.equals("-h") || s.equals("--help")) {  // or use help.getOpt() || help.getLongOpt()
@@ -507,6 +507,8 @@ public class Main {
                 System.exit(0);
             }
         }
+        // then, parse command line arguments
+        CommandLine commandLine = ParseCommandLine.generateCommandLine(options, args);
 
         // then parse the interrogate the commandLine object
         try {
@@ -560,6 +562,8 @@ public class Main {
 
             if (commandLine.hasOption("tol")) tol = ((Number) commandLine.getParsedOptionValue("tol")).doubleValue();
             if (commandLine.hasOption("Jex")) tempJ_ex = ((Number) commandLine.getParsedOptionValue("Jex")).doubleValue();
+            if (commandLine.hasOption("interpolation_table_name")) interpolationTableFileNameExtension = commandLine.getOptionValue("interpolation_table_name");
+
 
         }
         catch (ArrayIndexOutOfBoundsException e){
@@ -625,8 +629,8 @@ public class Main {
             create_cos_sin_tables(tempLattice.getArray(), Lz, Lx, k_cos_table, k_sin_table);
         }
 
-        FieldTable energyTable = FieldTable.of(String.format("energy_up_broyden_arr_%1.2f",extBx), false);
-        FieldTable momentTable = FieldTable.of(String.format("magnetic_moment_up_broyden_arr_%1.2f",extBx), true);
+        FieldTable energyTable = FieldTable.of(String.format("energy_up_arr_%1.2f"+interpolationTableFileNameExtension,extBx), false);
+        FieldTable momentTable = FieldTable.of(String.format("magnetic_moment_up_arr_%1.2f"+interpolationTableFileNameExtension,extBx), true);
 
         ObservableExtractor measure = new ObservableExtractor(k_cos_table, k_sin_table);
 

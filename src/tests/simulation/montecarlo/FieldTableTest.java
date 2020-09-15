@@ -58,7 +58,7 @@ public class FieldTableTest {
     @Before
     public void setUp() throws Exception {
         double extBx = 0.0;
-        momentTable = FieldTable.of(String.format("magnetic_moment_up_broyden_arr_%1.2f",extBx), true);
+        momentTable = FieldTable.of(String.format("magnetic_moment_up_arr_%1.2f",extBx), true);
     }
 
     @Test

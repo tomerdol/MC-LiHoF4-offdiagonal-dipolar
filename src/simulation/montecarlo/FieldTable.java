@@ -71,11 +71,12 @@ final public class FieldTable {
                 System.err.println("transverse field table file is empty");
             }
         }catch(Exception e){
+            System.err.println("Error reading field interpolation table: ");
             e.printStackTrace();
         }
 
         if (table!=null) return new FieldTable(table,Bvalues,transposedRequiresMinus, fileName);
-        else throw new RuntimeException("trans_field table not read");
+        else throw new RuntimeException("Field interpolation table not read.");
     }
 
     /**

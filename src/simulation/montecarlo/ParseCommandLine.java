@@ -127,11 +127,10 @@ public class ParseCommandLine {
                 .longOpt("folder_name")
                 .desc("Name of folder in which to save the output and save files.")
                 .build();
-        final Option method = Option.builder("method")
+        final Option interpolationTableName = Option.builder("interpolation_table_name")
                 .required(false)
                 .hasArg()
-                .desc("method for solving megnetic moment calculation")
-                .type(Number.class)
+                .desc("Extention of the name of the interpolation table file.")
                 .build();
         final Option alpha = Option.builder("alpha")
                 .required(false)
@@ -209,7 +208,7 @@ public class ParseCommandLine {
         options.addOption(seed);
         options.addOptionGroup(prog_output);
         options.addOption(folderName);
-        options.addOption(method);
+        options.addOption(interpolationTableName);
         options.addOption(alpha);
         options.addOption(verboseOutput);
         options.addOption(realTimeEqTest);
