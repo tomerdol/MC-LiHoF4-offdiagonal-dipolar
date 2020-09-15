@@ -1,11 +1,11 @@
 #!/bin/bash
 
-source ./sub.sh
+source ./scripts/sub.sh
 
 # this should override the definitions from sub.sh
-name="parallel_test2"
+name="res_test"
 arrayMech=( "false" "true" )
-arrayL=( 8 7 6 )
+arrayL=( 6 5 4 )
 arrayH=( 0.0 0.3 )
 minT_false=1.4
 maxT_false=1.85
@@ -20,7 +20,7 @@ do
 for H in "${arrayH[@]}"
 do
 
-yes n | python3 ./scripts2/gen_temp_schedule.py "$1" "$2" 24 | head -n1 > ./temperature_schedules/temp_schedule_"$L"_"$L"_"$4""$name"_"$H"_"$3".txt
+yes n | /gpfs0/smoshe/projects/Python-3.8_old/bin/python3 ./scripts/gen_temp_schedule.py "$1" "$2" 24 | head -n1 > ./temperature_schedules/temp_schedule_"$L"_"$L"_"$4""$name"_"$H"_"$3".txt
 echo "generated ./temperature_schedules/temp_schedule_${L}_${L}_$4${name}_${H}_$3.txt"
 
 done
@@ -28,12 +28,12 @@ done
 }
 
 # generate temporary temperature schedules for "true"
-#gen_temp_schedules $minT_true $maxT_true "true" "temp_"
+gen_temp_schedules $minT_true $maxT_true "true" "temp_"
 # generate temporary temperature schedules for "false"
-#gen_temp_schedules $minT_false $maxT_false "false" "temp_"
+gen_temp_schedules $minT_false $maxT_false "false" "temp_"
 
 # run initial temporary run
-#sub "temp_" 513 10
+sub "temp_" 513 10
 
 # wait until temporary runs finish
 running_jobs=$(qstat -u tomerdol | awk '$3 ~ /^tr/' | awk 'END {print NR}')
@@ -142,7 +142,7 @@ for H in "${arrayH[@]}"
 do
 
 all_L="${arrayL[@]}"
-initial_tc=$(/gpfs0/smoshe/projects/Python-3.8_old/bin/python3 ./scripts2/find_initial_tc.py --h_ex_list ${H} --mech ${mech} --folder_list temp_${name} -L ${all_L})
+initial_tc=$(/gpfs0/smoshe/projects/Python-3.8_old/bin/python3 ./scripts/find_initial_tc.py --h_ex_list ${H} --mech ${mech} --folder_list temp_${name} -L ${all_L})
 echo "Hex=$H mech=$mech : initial Tc = $initial_tc"
 
 for L in "${arrayL[@]}"

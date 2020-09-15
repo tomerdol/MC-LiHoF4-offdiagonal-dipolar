@@ -1,8 +1,8 @@
 #!/bin/bash
 
-name="parallel_test2"
+name="res_test"
 arrayMech=( "false" "true" )
-arrayL=( 8 7 6 )
+arrayL=( 6 5 4 )
 arrayH=( 0.0 0.3 )
 minT_false=1.4
 maxT_false=1.85
@@ -13,6 +13,7 @@ sub() {
 temp="$1"
 max_sweeps="$2"
 runs="$3"
+extra_par="_0.058"
 
 temp_initial="$(echo $temp | head -c 1)"
 
@@ -51,7 +52,7 @@ while [ $COUNT -lt $runs ]; do
     fi
     fi
 
-    qsub -pe shared 24 -l mem_free=40G -V -S /bin/bash -cwd -N "$temp_initial"r"$L"_"$H"_"$COUNT"_"$mech_initial" -o ./output/ -e ./output/ -q "$queues" met_with_t.sh "$L" "$L" "$max_sweeps" "$H" "$mech" "$local_name" "${seeds[$i]}"
+    qsub -pe shared 24 -l mem_free=40G -V -S /bin/bash -cwd -N "$temp_initial"r"$L"_"$H"_"$COUNT"_"$mech_initial" -o ./output/ -e ./output/ -q "$queues" scripts/met_with_t.sh "$L" "$L" "$max_sweeps" "$H" "$mech" "$local_name" "${seeds[$i]}" "$extra_par"
     #echo "${seeds[$i]}"
     ((i++))
     ((COUNT++))
