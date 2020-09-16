@@ -26,14 +26,14 @@ echo "generated ./temperature_schedules/temp_schedule_${L}_${L}_$4${name}_${H}_$
 done
 done
 }
-
+if false; then
 # generate temporary temperature schedules for "true"
 gen_temp_schedules $minT_true $maxT_true "true" "temp_"
 # generate temporary temperature schedules for "false"
 gen_temp_schedules $minT_false $maxT_false "false" "temp_"
 
 # run initial temporary run
-sub "temp_" 513 10
+sub "temp_" 513 20
 
 # wait until temporary runs finish
 running_jobs=$(qstat -u tomerdol | awk '$3 ~ /^tr/' | awk 'END {print NR}')
@@ -131,7 +131,7 @@ done
 done
 done
 #*************************************************************************
-
+fi
 
 # find initial Tc and create new temperature schedules
 #*************************************************************************
@@ -147,7 +147,7 @@ echo "Hex=$H mech=$mech : initial Tc = $initial_tc"
 
 for L in "${arrayL[@]}"
 do
-#bash ./R/temp_set_script.sh ./R/sample_energy_"$L"_"$H"_temp_"$name"_"$mech".txt 24 $(bc <<< "$initial_tc-$delta") $(bc <<< "$initial_tc+$delta") | awk -vORS=, '{ print $1 }' | sed 's/,$/\n/' > ./temperature_schedules/temp_schedule_"$L"_"$L"_"$name"_"$H"_"$mech".txt
+bash ./scripts/temp_set_script.sh ./data/analysis/sample_energy_"$L"_"$H"_temp_"$name"_"$mech".txt 24 $(bc <<< "$initial_tc-$delta") $(bc <<< "$initial_tc+$delta") | awk -vORS=, '{ print $1 }' | sed 's/,$/\n/' > ./temperature_schedules/temp_schedule_"$L"_"$L"_"$name"_"$H"_"$mech".txt
 echo "created ./temperature_schedules/temp_schedule_${L}_${L}_${name}_${H}_${mech}.txt"
 done
 
