@@ -133,11 +133,11 @@ done
 done
 
 #*************************************************************************
-fi
+
 
 # find initial Tc and create new temperature schedules
 #*************************************************************************
-echo "looking for initial Tc and "
+echo "looking for initial Tc and creating new temperature schedules"
 for mech in "${arrayMech[@]}"
 do
 for H in "${arrayH[@]}"
@@ -157,8 +157,10 @@ done
 done
 #*************************************************************************
 
+fi
+
 # run simulations
 echo "running simulations"
 sub "" 4096 50
-
+echo "done"
 exit 0

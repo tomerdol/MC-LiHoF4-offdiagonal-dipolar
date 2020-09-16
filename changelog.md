@@ -1,10 +1,12 @@
-1.0.1b:
-* Fixed scripts for creating interpolation table
+# Change log
+
+# v1.0.1b - 15/09/2020
+* Fixed scripts for creating interpolation table.
 * Name extension for field interpolation table file can be given as commandline argument.
-* Removed 'broyden' from file names
+* Removed 'broyden' from file names.
 * Added crystal+field+hamiltonian-transversal+field+broyden.py and initiating scripts that create the interpolation tables.
 
-Before 1.0.1b:
+# Before 1.0.1b:
 30689fa Merge branch 'beta' into dev
 9be1aa6 Added version printing
 39feb77 Added version printing

@@ -1,13 +1,23 @@
 #!/bin/bash
 
+#name="res_test"
+#arrayMech=( "false" "true" )
+#arrayL=( 6 5 4 )
+#arrayH=( 0.0 0.3 )
 name="res_test"
-arrayMech=( "false" "true" )
-arrayL=( 6 5 4 )
-arrayH=( 0.0 0.3 )
-minT_false=1.4
-maxT_false=1.85
-minT_true=1.55
-maxT_true=2.0
+#arrayMech=( "false" "true" )
+#arrayL=( 5 4 )
+#arrayH=( 0.0 )
+ד'שפ
+#next:
+arrayMech=( "true" )
+arrayL=( 6 )
+arrayH=( 0.0 )
+
+#next next:
+#arrayMech=( "false" "true" )
+#arrayL=( 6 5 4 )
+#arrayH=( 0.3 )
 
 sub() {
 temp="$1"
