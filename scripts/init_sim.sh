@@ -126,10 +126,12 @@ echo $T $energy $corr_length
 done
 
 sort -t" " -nk1 $tmp_file > ./data/analysis/sample_energy_"$L"_"$H"_temp_"$name"_"$mech".txt
+rm $tmp_file
 
 done
 done
 done
+
 #*************************************************************************
 fi
 
