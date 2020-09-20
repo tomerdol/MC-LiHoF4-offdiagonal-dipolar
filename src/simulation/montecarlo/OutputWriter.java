@@ -8,8 +8,6 @@ import java.util.InputMismatchException;
 import java.util.stream.IntStream;
 
 public class OutputWriter implements Closeable {
-
-
     private final boolean printProgress, printOutputToConsole;
     private final long obsPrintSweepNum;
     private final String folderName;
