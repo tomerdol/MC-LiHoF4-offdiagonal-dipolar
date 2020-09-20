@@ -89,7 +89,9 @@ def read_binned(sim, use_latest=True):
     max_bins=0
     min_bins=0
     first_iter=True
+    print(path)
     for fname in glob.glob(path):
+        print(fname)
         curr_array=np.genfromtxt(fname,skip_header=1)
         max_bins = len(curr_array) if len(curr_array)>max_bins else max_bins
         min_bins = len(curr_array) if len(curr_array)<min_bins or first_iter else min_bins
@@ -106,7 +108,7 @@ def read_binned(sim, use_latest=True):
         # remove last bins after min_bin so that all arrays have same dimensions
         arrays = [np.resize(a, (min_bins,a.shape[1])) for a in arrays]
         #print(list(map(len,arrays)))
-    
+
     return (np.mean(arrays, axis=0), np.sqrt(np.std(arrays, axis=0)/(len(arrays)-1)))
     
 def read_binned_data(sim, use_latest=False, use_bin=-1):
@@ -183,7 +185,7 @@ def main_bin(simulations):
         #print(glob.glob(path))
         for fname in glob.glob(path):
             tmp_fname_bin = fname.split('/')
-            tmp_fname_bin.insert(3,'binned_data')
+            tmp_fname_bin.insert(4,'binned_data')
             fname_bin='/'.join(tmp_fname_bin)
 
             # first check if there are enough data for a new bin

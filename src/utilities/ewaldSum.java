@@ -1,10 +1,11 @@
 package utilities;
-import org.apache.commons.math3.special.Erf;
 
+import org.apache.commons.math3.special.Erf;
 import simulation.montecarlo.*;
 
 import java.io.*;
 import java.text.DecimalFormat;
+import java.util.Arrays;
 import java.util.Properties;
 
 import static simulation.montecarlo.Main.makeDir;
@@ -139,8 +140,15 @@ public class ewaldSum {
 		singleSpin[] arr = lattice.getArray();
 		System.out.println("#real_cutoff="+real_cutoff);
 		System.out.println("#reciprocal_cutoff="+k_cutoff);
-		System.out.println("alpha\t0x\t0y\t0z\t1x\t1y\t1z\t2x\t2y\t2z\t3x\t3y\t3z\t4x\t4y\t4z");
+
 		DecimalFormat df = new DecimalFormat("0.0000000000");
+		System.out.println("r0 - r0 : " + Arrays.toString(arr[testSpin].distance(arr[testSpin], Lz, Lx)));
+		System.out.println("r0 - r1 : " + Arrays.toString(arr[testSpin].distance(arr[neighbor1], Lz, Lx)));
+		System.out.println("r0 - r2 : " + Arrays.toString(arr[testSpin].distance(arr[neighbor2], Lz, Lx)));
+		System.out.println("r0 - r3 : " + Arrays.toString(arr[testSpin].distance(arr[neighbor3], Lz, Lx)));
+		System.out.println("r0 - r4 : " + Arrays.toString(arr[testSpin].distance(arr[neighbor4], Lz, Lx)));
+
+		System.out.println("alpha\t0x\t0y\t0z\t1x\t1y\t1z\t2x\t2y\t2z\t3x\t3y\t3z\t4x\t4y\t4z");
 		for (alpha = 0.1 / Lz; alpha < 5.0 / Lz; alpha += 0.1 / Lz) {
 			System.out.print(df.format(alpha*Lz)+"\t");
 
@@ -241,9 +249,9 @@ public class ewaldSum {
 		}
 		//multipleSizeTestsWithvariableKcutoff(new int[]{3,4,5,6,7,9,10},2,new int[]{2,3,4,5,6,7,8,9,10,11,12});
 		//multipleSizeTestsWithvariableRealcutoff(new int[]{3,4,5,6,7,9,10},new int[]{2,3,4,5,6,7,8,9,10,11,12},6);
-		//convergenceTests3(Lz, Lx, real_cutoff, k_cutoff);
+		convergenceTests3(Lz, Lx, real_cutoff, k_cutoff);
 
-        //System.exit(0);
+        System.exit(0);
 
         try (BufferedWriter out = new BufferedWriter(new FileWriter("data" + File.separator + "interactions" + File.separator + "intTable_"+Lx+"_"+Lz+".txt"))){
             
