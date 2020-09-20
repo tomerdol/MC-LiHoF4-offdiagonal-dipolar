@@ -1,9 +1,9 @@
 #!/bin/bash
 
-num_of_queued_jobs=$(qstat -u tomerdol | awk '$5=="qw" {count++} END {print count}')
+num_of_queued_jobs=$(qstat -u tomerdol | grep r4_ | awk '$5=="qw" {count++} END {print count}')
 
 count=0
-while [[ $num_of_queued_jobs -gt 20  && count -lt 70 ]]
+while [[ $num_of_queued_jobs -gt 0 && count -lt 120 ]]
 do
     jobid=$(qstat -u tomerdol | grep qw | grep r4_ | head -n1 | awk '{print $1}')
     args=$(qstat -j ${jobid} | grep job_args | awk '{print $2}')
@@ -17,5 +17,6 @@ do
 
     ((count++))
     sleep 10
-    num_of_queued_jobs=$(qstat -u tomerdol | awk '$5=="qw" {count++} END {print count}')
+
+    num_of_queued_jobs=$(qstat -u tomerdol | grep r4_ | awk '$5=="qw" {count++} END {print count}')
 done
