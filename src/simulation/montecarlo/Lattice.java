@@ -73,7 +73,7 @@ public class Lattice implements Serializable {
      * @param other Lattice to copy
      * @param newSuppressInternalFields New value for suppressInternalFields
      */
-    //@CreatesInconsistency("By design. This constructor should be used only for measurement and then discarded.")
+    @CreatesInconsistency("By design. This constructor should be used only for measurement and then discarded.")
     public Lattice(Lattice other, boolean newSuppressInternalFields){
         this.N=other.N;
         this.Lx=other.Lx;

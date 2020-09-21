@@ -688,7 +688,7 @@ public class Main {
             outProblematicConfigs = new BufferedWriter(new FileWriter("data" + File.separator + "p_configs" + File.separator + "problematic_"+(Lx*Lx*Lz*4)+"_"+extBx,true));
 
             for (int i=0;i<T.length;i++){
-                // Create file to write output into. If verbocity is SPIN the file is always overwritten. Otherwise, depends on whether a checkpoint was successfully read from file.
+                // Create file to write output into. If verbocity is SPIN the file is always overwritten. Otherwise, depends on whether a checkpoint was successfully read from file
                 FileWriter out = new FileWriter("data" + File.separator + outputFolder + File.separator + folderName + File.separator + "table_" + Lx + "_" + Lz + "_" + extBx + "_" + T[i] + "_" + suppressInternalTransFields + "_" + seed + ".txt",
                         outType != OutputType.SPIN && successReadFromFile);
                 OutputWriter outputWriter = new OutputWriter.Builder(outType, folderName, obsPrintSweepNum, out)
@@ -711,14 +711,15 @@ public class Main {
                     ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).getLattice().setNnArray(nnArray);
                     ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).getLattice().setMeasure(measure);
                     ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).getLattice().initIterativeSolver();
-                    ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).setMaxSweeps(maxSweeps); // this potentially updates max sweeps (in case more runs are needed than initially planned)
+                    ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).addSweeps(maxSweeps); // this potentially updates max sweeps (in case more runs are needed than initially planned)
                     ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).setOutProblematicConfigs(outProblematicConfigs);
                     ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).setContinueFromSave(continueFromSave);
                     ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).setCheckpoint(saveState);
                     ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).setRealTimeEqTest(realTimeEqTest);
 
                     // print parameters and table headers (with preceding '#')
-                    ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).printRunParameters(VERSION, T, "# successfully read saved state"+System.lineSeparator()+'#'+outputWriter.makeTableHeader().substring(1), simulation.getSeed(), tempScheduleFileName, parallelTemperingOff);
+                    char tableHeaderLeadingChar = outType!=OutputType.SPIN ? '#' : ' ';
+                    ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).printRunParameters(VERSION, T, "# successfully read saved state"+System.lineSeparator()+tableHeaderLeadingChar+outputWriter.makeTableHeader().substring(1), simulation.getSeed(), tempScheduleFileName, parallelTemperingOff);
                 }else{
                     // initialize new simulation
                     Lattice lattice = new Lattice(Lx, Lz, extBx, suppressInternalTransFields, spinSize, intTable, exchangeIntTable, nnArray, energyTable, momentTable, measure);
@@ -741,7 +742,7 @@ public class Main {
                 checkpointer.writeCheckpoint((MultipleTMonteCarloSimulation) simulation);
             }else{
                 ((MultipleTMonteCarloSimulation)simulation).setCheckpointer(checkpointer);
-                ((MultipleTMonteCarloSimulation)simulation).setMaxSweeps(maxSweeps);
+                ((MultipleTMonteCarloSimulation)simulation).addSweeps(maxSweeps);
                 ((MultipleTMonteCarloSimulation)simulation).setContinueFromSave(continueFromSave);
                 ((MultipleTMonteCarloSimulation)simulation).setCheckpoint(saveState);
                 ((MultipleTMonteCarloSimulation)simulation).setRealTimeEqTest(realTimeEqTest);

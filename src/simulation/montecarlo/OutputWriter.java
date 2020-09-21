@@ -70,7 +70,8 @@ public class OutputWriter implements Closeable {
                 throw new InputMismatchException("the column header "+colNames[i]+" is longer than its designated" +
                         "column width of "+colWidths[i]);
             } else {
-                for (int pad=0;pad<colWidths[i]-colNames[i].length();pad++){
+                int pad = i==0 ? 1 : 0; // first char of first column has already been written ('#' or ' ')
+                for (;pad<colWidths[i]-colNames[i].length();pad++){
                     headerRow.append(" ");
                 }
                 headerRow.append(colNames[i]);
@@ -252,7 +253,7 @@ public class OutputWriter implements Closeable {
                     colWidths = new int[]{10, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 10};
                     break;
                 case SPIN:
-                    colWidths = new int[]{5, 5, 17, 17, 17, 17};
+                    colWidths = new int[]{6, 5, 17, 17, 17, 17};
                     break;
                 default:
                     throw new IllegalStateException("Unexpected value: " + outType);
