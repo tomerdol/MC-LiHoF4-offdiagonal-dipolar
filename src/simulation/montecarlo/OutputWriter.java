@@ -122,7 +122,7 @@ public class OutputWriter implements Closeable {
             if (colTypes[i]=='g')
                 rowFormat.append("% "+(colWidths[i]-1)+'.'+(colWidths[i]-8)+colTypes[i]+' ');
             else if (colTypes[i]=='d')
-                rowFormat.append("% "+(colWidths[i])+colTypes[i]+' ');
+                rowFormat.append("% "+(colWidths[i]-1)+colTypes[i]+' ');
             else if (colTypes[i]=='c')
                 rowFormat.append("%"+(colWidths[i]-1)+colTypes[i]+' ');
             else

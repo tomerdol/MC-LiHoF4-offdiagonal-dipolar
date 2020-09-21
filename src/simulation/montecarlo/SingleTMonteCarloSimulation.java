@@ -248,7 +248,7 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
         if (outWriter.getOutType() == OutputType.SPIN) {    // this is check inside outWriter.writeObservablesPerSpin() as well, but if we are not in SPIN output type, there's no need to copy the lattice array for nothing
             Lattice tempLatticeWithAllFields = new Lattice(lattice, false);
             tempLatticeWithAllFields.updateAllLocalFields();
-            singleSpin[] arr = lattice.getArray();  // this is not very efficient since all the spins are copied twice (once on this line and once two lines back), but it is not part of the regular run so not that terrible
+            singleSpin[] arr = tempLatticeWithAllFields.getArray();  // this is not very efficient since all the spins are copied twice (once on this line and once two lines back), but it is not part of the regular run so not that terrible
             for (int i = 0; i < arr.length; i++) {
                 outWriter.writeObservablesPerSpin(arr[i].getN(), arr[i].getSpin(), arr[i].getSpinSize(), arr[i].getLocalBx(), arr[i].getLocalBy(), arr[i].getLocalBz());
             }
