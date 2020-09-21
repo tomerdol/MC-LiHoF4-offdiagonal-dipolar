@@ -688,7 +688,9 @@ public class Main {
             outProblematicConfigs = new BufferedWriter(new FileWriter("data" + File.separator + "p_configs" + File.separator + "problematic_"+(Lx*Lx*Lz*4)+"_"+extBx,true));
 
             for (int i=0;i<T.length;i++){
-                FileWriter out = new FileWriter("data" + File.separator + outputFolder + File.separator + folderName + File.separator + "table_" + Lx + "_" + Lz + "_" + extBx + "_" + T[i] + "_" + suppressInternalTransFields + "_" + seed + ".txt", successReadFromFile);
+                // Create file to write output into. If verbocity is SPIN the file is always overwritten. Otherwise, depends on whether a checkpoint was successfully read from file.
+                FileWriter out = new FileWriter("data" + File.separator + outputFolder + File.separator + folderName + File.separator + "table_" + Lx + "_" + Lz + "_" + extBx + "_" + T[i] + "_" + suppressInternalTransFields + "_" + seed + ".txt",
+                        outType != OutputType.SPIN && successReadFromFile);
                 OutputWriter outputWriter = new OutputWriter.Builder(outType, folderName, obsPrintSweepNum, out)
                         .setPrintOutput(printOutput)
                         .setPrintProgress(printProgress)
