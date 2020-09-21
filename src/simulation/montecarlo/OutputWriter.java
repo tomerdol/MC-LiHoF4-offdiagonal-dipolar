@@ -94,7 +94,7 @@ public class OutputWriter implements Closeable {
     public void writeObservablesPerSpin(final int n, final int spin, final double spinSize, final double localBx, final double localBy, final double localBz){
         if (outType == OutputType.SPIN) {
             Formatter formatter = new Formatter(outputBuffer);
-            formatter.format(makeTableRowFormat(new char[]{'d', 'd', 'g', 'g', 'g'}), n, spin, spinSize, localBx, localBy, localBz);
+            formatter.format(makeTableRowFormat(new char[]{'d', 'd', 'g', 'g', 'g', 'g'}), n, spin, spinSize, localBx, localBy, localBz);
             outputBuffer.append(System.lineSeparator());
         }
     }

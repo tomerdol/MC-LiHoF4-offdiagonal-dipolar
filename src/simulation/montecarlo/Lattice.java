@@ -65,7 +65,34 @@ public class Lattice implements Serializable {
         for (int i=0;i<other.lattice.length;i++){
             lattice[i] = new singleSpin(other.lattice[i]);
         }
+    }
 
+    /**
+     * Constructor that (deep) copies a given Lattice, but sets a new value for suppressInternalFields.
+     * Used for measuring what the internal transverse fields would be had they not been suppressed.
+     * @param other Lattice to copy
+     * @param newSuppressInternalFields New value for suppressInternalFields
+     */
+    @CreatesInconsistency("By design. This constructor should be used only for measurement and then discarded.")
+    public Lattice(Lattice other, boolean newSuppressInternalFields){
+        this.N=other.N;
+        this.Lx=other.Lx;
+        this.Lz=other.Lz;
+        this.extBx=other.extBx;
+        this.suppressInternalTransFields=newSuppressInternalFields;
+        this.spinSize=other.spinSize;
+        this.intTable=other.intTable;
+        this.exchangeIntTable=other.exchangeIntTable;
+        this.energyTable=other.energyTable;
+        this.momentTable=other.momentTable;
+        this.nnArray=other.nnArray;
+        this.measure=other.measure;
+        this.iterativeSolver = new MagneticMomentsSolveIter();
+
+        lattice = new singleSpin[other.lattice.length];
+        for (int i=0;i<other.lattice.length;i++){
+            lattice[i] = new singleSpin(other.lattice[i]);
+        }
     }
 
     public void setIntTable(double[][][] intTable) {
