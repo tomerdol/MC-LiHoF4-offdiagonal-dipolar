@@ -33,6 +33,12 @@ public class MultipleTMonteCarloSimulation extends MonteCarloSimulation implemen
     }
 
 
+    public void printSimulationState(){
+        for (int i=0;i<simulations.length;i++){
+            simulations[i].printSimulationState();
+        }
+    }
+
     public void run() {
         run('s');
     }
@@ -84,7 +90,7 @@ public class MultipleTMonteCarloSimulation extends MonteCarloSimulation implemen
                 }
             }
             sweeps++;
-            if (sweeps%simulations[0].getOutWriter().getObsPrintSweepNum()==0 || sweeps==maxSweeps) {    // every obsPrintSweepNum sweeps or at the last one
+            if (sweeps%simulations[0].getOutWriter().getNumOfBufferedRows()==0 || sweeps==maxSweeps) {    // every obsPrintSweepNum sweeps or at the last one
                 if (checkpoint) {
                     checkpointer.writeCheckpoint(this);
                 }

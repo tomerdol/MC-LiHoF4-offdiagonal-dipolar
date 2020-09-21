@@ -179,7 +179,7 @@ public class Lattice implements Serializable {
     public void updateAllMagneticMoments(int maxIter, double tol, double alpha){
         iterativeSolver.updateAllMagneticMoments(maxIter, tol, alpha, true);
     }
-    public singleSpin[] solveSelfConsistentCalc(int maxIter, double tol, int flipSpin, int method, int[][] nnArray, double alpha, MersenneTwister rnd) throws ConvergenceException {
+    private singleSpin[] solveSelfConsistentCalc(int maxIter, double tol, int flipSpin, int method, int[][] nnArray, double alpha, MersenneTwister rnd) throws ConvergenceException {
         if (method>=1 && method<=3){
             int[] bfsOrder=null;
             if (nnArray!=null) {

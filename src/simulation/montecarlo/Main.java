@@ -482,13 +482,15 @@ public class Main {
         String folderName="default";
         double alpha=1.0;
         boolean realTimeEqTest=false;
-        boolean verboseOutput=false;
+        OutputType outType=OutputType.BIN;
+        String outputFolder = "results";    // name of folder (within folderName) in which output is saved. depends on outType
         char tempParallelMode='t';
         double tempJ_ex;
         double spinSize;
         double tol;
         double[] T=null;    // temperature array
         String interpolationTableFileNameExtension = "";
+
 
         // get Properties object that reads parameters from file
         Properties params = GetParamValues.getParams();
@@ -502,7 +504,7 @@ public class Main {
         Options options = ParseCommandLine.generateOptions();
         // first check if help was called
         for (String s : args) {
-            if (s.equals("-h") || s.equals("--help")) {  // or use help.getOpt() || help.getLongOpt()
+            if (s.equals("-h") || s.equals("--help")) {
                 ParseCommandLine.printHelp(options);
                 System.exit(0);
             }
@@ -518,7 +520,7 @@ public class Main {
             Lx = Integer.parseInt(commandLine.getOptionValues("L")[0]);
             Lz = Integer.parseInt(commandLine.getOptionValues("L")[1]);
 
-            verboseOutput = commandLine.hasOption("verbose");
+            outType = ParseCommandLine.OptionValue2Enum(commandLine, "verbosity", OutputType.class, "BIN");
 
             // get approximate values based on L (lower L means faster progress, so higher write frequency)
             // this is just the default values. if another is given as command-line argument that is the value used
@@ -584,7 +586,7 @@ public class Main {
         saveState = !printOutput;	// when output is printed to the console the state should not be saved.
         final char parallelMode = tempParallelMode;
         final double J_ex=tempJ_ex;
-
+        if (outType == OutputType.SPIN) outputFolder = "lattice_output";
 
         // first try and get spin size (initial guess) from manual calculation that diagonalizes the Ho C-F hamiltonian
         // using the external Bx.
@@ -603,9 +605,11 @@ public class Main {
 
         receiveIntTable(intTable, Lx, Lz);	// get interaction table from file
 
-        if (suppressInternalTransFields){
+        if (suppressInternalTransFields && outType != OutputType.SPIN){
             // if we suppress internal transverse fields we can just set the interaction table's x,y all to 0.0
-            // as a precaution we also always pass suppressInternalTransFields to ignore these interactions
+            // as a precaution we also always pass suppressInternalTransFields to ignore these interactions.
+            // This is unless we output per spin, in which case we may be interested in local fields regardless of whether
+            // they are used in the simulation or not.
             for (int dim=0;dim<intTable.length-1;dim++){    // go over x and y only (0 and 1)
                 for (int i=0;i<intTable[dim].length;i++){
                     for (int j=0;j<intTable[dim][i].length;j++){
@@ -672,8 +676,8 @@ public class Main {
 
         }
 
-        makeDir("data" + File.separator + "results" + File.separator, folderName);
 
+        makeDir("data" + File.separator + outputFolder + File.separator, folderName);
 
         SingleTMonteCarloSimulation[] subSimulations = new SingleTMonteCarloSimulation[T.length];
         BufferedWriter outProblematicConfigs=null;
@@ -684,8 +688,8 @@ public class Main {
             outProblematicConfigs = new BufferedWriter(new FileWriter("data" + File.separator + "p_configs" + File.separator + "problematic_"+(Lx*Lx*Lz*4)+"_"+extBx,true));
 
             for (int i=0;i<T.length;i++){
-                FileWriter out = new FileWriter("data" + File.separator + "results" + File.separator + folderName + File.separator + "table_" + Lx + "_" + Lz + "_" + extBx + "_" + T[i] + "_" + suppressInternalTransFields + "_" + seed + ".txt", successReadFromFile);
-                OutputWriter outputWriter = new OutputWriter.Builder(verboseOutput, folderName, obsPrintSweepNum, out)
+                FileWriter out = new FileWriter("data" + File.separator + outputFolder + File.separator + folderName + File.separator + "table_" + Lx + "_" + Lz + "_" + extBx + "_" + T[i] + "_" + suppressInternalTransFields + "_" + seed + ".txt", successReadFromFile);
+                OutputWriter outputWriter = new OutputWriter.Builder(outType, folderName, obsPrintSweepNum, out)
                         .setPrintOutput(printOutput)
                         .setPrintProgress(printProgress)
                         .setBufferSize(bufferSize)
@@ -741,9 +745,11 @@ public class Main {
                 ((MultipleTMonteCarloSimulation)simulation).setRealTimeEqTest(realTimeEqTest);
             }
 
-
-            ((MultipleTMonteCarloSimulation) simulation).run(parallelMode);
-
+            if (outType == OutputType.SPIN) {
+                simulation.printSimulationState();
+            } else {
+                ((MultipleTMonteCarloSimulation) simulation).run(parallelMode);
+            }
         }catch (IOException e) {System.err.println("error writing to file: " + e.toString()); }
         finally {
             // close all outputs

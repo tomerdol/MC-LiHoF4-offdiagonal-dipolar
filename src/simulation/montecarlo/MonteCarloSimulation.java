@@ -26,6 +26,8 @@ public abstract class MonteCarloSimulation implements Serializable, Runnable, Cl
         this.realTimeEqTest = realTimeEqTest;
     }
 
+    public abstract void printSimulationState();
+
     public abstract void run();
 
     public long getSeed() {

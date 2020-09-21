@@ -244,6 +244,16 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
         }
     }
 
+    public void printSimulationState(){
+        if (outWriter.getOutType() == OutputType.SPIN) {    // this is check inside outWriter.writeObservablesPerSpin() as well, but if we are not in SPIN output type, there's no need to copy the lattice array for nothing
+            singleSpin[] arr = lattice.getArray();
+            for (int i = 0; i < arr.length; i++) {
+                outWriter.writeObservablesPerSpin(arr[i].getN(), arr[i].getSpin(), arr[i].getSpinSize(), arr[i].getLocalBx(), arr[i].getLocalBy(), arr[i].getLocalBz());
+            }
+            outWriter.flush();
+        }
+    }
+
     public void writeObservables(){
         double m = lattice.getMagnetization();
         double[] temp = lattice.getMagneticFields();
@@ -398,7 +408,7 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
         writeObservables();
         sweeps++;
 
-        if (sweeps%outWriter.getObsPrintSweepNum()==0 || sweeps==maxSweeps) {	// every obsPrintSweepNum sweeps or at the last one
+        if (sweeps%outWriter.getNumOfBufferedRows()==0 || sweeps==maxSweeps) {	// every obsPrintSweepNum sweeps or at the last one
             if (outWriter.isPrintOutputToConsole()) System.out.println("T="+T);
             outWriter.flush();
         }
@@ -414,10 +424,10 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
         outWriter.print("#" + Constants.constantsToString(), true);
         outWriter.print(String.format("# Lx=%s, Ly=%s, Lz=%s, J_ex=%f, spinSize=%.8f, tol=%4.1e, extBx=%s, maxSweeps=%s, suppressInternalTransFields=%s, " +
                         "continueFromSave=%s, maxIter=%s, bufferSize=%s, tempScheduleFileName=%s, parallelTemperingOff=%s, " +
-                        "checkpoint=%s, folderName=%s, alpha=%s, verboseOutput=%s ",lattice.getLx(),lattice.getLx(),lattice.getLz(),J_ex,spinSize,tol,lattice.getExtBx(), maxSweeps,lattice.isSuppressInternalTransFields(),
+                        "checkpoint=%s, folderName=%s, alpha=%s, output=%s ",lattice.getLx(),lattice.getLx(),lattice.getLz(),J_ex,spinSize,tol,lattice.getExtBx(), maxSweeps,lattice.isSuppressInternalTransFields(),
                 continueFromSave, maxIter, outWriter.getBufferSize(),
                 tempScheduleFileName, parallelTemperingOff, checkpoint, outWriter.getFolderName(),
-                alpha, outWriter.isVerboseOutput()),true);
+                alpha, outWriter.getOutType()),true);
         outWriter.print("#" + Constants.locationsToString(), true);
         outWriter.print("#seed=" + mutualSeed + " (" + seed + ")", true);
         outWriter.print(extraMessage, true);
