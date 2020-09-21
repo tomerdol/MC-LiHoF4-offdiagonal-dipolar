@@ -122,7 +122,7 @@ public class OutputWriter implements Closeable {
             if (colTypes[i]=='g')
                 rowFormat.append("% "+(colWidths[i]-1)+'.'+(colWidths[i]-8)+colTypes[i]+' ');
             else if (colTypes[i]=='d')
-                rowFormat.append("%"+(colWidths[i])+colTypes[i]+' ');
+                rowFormat.append("% "+(colWidths[i])+colTypes[i]+' ');
             else if (colTypes[i]=='c')
                 rowFormat.append("%"+(colWidths[i]-1)+colTypes[i]+' ');
             else
@@ -252,7 +252,7 @@ public class OutputWriter implements Closeable {
                     colWidths = new int[]{10, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 10};
                     break;
                 case SPIN:
-                    colWidths = new int[]{10, 5, 17, 17, 17, 17};
+                    colWidths = new int[]{5, 5, 17, 17, 17, 17};
                     break;
                 default:
                     throw new IllegalStateException("Unexpected value: " + outType);
