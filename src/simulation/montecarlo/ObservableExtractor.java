@@ -126,6 +126,12 @@ public class ObservableExtractor {
         return new double[]{mean, Math.sqrt(std)};
     }
 
+    public static int countTransverseFieldMaximizingNNConfigs(){
+        int count=0;
+        // TODO count transverse field maximizing nearest neighbor configurations
+        return count;
+    }
+
 
 
 }
