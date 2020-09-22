@@ -63,21 +63,21 @@ public class OutputWriter implements Closeable {
     public String makeTableHeader(){
         if (colNames.length!=colNames.length)
             throw new InputMismatchException("array of column names should be the same length as array of column widths.");
-        int totalChrsForRow = IntStream.of(colWidths).sum();
-        StringBuilder headerRow = new StringBuilder(totalChrsForRow+10);
+        int totalChrsForRow = IntStream.of(colWidths).sum()+colWidths.length+10;    //+10 just to be safe
+        StringBuilder headerRow = new StringBuilder(totalChrsForRow);
         for (int i=0;i<colNames.length;i++){
             if (colNames[i].length()>colWidths[i]){
                 throw new InputMismatchException("the column header "+colNames[i]+" is longer than its designated" +
                         "column width of "+colWidths[i]);
             } else {
-                int pad = i==0 ? 1 : 0; // first char of first column has already been written ('#' or ' ')
-                for (;pad<colWidths[i]-colNames[i].length();pad++){
+
+                for (int pad=0;pad<=colWidths[i]-colNames[i].length();pad++){
                     headerRow.append(" ");
                 }
                 headerRow.append(colNames[i]);
             }
         }
-        if (headerRow.length()>totalChrsForRow+10)
+        if (headerRow.length()>totalChrsForRow)
             System.err.println("header row builder not allocated enough space: " + headerRow.length() + "/" + (totalChrsForRow+10));
         return headerRow.toString();
     }
@@ -117,20 +117,21 @@ public class OutputWriter implements Closeable {
     public String makeTableRowFormat(char[] colTypes){
         if (colWidths.length!=colTypes.length)
             throw new InputMismatchException("array of column types should be the same length as array of column widths. colWidths.length=" + colWidths.length + ", colTypes.length="+colTypes.length);
-        StringBuilder rowFormat = new StringBuilder(colTypes.length*10);
-        for (int i=0;i<colTypes.length;i++){	// the last column is printed separately
+        int totalChrsForRow = IntStream.of(colWidths).sum()+colWidths.length+10;    // +10 just to be safe
+        StringBuilder rowFormat = new StringBuilder(totalChrsForRow);
+        for (int i=0;i<colTypes.length;i++){
             // % 10d
             if (colTypes[i]=='g')
-                rowFormat.append("% "+(colWidths[i]-1)+'.'+(colWidths[i]-8)+colTypes[i]+' ');
+                rowFormat.append(" % "+colWidths[i]+'.'+(colWidths[i]-8)+colTypes[i]);
             else if (colTypes[i]=='d')
-                rowFormat.append("% "+(colWidths[i]-1)+colTypes[i]+' ');
+                rowFormat.append(" % "+colWidths[i]+colTypes[i]);
             else if (colTypes[i]=='c')
-                rowFormat.append("%"+(colWidths[i]-1)+colTypes[i]+' ');
+                rowFormat.append(" %"+colWidths[i]+colTypes[i]);
             else
                 throw new IllegalArgumentException("column types can be only 'd' or 'g'");
         }
 //		System.out.println(rowFormat.toString());
-        if (rowFormat.length()>colTypes.length*9)
+        if (rowFormat.length()>totalChrsForRow)
             System.err.println("string format builder not allocated enough space: "+ rowFormat.length()+'/'+(colTypes.length*9));
         return rowFormat.toString();
     }
@@ -139,17 +140,17 @@ public class OutputWriter implements Closeable {
     public String avgArrToString(double[] avgArr, long N, int startIndex) {
         if (avgArr.length+startIndex>colWidths.length)
             throw new InputMismatchException("start index too high such that startIndex+avgArr.length > colWidths.length.");
-        int sum = IntStream.of(colWidths).sum();
-        StringBuilder str = new StringBuilder(sum+10);
+        int totalChrsForRow = IntStream.of(colWidths).sum()+ colWidths.length + 10; // +10 just to be safe
+        StringBuilder str = new StringBuilder(totalChrsForRow);
         Formatter formatter = new Formatter(str);
         int i;
         for (i=0;i<avgArr.length-1;i++){
-            formatter.format("% "+(colWidths[startIndex+i]-1)+'.'+(colWidths[startIndex+i]-8)+"g ",(avgArr[i]/N));
+            formatter.format(" % "+(colWidths[startIndex+i]-1)+'.'+(colWidths[startIndex+i]-8)+"g",(avgArr[i]/N));
         }
-        formatter.format("% "+(colWidths[startIndex+i]-1)+'.'+(colWidths[startIndex+i]-8)+"g ",(avgArr[i]/N));
+        formatter.format(" % "+(colWidths[startIndex+i]-1)+'.'+(colWidths[startIndex+i]-8)+"g",(avgArr[i]/N));
         //System.out.println("String length: " + str.length());
-        if (str.length()>sum+10)
-            System.err.println("avg arr row builder not allocated enough space: " + str.length() + "/" + (sum+10));
+        if (str.length()>totalChrsForRow)
+            System.err.println("avg arr row builder not allocated enough space: " + str.length() + "/" + (totalChrsForRow));
         return str.toString();
     }
 
@@ -216,7 +217,8 @@ public class OutputWriter implements Closeable {
 
         public OutputWriter build() {
             if (bufferSize==0){
-                this.bufferSize = (int)(numOfBufferedRows)*(IntStream.of(colWidths).sum() + 4);	// +4 includes 2 for the line separator and 2 as extra buffer just in case
+                // includes for each buffered row: column widths, 1 extra space for each column as separator, line separator, 2 extra for safety.
+                this.bufferSize = (int)(numOfBufferedRows)*(IntStream.of(colWidths).sum() + colWidths.length + System.lineSeparator().length() + 2);
             }
             return new OutputWriter(this);
         }

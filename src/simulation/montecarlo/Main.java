@@ -616,6 +616,7 @@ public class Main {
             }
         }
 
+
         int[][] nnArray = exchangeInt(exchangeIntTable, Lx, Lz, J_ex);	// receive the nearest neighbor array and fill exchangeIntTable with the exchange interaction values
 
         final double[] k_cos_table, k_sin_table;
@@ -694,20 +695,13 @@ public class Main {
                         .setPrintProgress(printProgress)
                         .setBufferSize(bufferSize)
                         .build();
-                // Create file to write full lattice configurations into
-                // lattices are written in full only at the end of the simulation.
-                // If one wishes to only write out the lattice of a finished simulation, it should be run with maxSweeps that equals the number of sweeps already done
-                FileWriter latticeOut = new FileWriter("data" + File.separator + "lattice_output" + File.separator + folderName + File.separator + "table_" + Lx + "_" + Lz + "_" + extBx + "_" + T[i] + "_" + suppressInternalTransFields + "_" + seed + ".txt",
-                        false);
-                OutputWriter latticeOutputWriter = new OutputWriter.Builder(OutputType.SPIN, folderName, 4*Lx*Lx*Lz, latticeOut)
-                        .build();
+
 
                 if (successReadFromFile){
                     // initialize simulation read from checkpoint
                     // this is for fields of the sub-simulations.
                     // fields that (also) exist in the wrapper MultipleTMonteCarloSimulation are initialized later
                     ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).setOutWriter(outputWriter);
-                    ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).setLatticeOutWriter(latticeOutputWriter);
                     ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).setAlpha(alpha);
                     ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).setMaxIter(maxIter);
                     ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).getLattice().setEnergyTable(energyTable);
@@ -724,17 +718,15 @@ public class Main {
                     ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).setRealTimeEqTest(realTimeEqTest);
 
                     // print parameters and table headers (with preceding '#') to results output file
-                    ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).printRunParameters(VERSION, T, "# successfully read saved state"+System.lineSeparator()+'#'+outputWriter.makeTableHeader().substring(1), simulation.getSeed(), tempScheduleFileName, parallelTemperingOff,
-                            ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).getOutWriter());
+                    ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).printRunParameters(VERSION, T, "# successfully read saved state"+System.lineSeparator()+'#'+outputWriter.makeTableHeader().substring(1), simulation.getSeed(), tempScheduleFileName, parallelTemperingOff);
                 }else{
                     // initialize new simulation
                     Lattice lattice = new Lattice(Lx, Lz, extBx, suppressInternalTransFields, spinSize, intTable, exchangeIntTable, nnArray, energyTable, momentTable, measure);
                     rnd[i] = new MersenneTwister(seeds[i]);
                     subSimulations[i] = new SingleTMonteCarloSimulation(T[i], i, T.length, lattice, 30, maxSweeps, seeds[i], rnd[i], continueFromSave,
-                            realTimeEqTest, outputWriter, latticeOutputWriter, saveState, maxIter, alpha, outProblematicConfigs, spinSize, tol, J_ex);
+                            realTimeEqTest, outputWriter, saveState, maxIter, alpha, outProblematicConfigs, spinSize, tol, J_ex);
                     // print parameters and table headers
-                    subSimulations[i].printRunParameters(VERSION, T, "# unsuccessful reading checkpoint... Starting new state."+System.lineSeparator()+' '+outputWriter.makeTableHeader(), seed, tempScheduleFileName, parallelTemperingOff,
-                            subSimulations[i].getOutWriter());
+                    subSimulations[i].printRunParameters(VERSION, T, "# unsuccessful reading checkpoint... Starting new state."+System.lineSeparator()+outputWriter.makeTableHeader(), seed, tempScheduleFileName, parallelTemperingOff);
                 }
 
                 //outputWriter.print(outputWriter.makeTableHeader(), true);
@@ -758,10 +750,23 @@ public class Main {
             ((MultipleTMonteCarloSimulation) simulation).run(parallelMode);
 
             // Write lattice states
+            if (suppressInternalTransFields) receiveIntTable(intTable, Lx, Lz);	// get interaction table from file AGAIN, for off-diagonal interactions that where previously set to zero
             for (int i=0;i<T.length;i++){
-                ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).printRunParameters(VERSION, T, ' '+((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).getLatticeOutWriter().makeTableHeader().substring(1), simulation.getSeed(), tempScheduleFileName, parallelTemperingOff,
-                        ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).getLatticeOutWriter());
-                ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).printSimulationState();
+                // Create file to write full lattice configurations into
+                // lattices are written in full only at the end of the simulation.
+                // If one wishes to only write out the lattice of a finished simulation, it should be run with maxSweeps that equals the number of sweeps already done
+                try (FileWriter latticeOut = new FileWriter("data" + File.separator + "lattice_output" + File.separator + folderName + File.separator + "table_" + Lx + "_" + Lz + "_" + extBx + "_" + T[i] + "_" + suppressInternalTransFields + "_" + seed + ".txt", false)) {
+                    OutputWriter latticeOutputWriter = new OutputWriter.Builder(OutputType.SPIN, folderName, 4 * Lx * Lx * Lz, latticeOut)
+                            .build();
+                    ((MultipleTMonteCarloSimulation) simulation).getIthSubSimulation(i).setOutWriter(latticeOutputWriter);
+                    ((MultipleTMonteCarloSimulation) simulation).getIthSubSimulation(i).getLattice().setIntTable(intTable); // set intTable to new one with off-diagonal interactions
+                    ((MultipleTMonteCarloSimulation) simulation).getIthSubSimulation(i).printRunParameters(VERSION, T, "# NOTICE: The local transverse (x,y) fields are \"hypothetical\", meaning that if suppressInternalTransFields is true (see above), they are effectively always (localBx=extBx,localBy=0)." + System.lineSeparator() + ((MultipleTMonteCarloSimulation) simulation).getIthSubSimulation(i).getOutWriter().makeTableHeader(), simulation.getSeed(), tempScheduleFileName, parallelTemperingOff);
+                    ((MultipleTMonteCarloSimulation) simulation).getIthSubSimulation(i).printSimulationState();
+
+                } catch (IOException e){
+                    System.err.println("error writing lattice state to file: " + e.toString());
+                    e.printStackTrace();
+                }
             }
 
         }catch (IOException e) {

@@ -25,7 +25,6 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
     private Lattice lattice;
     private final MersenneTwister rnd;
     private transient OutputWriter outWriter;
-    private transient OutputWriter latticeOutWriter;
     private double currentEnergy;
     private int acceptanceRateCount;
     private int acceptanceRateSum;
@@ -41,7 +40,7 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
 
     public SingleTMonteCarloSimulation(final double T, final int temperatureIndex, final int totalNumOfTemperatures, final Lattice lattice, final int numOfObservables, final long maxSweeps,
                                        final long seed, final MersenneTwister rnd, final boolean continueFromSave, final boolean realTimeEqTest,
-                                       final OutputWriter out, final OutputWriter latticeOutWriter, final boolean checkpoint, final int maxIter, final double alpha, final BufferedWriter outProblematicConfigs,
+                                       final OutputWriter out, final boolean checkpoint, final int maxIter, final double alpha, final BufferedWriter outProblematicConfigs,
                                        final double spinSize, final double tol, final double J_ex) {
         this.T = T;
         this.temperatureIndex=temperatureIndex;
@@ -56,7 +55,6 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
         this.realTimeEqTest=realTimeEqTest;
         this.rnd=rnd;
         this.outWriter=out;
-        this.latticeOutWriter=latticeOutWriter;
         this.checkpoint=checkpoint;
         this.alpha=alpha;
         this.maxIter=maxIter;
@@ -247,19 +245,22 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
     }
 
     public void printSimulationState(){
-        singleSpin[] arr;
-        if (lattice.isSuppressInternalTransFields()) {
-            // copy lattice to a new object that does not suppress internal fields
-            Lattice tempLatticeWithAllFields = new Lattice(lattice, false);
-            tempLatticeWithAllFields.updateAllLocalFields();
-            arr = tempLatticeWithAllFields.getArray();  // this is not very efficient since all the spins are copied twice (once on this line and once two lines back), but it is not part of the regular run so not that terrible
-        }else{
-            arr = lattice.getArray(); // deep copy
+
+        if (outWriter.getOutType() == OutputType.SPIN) {
+            singleSpin[] arr;
+            if (lattice.isSuppressInternalTransFields()) {
+                // copy lattice to a new object that does not suppress internal fields
+                Lattice tempLatticeWithAllFields = new Lattice(lattice, false);
+                tempLatticeWithAllFields.updateAllLocalFields();
+                arr = tempLatticeWithAllFields.getArray();  // this is not very efficient since all the spins are copied twice (once on this line and once two lines back), but it is not part of the regular run so not that terrible
+            } else {
+                arr = lattice.getArray(); // deep copy
+            }
+            for (int i = 0; i < arr.length; i++) {
+                outWriter.writeObservablesPerSpin(arr[i].getN(), arr[i].getSpin(), arr[i].getSpinSize(), arr[i].getLocalBx(), arr[i].getLocalBy(), arr[i].getLocalBz());
+            }
+            outWriter.flush();
         }
-        for (int i = 0; i < arr.length; i++) {
-            latticeOutWriter.writeObservablesPerSpin(arr[i].getN(), arr[i].getSpin(), arr[i].getSpinSize(), arr[i].getLocalBx(), arr[i].getLocalBy(), arr[i].getLocalBz());
-        }
-        latticeOutWriter.flush();
     }
 
     public void writeObservables(){
@@ -324,7 +325,6 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
 
     public void close() throws IOException{
         this.outWriter.close();
-        this.latticeOutWriter.close();
     }
 
     public Lattice getLattice(){ return this.lattice; }
@@ -332,12 +332,11 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
     public OutputWriter getOutWriter() {
         return outWriter;
     }
-    public OutputWriter getLatticeOutWriter() { return latticeOutWriter; }
 
     public void setOutWriter(final OutputWriter outWriter){
         this.outWriter=outWriter;
     }
-    public void setLatticeOutWriter(OutputWriter latticeOutWriter) { this.latticeOutWriter = latticeOutWriter; }
+
     public void setMaxIter(final int maxIter){
         this.maxIter=maxIter;
     }
@@ -442,10 +441,10 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
                 extraMessage;
     }
 
-    public void printRunParameters(String version, double[] T, String extraMessage, long mutualSeed, String tempScheduleFileName, boolean parallelTemperingOff, OutputWriter outputWriter) throws IOException{
+    public void printRunParameters(String version, double[] T, String extraMessage, long mutualSeed, String tempScheduleFileName, boolean parallelTemperingOff) throws IOException{
         // print some information to the beginning of the results file (or console):
-        outputWriter.print(runParameters(version, T, extraMessage, mutualSeed, tempScheduleFileName, parallelTemperingOff), true);
-        outputWriter.flush();
+        outWriter.print(runParameters(version, T, extraMessage, mutualSeed, tempScheduleFileName, parallelTemperingOff), true);
+        outWriter.flush();
     }
 
     public void initSimulation(){
