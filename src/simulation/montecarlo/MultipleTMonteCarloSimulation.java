@@ -30,6 +30,7 @@ public class MultipleTMonteCarloSimulation extends MonteCarloSimulation implemen
         for (int i=0;i<simulations.length;i++){
             simulations[i].initSimulation();
         }
+        if (checkpoint) checkpointer.writeCheckpoint(this);
     }
 
 
@@ -144,9 +145,6 @@ public class MultipleTMonteCarloSimulation extends MonteCarloSimulation implemen
         this.J_ex=J_ex;
     }
 
-    public void printRunParameters(){
-
-    }
 
     public boolean isParallelTempetingOff() {
         return parallelTempetingOff;

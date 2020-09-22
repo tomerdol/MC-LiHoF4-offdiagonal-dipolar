@@ -7,34 +7,6 @@ import java.util.Arrays;
 
 
 public class ParseCommandLine {
-    /** This method provides conversion from a command line argument
-     *  to the matching enum.
-     *  For instance, if in command line we have --extract sparnew,
-     *      <code>OptionValue2Enum("extract", ExtractionModeEnum.class, "stupid default value")</code>
-     * will return ExtractionModeEnum.sparnew
-     * @param commandLine Command-line object
-     * @param <T> enum class pattern
-     * @param optionName corresponding optionName, for instance extract
-     * @param enumType enum to be converted to.
-     * @param defaultValue the default value for this option if the option is present but not a value
-     * @return value in enum form, null if the option is not set
-     * @throws ParseException if value does not correspond to enum values.
-     */
-    public static <T extends Enum<T>> T OptionValue2Enum(CommandLine commandLine, String optionName, Class<T> enumType, String defaultValue) throws ParseException {
-        if (commandLine.hasOption(optionName)) {
-            String ex = commandLine.getOptionValue(optionName, defaultValue);
-            ex = ex.trim().toUpperCase();
-            try {
-                return Enum.valueOf(enumType, ex);
-            } catch (IllegalArgumentException e) {
-                throw new ParseException("The argument given for " +
-                        optionName + " is not correctly valued: "
-                        + ex + " found.");
-            }
-        } else {
-            return null;
-        }
-    }
 
     /**
      * "Definition" stage of command-line parsing with Apache Commons CLI.
@@ -167,13 +139,9 @@ public class ParseCommandLine {
                 .type(Number.class)
                 .desc("Alpha parameter for over/under relaxation of iterative moment calculation. Default is 1.0")
                 .build();
-        final Option outputVerbosity = Option.builder("verbosity")
+        final Option verboseOutput = Option.builder("verbose")
                 .required(false)
-                .longOpt("verbosity_level")
-                .hasArg()
-                .desc("Level of verbosity of simulation output." + System.lineSeparator() + " VERBOSE - Observables are printed after each Monte Carlo sweep." +
-                        System.lineSeparator() + "BIN - Observables are averaged and printed  in logarithmically increasing bins." +
-                        System.lineSeparator() + "SPIN - The lattice is printed exactly. This option only performs the measurement and prints if to file; no simulation steps are performed.")
+                .desc("print out the observables after each Monte Carlo sweep, as opposed to logarithmic binnig.")
                 .build();
         final Option realTimeEqTest = Option.builder("test_eq")
                 .desc("test equilibration in real-time and stop when it is reached.")
@@ -243,7 +211,7 @@ public class ParseCommandLine {
         options.addOption(folderName);
         options.addOption(interpolationTableName);
         options.addOption(alpha);
-        options.addOption(outputVerbosity);
+        options.addOption(verboseOutput);
         options.addOption(realTimeEqTest);
         options.addOption(tol);
         options.addOption(parallelMode);

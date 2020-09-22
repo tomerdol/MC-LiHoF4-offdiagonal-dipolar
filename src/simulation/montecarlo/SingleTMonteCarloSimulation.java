@@ -25,6 +25,7 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
     private Lattice lattice;
     private final MersenneTwister rnd;
     private transient OutputWriter outWriter;
+    private transient OutputWriter latticeOutWriter;
     private double currentEnergy;
     private int acceptanceRateCount;
     private int acceptanceRateSum;
@@ -40,7 +41,7 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
 
     public SingleTMonteCarloSimulation(final double T, final int temperatureIndex, final int totalNumOfTemperatures, final Lattice lattice, final int numOfObservables, final long maxSweeps,
                                        final long seed, final MersenneTwister rnd, final boolean continueFromSave, final boolean realTimeEqTest,
-                                       final OutputWriter out, final boolean checkpoint, final int maxIter, final double alpha, final BufferedWriter outProblematicConfigs,
+                                       final OutputWriter out, final OutputWriter latticeOutWriter, final boolean checkpoint, final int maxIter, final double alpha, final BufferedWriter outProblematicConfigs,
                                        final double spinSize, final double tol, final double J_ex) {
         this.T = T;
         this.temperatureIndex=temperatureIndex;
@@ -55,6 +56,7 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
         this.realTimeEqTest=realTimeEqTest;
         this.rnd=rnd;
         this.outWriter=out;
+        this.latticeOutWriter=latticeOutWriter;
         this.checkpoint=checkpoint;
         this.alpha=alpha;
         this.maxIter=maxIter;
@@ -245,15 +247,19 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
     }
 
     public void printSimulationState(){
-        if (outWriter.getOutType() == OutputType.SPIN) {    // this is check inside outWriter.writeObservablesPerSpin() as well, but if we are not in SPIN output type, there's no need to copy the lattice array for nothing
+        singleSpin[] arr;
+        if (lattice.isSuppressInternalTransFields()) {
+            // copy lattice to a new object that does not suppress internal fields
             Lattice tempLatticeWithAllFields = new Lattice(lattice, false);
             tempLatticeWithAllFields.updateAllLocalFields();
-            singleSpin[] arr = tempLatticeWithAllFields.getArray();  // this is not very efficient since all the spins are copied twice (once on this line and once two lines back), but it is not part of the regular run so not that terrible
-            for (int i = 0; i < arr.length; i++) {
-                outWriter.writeObservablesPerSpin(arr[i].getN(), arr[i].getSpin(), arr[i].getSpinSize(), arr[i].getLocalBx(), arr[i].getLocalBy(), arr[i].getLocalBz());
-            }
-            outWriter.flush();
+            arr = tempLatticeWithAllFields.getArray();  // this is not very efficient since all the spins are copied twice (once on this line and once two lines back), but it is not part of the regular run so not that terrible
+        }else{
+            arr = lattice.getArray(); // deep copy
         }
+        for (int i = 0; i < arr.length; i++) {
+            latticeOutWriter.writeObservablesPerSpin(arr[i].getN(), arr[i].getSpin(), arr[i].getSpinSize(), arr[i].getLocalBx(), arr[i].getLocalBy(), arr[i].getLocalBz());
+        }
+        latticeOutWriter.flush();
     }
 
     public void writeObservables(){
@@ -318,6 +324,7 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
 
     public void close() throws IOException{
         this.outWriter.close();
+        this.latticeOutWriter.close();
     }
 
     public Lattice getLattice(){ return this.lattice; }
@@ -325,10 +332,12 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
     public OutputWriter getOutWriter() {
         return outWriter;
     }
+    public OutputWriter getLatticeOutWriter() { return latticeOutWriter; }
 
     public void setOutWriter(final OutputWriter outWriter){
         this.outWriter=outWriter;
     }
+    public void setLatticeOutWriter(OutputWriter latticeOutWriter) { this.latticeOutWriter = latticeOutWriter; }
     public void setMaxIter(final int maxIter){
         this.maxIter=maxIter;
     }
@@ -416,25 +425,27 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
         }
     }
 
-    public void printRunParameters(String version, double[] T, String extraMessage, long mutualSeed, String tempScheduleFileName, boolean parallelTemperingOff) throws IOException{
-        // print some information to the begining of the file:
-        outWriter.print("# VERSION: " + version, true);
-        outWriter.print("#" + LocalDateTime.now(), true);
-        outWriter.print("#temperature_schedule: "+ Arrays.toString(T), true);
-        outWriter.print("#T="+ this.T + ":" + temperatureIndex, true);
-        //print constants:
-        outWriter.print("#" + Constants.constantsToString(), true);
-        outWriter.print(String.format("# Lx=%s, Ly=%s, Lz=%s, J_ex=%f, spinSize=%.8f, tol=%4.1e, extBx=%s, maxSweeps=%s, suppressInternalTransFields=%s, " +
+    public String runParameters(String version, double[] T, String extraMessage, long mutualSeed, String tempScheduleFileName, boolean parallelTemperingOff){
+        return  "# VERSION: " + version + System.lineSeparator() +
+                "#" + LocalDateTime.now() + System.lineSeparator() +
+                "#temperature_schedule: " + Arrays.toString(T) + System.lineSeparator() +
+                "#T=" + this.T + ":" + temperatureIndex + System.lineSeparator() +
+                "#" + Constants.constantsToString() + System.lineSeparator() +
+                String.format("# Lx=%s, Ly=%s, Lz=%s, J_ex=%f, spinSize=%.8f, tol=%4.1e, extBx=%s, maxSweeps=%s, suppressInternalTransFields=%s, " +
                         "continueFromSave=%s, maxIter=%s, bufferSize=%s, tempScheduleFileName=%s, parallelTemperingOff=%s, " +
                         "checkpoint=%s, folderName=%s, alpha=%s, output=%s ",lattice.getLx(),lattice.getLx(),lattice.getLz(),J_ex,spinSize,tol,lattice.getExtBx(), maxSweeps,lattice.isSuppressInternalTransFields(),
-                continueFromSave, maxIter, outWriter.getBufferSize(),
-                tempScheduleFileName, parallelTemperingOff, checkpoint, outWriter.getFolderName(),
-                alpha, outWriter.getOutType()),true);
-        outWriter.print("#" + Constants.locationsToString(), true);
-        outWriter.print("#seed=" + mutualSeed + " (" + seed + ")", true);
-        outWriter.print(extraMessage, true);
-        outWriter.flush();
+                    continueFromSave, maxIter, outWriter.getBufferSize(),
+                    tempScheduleFileName, parallelTemperingOff, checkpoint, outWriter.getFolderName(),
+                    alpha, outWriter.getOutType()) + System.lineSeparator() +
+                "#" + Constants.locationsToString() + System.lineSeparator() +
+                "#seed=" + mutualSeed + " (" + seed + ")" + System.lineSeparator() +
+                extraMessage;
+    }
 
+    public void printRunParameters(String version, double[] T, String extraMessage, long mutualSeed, String tempScheduleFileName, boolean parallelTemperingOff, OutputWriter outputWriter) throws IOException{
+        // print some information to the beginning of the results file (or console):
+        outputWriter.print(runParameters(version, T, extraMessage, mutualSeed, tempScheduleFileName, parallelTemperingOff), true);
+        outputWriter.flush();
     }
 
     public void initSimulation(){
