@@ -4,6 +4,7 @@ import java.io.Closeable;
 import java.io.Serializable;
 
 public abstract class MonteCarloSimulation implements Serializable, Runnable, Closeable {
+    private static final long serialVersionUID = 7948934465122188289L;
     protected long maxSweeps;
     protected boolean continueFromSave;
     protected long seed;

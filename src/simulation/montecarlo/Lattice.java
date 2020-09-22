@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.Properties;
 
 public class Lattice implements Serializable {
+
     private final int N, Lx, Lz;
     private final double extBx;
     private final boolean suppressInternalTransFields;
