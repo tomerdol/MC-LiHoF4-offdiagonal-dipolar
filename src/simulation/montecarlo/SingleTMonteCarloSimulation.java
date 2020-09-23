@@ -15,6 +15,7 @@ import java.util.Arrays;
 
 
 public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements Serializable, Closeable, Runnable {
+    private static final long serialVersionUID = -7085068052197341667L;
     private final double T;
     private final int temperatureIndex;  // should be -1 if not part of multiple T simulation
     private final int totalNumOfTemperatures;
@@ -37,6 +38,10 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
     private transient int maxIter;
     private transient double alpha;
     private transient BufferedWriter outProblematicConfigs;
+
+    public void printStuff(){
+        System.out.println(binAvg.length);
+    }
 
     public SingleTMonteCarloSimulation(final double T, final int temperatureIndex, final int totalNumOfTemperatures, final Lattice lattice, final int numOfObservables, final long maxSweeps,
                                        final long seed, final MersenneTwister rnd, final boolean continueFromSave, final boolean realTimeEqTest,

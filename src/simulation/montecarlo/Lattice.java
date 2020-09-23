@@ -10,7 +10,7 @@ import java.util.Arrays;
 import java.util.Properties;
 
 public class Lattice implements Serializable {
-
+    private static final long serialVersionUID = -9119463380760410942L;
     private final int N, Lx, Lz;
     private final double extBx;
     private final boolean suppressInternalTransFields;

@@ -14,6 +14,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class MultipleTMonteCarloSimulation extends MonteCarloSimulation implements Closeable, Runnable {
+    private static final long serialVersionUID = -7500236380863421871L;
     private final boolean parallelTempetingOff;
     private int[] acceptanceRateCount;
     private int[] acceptanceRateSum;
