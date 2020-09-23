@@ -21,7 +21,7 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
     private final int totalNumOfTemperatures;
     private long sweeps;
     private long currentBinCount;
-    private final double[] binAvg;
+    private double[] binAvg;
     private final ArrayList<CircularFifoQueue<Pair<Double,Double>>> equilibratingObs;
     private Lattice lattice;
     private final MersenneTwister rnd;
@@ -38,10 +38,6 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
     private transient int maxIter;
     private transient double alpha;
     private transient BufferedWriter outProblematicConfigs;
-
-    public void printStuff(){
-        System.out.println(binAvg.length);
-    }
 
     public SingleTMonteCarloSimulation(final double T, final int temperatureIndex, final int totalNumOfTemperatures, final Lattice lattice, final int numOfObservables, final long maxSweeps,
                                        final long seed, final MersenneTwister rnd, final boolean continueFromSave, final boolean realTimeEqTest,
@@ -77,6 +73,21 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
         if (lattice.energyTable==null || lattice.momentTable==null || lattice.nnArray==null || lattice.exchangeIntTable==null || lattice.intTable==null) {
             throw new NullPointerException("The Lattice given to the SingleTMonteCarloSimulation has null some pointers. ");
         }
+    }
+
+    public void addObservableToBinAvg(int numOfObservables){
+        if (binAvg.length < numOfObservables) {
+            double[] newBinAvg = new double[numOfObservables]; // Add column (and its sd) to the end
+            int i;
+            for (i = 0; i < binAvg.length; i++) {
+                newBinAvg[i] = binAvg[i];
+            }
+            for (; i < numOfObservables; i++) {
+                newBinAvg[i] = Double.NaN;
+            }
+            binAvg = newBinAvg;
+        }
+        // else, do nothing
     }
 
     public void swap(SingleTMonteCarloSimulation other){

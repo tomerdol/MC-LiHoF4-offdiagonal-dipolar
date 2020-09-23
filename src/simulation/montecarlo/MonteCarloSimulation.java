@@ -34,4 +34,8 @@ public abstract class MonteCarloSimulation implements Serializable, Runnable, Cl
     public long getSeed() {
         return seed;
     }
+
+    public boolean isCheckpoint() {
+        return checkpoint;
+    }
 }
