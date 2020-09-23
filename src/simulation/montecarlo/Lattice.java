@@ -622,6 +622,10 @@ public class Lattice implements Serializable {
         return measure.calcSpinSizes(lattice);
     }
 
+    public double getTransverseFieldMaximizingNNConfigsFrac(){
+        return measure.countTransverseFieldMaximizingNNConfigs(this);
+    }
+
     // *****************************************************************************************************************
 
     /*

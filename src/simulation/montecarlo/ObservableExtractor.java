@@ -126,10 +126,29 @@ public class ObservableExtractor {
         return new double[]{mean, Math.sqrt(std)};
     }
 
-    public static int countTransverseFieldMaximizingNNConfigs(){
+    /**
+     * Calculate the fraction of spins whose 4 nearest neighbors are oriented in one of the configurations that maximize the local transverse field on those spins.
+     * These configurations are ones where for each of the two pairs of spins that share a common plane (which also includes the z axis), both spins are oriented opposite to one another.
+     * The identification of such configurations relies on the order of neighbors in lattice.nnArray
+     * @param lattice - the lattice object
+     * @return the fraction of such spins out of the total number of spins.
+     */
+    public static double countTransverseFieldMaximizingNNConfigs(Lattice lattice){
         int count=0;
-        // TODO count transverse field maximizing nearest neighbor configurations
-        return count;
+        singleSpin[] arr = lattice.getArray();
+
+        for (int i=0;i<arr.length;i++){
+            // identify transverse field maximizing configurations:
+            // the pairs of spins that share a common plane with the z axis are neighbors 0&1 and 2&3
+            if (arr[lattice.nnArray[i][0]].getSpin()*arr[lattice.nnArray[i][1]].getSpin()==-1 && arr[lattice.nnArray[i][2]].getSpin()*arr[lattice.nnArray[i][3]].getSpin()==-1){
+                boolean allNeighborSpinSizesLarge=true;
+                for (int j=0; j<lattice.nnArray[i].length && allNeighborSpinSizesLarge; j++) {
+                    allNeighborSpinSizesLarge &= arr[lattice.nnArray[i][j]].getSpin()*arr[lattice.nnArray[i][j]].getSpinSize() > 1.0;   // should (almost) always be positive
+                }
+                if (allNeighborSpinSizesLarge) count++;
+            }
+        }
+        return 1.0*count/arr.length;
     }
 
 
