@@ -249,9 +249,9 @@ public class ewaldSum {
 		}
 		//multipleSizeTestsWithvariableKcutoff(new int[]{3,4,5,6,7,9,10},2,new int[]{2,3,4,5,6,7,8,9,10,11,12});
 		//multipleSizeTestsWithvariableRealcutoff(new int[]{3,4,5,6,7,9,10},new int[]{2,3,4,5,6,7,8,9,10,11,12},6);
-		convergenceTests3(Lz, Lx, real_cutoff, k_cutoff);
+		//convergenceTests3(Lz, Lx, real_cutoff, k_cutoff);
 
-        System.exit(0);
+        //System.exit(0);
 
         try (BufferedWriter out = new BufferedWriter(new FileWriter("data" + File.separator + "interactions" + File.separator + "intTable_"+Lx+"_"+Lz+".txt"))){
             

@@ -488,7 +488,7 @@ public class Main {
 
 
     public static void main(String[] args){
-        final String VERSION = "1.0.1b";
+        final String VERSION = "1.1.0b";
         int Lx=0;	// lattice x-y size
         int Lz=0;	// lattice z size
         double extBx=-1;   // external Bx
