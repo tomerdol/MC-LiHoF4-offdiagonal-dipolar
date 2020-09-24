@@ -15,12 +15,13 @@ import java.util.Arrays;
 
 
 public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements Serializable, Closeable, Runnable {
+    private static final long serialVersionUID = -7085068052197341667L;
     private final double T;
     private final int temperatureIndex;  // should be -1 if not part of multiple T simulation
     private final int totalNumOfTemperatures;
     private long sweeps;
     private long currentBinCount;
-    private final double[] binAvg;
+    private double[] binAvg;
     private final ArrayList<CircularFifoQueue<Pair<Double,Double>>> equilibratingObs;
     private Lattice lattice;
     private final MersenneTwister rnd;
@@ -72,6 +73,21 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
         if (lattice.energyTable==null || lattice.momentTable==null || lattice.nnArray==null || lattice.exchangeIntTable==null || lattice.intTable==null) {
             throw new NullPointerException("The Lattice given to the SingleTMonteCarloSimulation has null some pointers. ");
         }
+    }
+
+    public void addObservableToBinAvg(int numOfObservables){
+        if (binAvg.length < numOfObservables) {
+            double[] newBinAvg = new double[numOfObservables]; // Add column (and its sd) to the end
+            int i;
+            for (i = 0; i < binAvg.length; i++) {
+                newBinAvg[i] = binAvg[i];
+            }
+            for (; i < numOfObservables; i++) {
+                newBinAvg[i] = Double.NaN;
+            }
+            binAvg = newBinAvg;
+        }
+        // else, do nothing
     }
 
     public void swap(SingleTMonteCarloSimulation other){
@@ -244,15 +260,34 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
         }
     }
 
+    public void printSimulationState(){
+
+        if (outWriter.getOutType() == OutputType.SPIN) {
+            singleSpin[] arr;
+            if (lattice.isSuppressInternalTransFields()) {
+                // copy lattice to a new object that does not suppress internal fields
+                Lattice tempLatticeWithAllFields = new Lattice(lattice, false);
+                tempLatticeWithAllFields.updateAllLocalFields();
+                arr = tempLatticeWithAllFields.getArray();  // this is not very efficient since all the spins are copied twice (once on this line and once two lines back), but it is not part of the regular run so not that terrible
+            } else {
+                arr = lattice.getArray(); // deep copy
+            }
+            for (int i = 0; i < arr.length; i++) {
+                outWriter.writeObservablesPerSpin(arr[i].getN(), arr[i].getSpin(), arr[i].getSpinSize(), arr[i].getLocalBx(), arr[i].getLocalBy(), arr[i].getLocalBz());
+            }
+            outWriter.flush();
+        }
+    }
+
     public void writeObservables(){
         double m = lattice.getMagnetization();
         double[] temp = lattice.getMagneticFields();
         double[] tempSpinSizes = lattice.getSpinSizes();
-        double mk2 = lattice.getMK2();    // m(k)^2, used later for correlation length calculation
+        double[] mk2 = lattice.getMK2();    // m(k)^2, used later for correlation length calculation
+        double transFieldMaxConfig = lattice.getTransverseFieldMaximizingNNConfigsFrac();
 
 
-
-        outWriter.writeObservablesVerbose(sweeps, m ,currentEnergy ,temp[0] ,temp[1] ,temp[2] ,temp[3] ,temp[4] ,temp[5] ,temp[6] ,temp[7] ,temp[8], tempSpinSizes[0] ,tempSpinSizes[1] ,mk2, lastSwapAccepted);
+        outWriter.writeObservablesVerbose(sweeps, m ,currentEnergy ,temp[0] ,temp[1] ,temp[2] ,temp[3] ,temp[4] ,temp[5] ,temp[6] ,temp[7] ,temp[8], tempSpinSizes[0] ,tempSpinSizes[1] ,mk2[0], mk2[1], mk2[2], transFieldMaxConfig, lastSwapAccepted);
 
         if (sweeps>0) currentBinCount++;
         //System.out.println(sweeps+ " , " + sweeps/2 + " , " + currentBinCount + " , " + (sweeps&1));
@@ -299,7 +334,7 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
             }
         }
 
-        addToAvg(binAvg,new double[]{Math.abs(m), m , m*m, currentEnergy , temp[0] , temp[1] , temp[2] , temp[3] , temp[4] , temp[5] , temp[6] , temp[7] , tempSpinSizes[0] , tempSpinSizes[1] , mk2});
+        addToAvg(binAvg,new double[]{Math.abs(m), m , m*m, currentEnergy , temp[0] , temp[1] , temp[2] , temp[3] , temp[4] , temp[5] , temp[6] , temp[7] , tempSpinSizes[0] , tempSpinSizes[1] , mk2[0], mk2[1], mk2[2], transFieldMaxConfig});
 
 
     }
@@ -317,6 +352,7 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
     public void setOutWriter(final OutputWriter outWriter){
         this.outWriter=outWriter;
     }
+
     public void setMaxIter(final int maxIter){
         this.maxIter=maxIter;
     }
@@ -398,31 +434,33 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
         writeObservables();
         sweeps++;
 
-        if (sweeps%outWriter.getObsPrintSweepNum()==0 || sweeps==maxSweeps) {	// every obsPrintSweepNum sweeps or at the last one
+        if (sweeps%outWriter.getNumOfBufferedRows()==0 || sweeps==maxSweeps) {	// every obsPrintSweepNum sweeps or at the last one
             if (outWriter.isPrintOutputToConsole()) System.out.println("T="+T);
             outWriter.flush();
         }
     }
 
-    public void printRunParameters(String version, double[] T, String extraMessage, long mutualSeed, String tempScheduleFileName, boolean parallelTemperingOff) throws IOException{
-        // print some information to the begining of the file:
-        outWriter.print("# VERSION: " + version, true);
-        outWriter.print("#" + LocalDateTime.now(), true);
-        outWriter.print("#temperature_schedule: "+ Arrays.toString(T), true);
-        outWriter.print("#T="+ this.T + ":" + temperatureIndex, true);
-        //print constants:
-        outWriter.print("#" + Constants.constantsToString(), true);
-        outWriter.print(String.format("# Lx=%s, Ly=%s, Lz=%s, J_ex=%f, spinSize=%.8f, tol=%4.1e, extBx=%s, maxSweeps=%s, suppressInternalTransFields=%s, " +
+    public String runParameters(String version, double[] T, String extraMessage, long mutualSeed, String tempScheduleFileName, boolean parallelTemperingOff){
+        return  "# VERSION: " + version + System.lineSeparator() +
+                "#" + LocalDateTime.now() + System.lineSeparator() +
+                "#temperature_schedule: " + Arrays.toString(T) + System.lineSeparator() +
+                "#T=" + this.T + ":" + temperatureIndex + System.lineSeparator() +
+                "#" + Constants.constantsToString() + System.lineSeparator() +
+                String.format("# Lx=%s, Ly=%s, Lz=%s, J_ex=%f, spinSize=%.8f, tol=%4.1e, extBx=%s, maxSweeps=%s, suppressInternalTransFields=%s, " +
                         "continueFromSave=%s, maxIter=%s, bufferSize=%s, tempScheduleFileName=%s, parallelTemperingOff=%s, " +
-                        "checkpoint=%s, folderName=%s, alpha=%s, verboseOutput=%s ",lattice.getLx(),lattice.getLx(),lattice.getLz(),J_ex,spinSize,tol,lattice.getExtBx(), maxSweeps,lattice.isSuppressInternalTransFields(),
-                continueFromSave, maxIter, outWriter.getBufferSize(),
-                tempScheduleFileName, parallelTemperingOff, checkpoint, outWriter.getFolderName(),
-                alpha, outWriter.isVerboseOutput()),true);
-        outWriter.print("#" + Constants.locationsToString(), true);
-        outWriter.print("#seed=" + mutualSeed + " (" + seed + ")", true);
-        outWriter.print(extraMessage, true);
-        outWriter.flush();
+                        "checkpoint=%s, folderName=%s, alpha=%s, output=%s ",lattice.getLx(),lattice.getLx(),lattice.getLz(),J_ex,spinSize,tol,lattice.getExtBx(), maxSweeps,lattice.isSuppressInternalTransFields(),
+                    continueFromSave, maxIter, outWriter.getBufferSize(),
+                    tempScheduleFileName, parallelTemperingOff, checkpoint, outWriter.getFolderName(),
+                    alpha, outWriter.getOutType()) + System.lineSeparator() +
+                "#" + Constants.locationsToString() + System.lineSeparator() +
+                "#seed=" + mutualSeed + " (" + seed + ")" + System.lineSeparator() +
+                extraMessage;
+    }
 
+    public void printRunParameters(String version, double[] T, String extraMessage, long mutualSeed, String tempScheduleFileName, boolean parallelTemperingOff) throws IOException{
+        // print some information to the beginning of the results file (or console):
+        outWriter.print(runParameters(version, T, extraMessage, mutualSeed, tempScheduleFileName, parallelTemperingOff), true);
+        outWriter.flush();
     }
 
     public void initSimulation(){

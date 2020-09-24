@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.Properties;
 
 public class Lattice implements Serializable {
+    private static final long serialVersionUID = -9119463380760410942L;
     private final int N, Lx, Lz;
     private final double extBx;
     private final boolean suppressInternalTransFields;
@@ -65,7 +66,34 @@ public class Lattice implements Serializable {
         for (int i=0;i<other.lattice.length;i++){
             lattice[i] = new singleSpin(other.lattice[i]);
         }
+    }
 
+    /**
+     * Constructor that (deep) copies a given Lattice, but sets a new value for suppressInternalFields.
+     * Used for measuring what the internal transverse fields would be had they not been suppressed.
+     * @param other Lattice to copy
+     * @param newSuppressInternalFields New value for suppressInternalFields
+     */
+    @CreatesInconsistency("By design. This constructor should be used only for measurement and then discarded.")
+    public Lattice(Lattice other, boolean newSuppressInternalFields){
+        this.N=other.N;
+        this.Lx=other.Lx;
+        this.Lz=other.Lz;
+        this.extBx=other.extBx;
+        this.suppressInternalTransFields=newSuppressInternalFields;
+        this.spinSize=other.spinSize;
+        this.intTable=other.intTable;
+        this.exchangeIntTable=other.exchangeIntTable;
+        this.energyTable=other.energyTable;
+        this.momentTable=other.momentTable;
+        this.nnArray=other.nnArray;
+        this.measure=other.measure;
+        this.iterativeSolver = new MagneticMomentsSolveIter();
+
+        lattice = new singleSpin[other.lattice.length];
+        for (int i=0;i<other.lattice.length;i++){
+            lattice[i] = new singleSpin(other.lattice[i]);
+        }
     }
 
     public void setIntTable(double[][][] intTable) {
@@ -179,7 +207,7 @@ public class Lattice implements Serializable {
     public void updateAllMagneticMoments(int maxIter, double tol, double alpha){
         iterativeSolver.updateAllMagneticMoments(maxIter, tol, alpha, true);
     }
-    public singleSpin[] solveSelfConsistentCalc(int maxIter, double tol, int flipSpin, int method, int[][] nnArray, double alpha, MersenneTwister rnd) throws ConvergenceException {
+    private singleSpin[] solveSelfConsistentCalc(int maxIter, double tol, int flipSpin, int method, int[][] nnArray, double alpha, MersenneTwister rnd) throws ConvergenceException {
         if (method>=1 && method<=3){
             int[] bfsOrder=null;
             if (nnArray!=null) {
@@ -580,7 +608,7 @@ public class Lattice implements Serializable {
         return measure.meanField(lattice);
     }
 
-    public double getMK2(){ return measure.calc_mk2(lattice); }
+    public double[] getMK2(){ return measure.calc_mk2(lattice); }
 
     public double getMagnetization(){
         return measure.calcMagnetization(lattice);
@@ -592,6 +620,10 @@ public class Lattice implements Serializable {
 
     public double[] getSpinSizes(){
         return measure.calcSpinSizes(lattice);
+    }
+
+    public double getTransverseFieldMaximizingNNConfigsFrac(){
+        return measure.countTransverseFieldMaximizingNNConfigs(this);
     }
 
     // *****************************************************************************************************************

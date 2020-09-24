@@ -7,11 +7,12 @@ import java.util.Arrays;
 
 
 public class ParseCommandLine {
+
     /**
      * "Definition" stage of command-line parsing with Apache Commons CLI.
      * @return Definition of command-line options.
      */
-    static Options generateOptions()
+    public static Options generateOptions()
     {
         final Option magneticMomentCalcMaxIter = Option.builder("max_iter")
                 .required(true)
@@ -230,7 +231,7 @@ public class ParseCommandLine {
      *    command line arguments; may be {@code null} if there is an exception
      *    encountered while attempting to parse the command line options.
      */
-    static CommandLine generateCommandLine(
+    public static CommandLine generateCommandLine(
             final Options options, final String[] commandLineArguments)
     {
         final CommandLineParser cmdLineParser = new DefaultParser();
@@ -273,7 +274,7 @@ public class ParseCommandLine {
      * @param options Instance of Options to be used to prepare
      *    help formatter.
      */
-    static void printHelp(final Options options)
+    public static void printHelp(final Options options)
     {
         final HelpFormatter formatter = new HelpFormatter();
         final String syntax = "simulation/montecarlo";
@@ -289,7 +290,7 @@ public class ParseCommandLine {
         System.err.println(
                 "ERROR: Unable to parse command-line arguments "
                         + Arrays.toString(args) + " due to: "
-                        + p + "\n" + "For help run with -h");
+                        + p + System.lineSeparator() + "For help run with -h");
         System.exit(1);
     }
 

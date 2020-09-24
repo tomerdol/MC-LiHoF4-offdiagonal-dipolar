@@ -14,6 +14,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class MultipleTMonteCarloSimulation extends MonteCarloSimulation implements Closeable, Runnable {
+    private static final long serialVersionUID = -7500236380863421871L;
     private final boolean parallelTempetingOff;
     private int[] acceptanceRateCount;
     private int[] acceptanceRateSum;
@@ -30,8 +31,15 @@ public class MultipleTMonteCarloSimulation extends MonteCarloSimulation implemen
         for (int i=0;i<simulations.length;i++){
             simulations[i].initSimulation();
         }
+        if (checkpoint) checkpointer.writeCheckpoint(this);
     }
 
+
+    public void printSimulationState(){
+        for (int i=0;i<simulations.length;i++){
+            simulations[i].printSimulationState();
+        }
+    }
 
     public void run() {
         run('s');
@@ -84,7 +92,7 @@ public class MultipleTMonteCarloSimulation extends MonteCarloSimulation implemen
                 }
             }
             sweeps++;
-            if (sweeps%simulations[0].getOutWriter().getObsPrintSweepNum()==0 || sweeps==maxSweeps) {    // every obsPrintSweepNum sweeps or at the last one
+            if (sweeps%simulations[0].getOutWriter().getNumOfBufferedRows()==0 || sweeps==maxSweeps) {    // every obsPrintSweepNum sweeps or at the last one
                 if (checkpoint) {
                     checkpointer.writeCheckpoint(this);
                 }
@@ -138,9 +146,6 @@ public class MultipleTMonteCarloSimulation extends MonteCarloSimulation implemen
         this.J_ex=J_ex;
     }
 
-    public void printRunParameters(){
-
-    }
 
     public boolean isParallelTempetingOff() {
         return parallelTempetingOff;

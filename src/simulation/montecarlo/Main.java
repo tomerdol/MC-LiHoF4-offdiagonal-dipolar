@@ -17,13 +17,29 @@ import java.util.Properties;
 public class Main {
 
     // fills the sin and cos tables for mk^2
-    public static void create_cos_sin_tables(singleSpin[] arr, int Lz, int Lx, double[] k_cos_table, double[] k_sin_table){
+    public static void create_cos_sin_tables(singleSpin[] arr, int Lz, int Lx, double[][] k_cos_table, double[][] k_sin_table){
+        // for correlation length along x
         double actual_length = Lx*Constants.a;
         double k = 2*Math.PI/actual_length;
-
         for (int i=0; i<arr.length;i++){
-            k_cos_table[i] = Math.cos(k*arr[i].getX(Lz,Lx));
-            k_sin_table[i] = Math.sin(k*arr[i].getX(Lz,Lx));
+            k_cos_table[0][i] = Math.cos(k*arr[i].getX(Lz,Lx));
+            k_sin_table[0][i] = Math.sin(k*arr[i].getX(Lz,Lx));
+        }
+
+        // for correlation length along y
+        actual_length = Lx*Constants.a;
+        k = 2*Math.PI/actual_length;
+        for (int i=0; i<arr.length;i++){
+            k_cos_table[1][i] = Math.cos(k*arr[i].getY(Lz,Lx));
+            k_sin_table[1][i] = Math.sin(k*arr[i].getY(Lz,Lx));
+        }
+
+        // for correlation length along z
+        actual_length = Lz*Constants.c;
+        k = 2*Math.PI/actual_length;
+        for (int i=0; i<arr.length;i++){
+            k_cos_table[2][i] = Math.cos(k*arr[i].getZ(Lz,Lx));
+            k_sin_table[2][i] = Math.sin(k*arr[i].getZ(Lz,Lx));
         }
     }
 
@@ -108,6 +124,8 @@ public class Main {
     }
 
     private static void addExchangeToNeighbor(int focusSpin, int neighbor1, int neighbor2, int neighbor3, int neighbor4, int[][] nnArray, boolean[][] nnArray_test, double[][] intTable, double J_ex){
+
+
         intTable[focusSpin][neighbor1]+=J_ex;
         intTable[neighbor1][focusSpin]+=J_ex;
 
@@ -155,11 +173,18 @@ public class Main {
         int[][] nnArray = new int[N][4];	// nearest neighbor array
         boolean[][] nnArray_test = new boolean[N][N];	// for testing
 
-        // neighbor numbers are as follows (with respect to ion positions_1.pdf):
+        // neighbor numbers are as follows, for the 0th and 2nd atoms in the base (with respect to ion positions_1.pdf):
         // neighbor1: up-right
         // neighbor2: up-left
         // neighbor3: down-outward
         // neighbor4: down-inward
+
+        // for the 1st and 3rd atoms, it is the same, up to parity inversion, i.e.,
+        // neighbor1: down-left
+        // neighbor2: down-right
+        // neighbor3: up-inward
+        // neighbor4: up-outward
+        // notice this is relevant mostly for how the nearest-neighbors are ordered in nnArray, which is filled in addExchangeToNeighbor()
 
         for (int i=0;i<Lx;i++){
             for (int j=0;j<Lx;j++){
@@ -170,29 +195,29 @@ public class Main {
                     int focusSpin = i*Lx*Lz*4+j*Lz*4+k*4+0;
                     int neighbor1=-1, neighbor2=-1, neighbor3=-1, neighbor4=-1;
 
-                        neighbor1=i*Lx*Lz*4+j*Lz*4+k*4+1;
-                        if (i==0)
-                            neighbor2=(Lx-1)*Lx*Lz*4+j*Lz*4+k*4+1;
-                        else
-                            neighbor2=(i-1)*Lx*Lz*4+j*Lz*4+k*4+1;
-                        if (k==0)
-                            neighbor3=i*Lx*Lz*4+j*Lz*4+(Lz-1)*4+3;
-                        else
-                            neighbor3=i*Lx*Lz*4+j*Lz*4+(k-1)*4+3;
+                    neighbor1=i*Lx*Lz*4+j*Lz*4+k*4+1;
+                    if (i==0)
+                        neighbor2=(Lx-1)*Lx*Lz*4+j*Lz*4+k*4+1;
+                    else
+                        neighbor2=(i-1)*Lx*Lz*4+j*Lz*4+k*4+1;
+                    if (k==0)
+                        neighbor3=i*Lx*Lz*4+j*Lz*4+(Lz-1)*4+3;
+                    else
+                        neighbor3=i*Lx*Lz*4+j*Lz*4+(k-1)*4+3;
 
-                        if (j==0 && k==0)
-                            neighbor4=i*Lx*Lz*4+(Lx-1)*Lz*4+(Lz-1)*4+3;
-                        else if(j==0){
-                            neighbor4=i*Lx*Lz*4+(Lx-1)*Lz*4+(k-1)*4+3;
-                        }
-                        else if(k==0){
-                            neighbor4=i*Lx*Lz*4+(j-1)*Lz*4+(Lz-1)*4+3;
-                        }else{
-                            neighbor4=i*Lx*Lz*4+(j-1)*Lz*4+(k-1)*4+3;
-                        }
+                    if (j==0 && k==0)
+                        neighbor4=i*Lx*Lz*4+(Lx-1)*Lz*4+(Lz-1)*4+3;
+                    else if(j==0){
+                        neighbor4=i*Lx*Lz*4+(Lx-1)*Lz*4+(k-1)*4+3;
+                    }
+                    else if(k==0){
+                        neighbor4=i*Lx*Lz*4+(j-1)*Lz*4+(Lz-1)*4+3;
+                    }else{
+                        neighbor4=i*Lx*Lz*4+(j-1)*Lz*4+(k-1)*4+3;
+                    }
 
-                        // put interactions in intTable and nearest neighbor indices in nnArray
-                        addExchangeToNeighbor(focusSpin, neighbor1, neighbor2, neighbor3, neighbor4, nnArray, nnArray_test, intTable, J_ex);
+                    // put interactions in intTable and nearest neighbor indices in nnArray
+                    addExchangeToNeighbor(focusSpin, neighbor1, neighbor2, neighbor3, neighbor4, nnArray, nnArray_test, intTable, J_ex);
 
 
 
@@ -490,6 +515,7 @@ public class Main {
         double[] T=null;    // temperature array
         String interpolationTableFileNameExtension = "";
 
+
         // get Properties object that reads parameters from file
         Properties params = GetParamValues.getParams();
         // get default values from file
@@ -502,7 +528,7 @@ public class Main {
         Options options = ParseCommandLine.generateOptions();
         // first check if help was called
         for (String s : args) {
-            if (s.equals("-h") || s.equals("--help")) {  // or use help.getOpt() || help.getLongOpt()
+            if (s.equals("-h") || s.equals("--help")) {
                 ParseCommandLine.printHelp(options);
                 System.exit(0);
             }
@@ -615,17 +641,18 @@ public class Main {
             }
         }
 
+
         int[][] nnArray = exchangeInt(exchangeIntTable, Lx, Lz, J_ex);	// receive the nearest neighbor array and fill exchangeIntTable with the exchange interaction values
 
-        final double[] k_cos_table, k_sin_table;
+        final double[][] k_cos_table, k_sin_table;
         {   // code block: tempLattice is discarded at the end
 
             // temporary lattice objecct used to create k_tables
             Lattice tempLattice = new Lattice(Lx, Lz, extBx, suppressInternalTransFields, spinSize,null, null, null, null, null, null);
 
             // initialize sin, cos tables for mk^2 calculation (correlation length)
-            k_cos_table = new double[tempLattice.getN()];
-            k_sin_table = new double[tempLattice.getN()];
+            k_cos_table = new double[3][tempLattice.getN()];
+            k_sin_table = new double[3][tempLattice.getN()];
             create_cos_sin_tables(tempLattice.getArray(), Lz, Lx, k_cos_table, k_sin_table);
         }
 
@@ -674,6 +701,7 @@ public class Main {
 
         makeDir("data" + File.separator + "results" + File.separator, folderName);
 
+        makeDir("data" + File.separator + "lattice_output" + File.separator, folderName);
 
         SingleTMonteCarloSimulation[] subSimulations = new SingleTMonteCarloSimulation[T.length];
         BufferedWriter outProblematicConfigs=null;
@@ -684,12 +712,15 @@ public class Main {
             outProblematicConfigs = new BufferedWriter(new FileWriter("data" + File.separator + "p_configs" + File.separator + "problematic_"+(Lx*Lx*Lz*4)+"_"+extBx,true));
 
             for (int i=0;i<T.length;i++){
-                FileWriter out = new FileWriter("data" + File.separator + "results" + File.separator + folderName + File.separator + "table_" + Lx + "_" + Lz + "_" + extBx + "_" + T[i] + "_" + suppressInternalTransFields + "_" + seed + ".txt", successReadFromFile);
-                OutputWriter outputWriter = new OutputWriter.Builder(verboseOutput, folderName, obsPrintSweepNum, out)
+                // Create file to write output into
+                FileWriter out = new FileWriter("data" + File.separator + "results" + File.separator + folderName + File.separator + "table_" + Lx + "_" + Lz + "_" + extBx + "_" + T[i] + "_" + suppressInternalTransFields + "_" + seed + ".txt",
+                        successReadFromFile);
+                OutputWriter outputWriter = new OutputWriter.Builder(verboseOutput ? OutputType.VERBOSE : OutputType.BIN, folderName, obsPrintSweepNum, out)
                         .setPrintOutput(printOutput)
                         .setPrintProgress(printProgress)
                         .setBufferSize(bufferSize)
                         .build();
+
 
                 if (successReadFromFile){
                     // initialize simulation read from checkpoint
@@ -705,19 +736,19 @@ public class Main {
                     ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).getLattice().setNnArray(nnArray);
                     ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).getLattice().setMeasure(measure);
                     ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).getLattice().initIterativeSolver();
-                    ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).setMaxSweeps(maxSweeps); // this potentially updates max sweeps (in case more runs are needed than initially planned)
+                    ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).addSweeps(maxSweeps); // this potentially updates max sweeps (in case more runs are needed than initially planned)
                     ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).setOutProblematicConfigs(outProblematicConfigs);
                     ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).setContinueFromSave(continueFromSave);
                     ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).setCheckpoint(saveState);
                     ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).setRealTimeEqTest(realTimeEqTest);
 
-                    // print parameters and table headers (with preceding '#')
+                    // print parameters and table headers (with preceding '#') to results output file
                     ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).printRunParameters(VERSION, T, "# successfully read saved state"+System.lineSeparator()+'#'+outputWriter.makeTableHeader().substring(1), simulation.getSeed(), tempScheduleFileName, parallelTemperingOff);
                 }else{
                     // initialize new simulation
                     Lattice lattice = new Lattice(Lx, Lz, extBx, suppressInternalTransFields, spinSize, intTable, exchangeIntTable, nnArray, energyTable, momentTable, measure);
                     rnd[i] = new MersenneTwister(seeds[i]);
-                    subSimulations[i] = new SingleTMonteCarloSimulation(T[i], i, T.length, lattice, 30, maxSweeps, seeds[i], rnd[i], continueFromSave,
+                    subSimulations[i] = new SingleTMonteCarloSimulation(T[i], i, T.length, lattice, 36, maxSweeps, seeds[i], rnd[i], continueFromSave,
                             realTimeEqTest, outputWriter, saveState, maxIter, alpha, outProblematicConfigs, spinSize, tol, J_ex);
                     // print parameters and table headers
                     subSimulations[i].printRunParameters(VERSION, T, "# unsuccessful reading checkpoint... Starting new state."+System.lineSeparator()+outputWriter.makeTableHeader(), seed, tempScheduleFileName, parallelTemperingOff);
@@ -732,19 +763,41 @@ public class Main {
             if (!successReadFromFile){
                 simulation=new MultipleTMonteCarloSimulation(T, subSimulations, maxSweeps, seed, mutualRnd, continueFromSave, realTimeEqTest, parallelTemperingOff, saveState, checkpointer, spinSize, tol, J_ex);
                 ((MultipleTMonteCarloSimulation) simulation).initSimulation();
-                checkpointer.writeCheckpoint((MultipleTMonteCarloSimulation) simulation);
             }else{
                 ((MultipleTMonteCarloSimulation)simulation).setCheckpointer(checkpointer);
-                ((MultipleTMonteCarloSimulation)simulation).setMaxSweeps(maxSweeps);
+                ((MultipleTMonteCarloSimulation)simulation).addSweeps(maxSweeps);
                 ((MultipleTMonteCarloSimulation)simulation).setContinueFromSave(continueFromSave);
                 ((MultipleTMonteCarloSimulation)simulation).setCheckpoint(saveState);
                 ((MultipleTMonteCarloSimulation)simulation).setRealTimeEqTest(realTimeEqTest);
             }
 
-
+            // Run simulation
             ((MultipleTMonteCarloSimulation) simulation).run(parallelMode);
 
-        }catch (IOException e) {System.err.println("error writing to file: " + e.toString()); }
+            // Write lattice states
+            if (suppressInternalTransFields) receiveIntTable(intTable, Lx, Lz);	// get interaction table from file AGAIN, for off-diagonal interactions that where previously set to zero
+            for (int i=0;i<T.length;i++){
+                // Create file to write full lattice configurations into
+                // lattices are written in full only at the end of the simulation.
+                // If one wishes to only write out the lattice of a finished simulation, it should be run with maxSweeps that equals the number of sweeps already done
+                try (FileWriter latticeOut = new FileWriter("data" + File.separator + "lattice_output" + File.separator + folderName + File.separator + "table_" + Lx + "_" + Lz + "_" + extBx + "_" + T[i] + "_" + suppressInternalTransFields + "_" + seed + ".txt", false)) {
+                    OutputWriter latticeOutputWriter = new OutputWriter.Builder(OutputType.SPIN, folderName, 4 * Lx * Lx * Lz, latticeOut)
+                            .build();
+                    ((MultipleTMonteCarloSimulation) simulation).getIthSubSimulation(i).setOutWriter(latticeOutputWriter);
+                    ((MultipleTMonteCarloSimulation) simulation).getIthSubSimulation(i).getLattice().setIntTable(intTable); // set intTable to new one with off-diagonal interactions
+                    ((MultipleTMonteCarloSimulation) simulation).getIthSubSimulation(i).printRunParameters(VERSION, T, "# NOTICE: The local transverse (x,y) fields are \"hypothetical\", meaning that if suppressInternalTransFields is true (see above), they are effectively always (localBx=extBx,localBy=0)." + System.lineSeparator() + ((MultipleTMonteCarloSimulation) simulation).getIthSubSimulation(i).getOutWriter().makeTableHeader(), simulation.getSeed(), tempScheduleFileName, parallelTemperingOff);
+                    ((MultipleTMonteCarloSimulation) simulation).getIthSubSimulation(i).printSimulationState();
+
+                } catch (IOException e){
+                    System.err.println("error writing lattice state to file: " + e.toString());
+                    e.printStackTrace();
+                }
+            }
+
+        }catch (IOException e) {
+            System.err.println("error writing to file: " + e.toString());
+            e.printStackTrace();
+        }
         finally {
             // close all outputs
             if (simulation!=null){
