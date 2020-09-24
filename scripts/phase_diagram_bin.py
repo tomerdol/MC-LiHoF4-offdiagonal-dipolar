@@ -212,7 +212,7 @@ def main():
                     continue
                 
                 good_fit=False
-                delta=0.06
+                delta=0.04
                 while not good_fit and delta<0.2:
                     min_x = initial_xc-delta
                     max_x = initial_xc+delta

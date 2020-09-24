@@ -10,14 +10,14 @@ name="res_test"
 #arrayH=( 0.0 )
 
 #next:
-#arrayMech=( "true" )
-#arrayL=( 6 )
-#arrayH=( 0.0 )
+arrayMech=( "true" )
+arrayL=( 6 )
+arrayH=( 0.0 )
 
 #next next:
-arrayMech=( "false" "true" )
-arrayL=( 6 5 4 )
-arrayH=( 0.3 )
+#arrayMech=( "false" "true" )
+#arrayL=( 6 5 4 )
+#arrayH=( 0.3 )
 
 sub() {
 temp="$1"
