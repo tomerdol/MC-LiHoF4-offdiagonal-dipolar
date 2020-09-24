@@ -1,9 +1,9 @@
 package simulation.montecarlo;
 
 public class ObservableExtractor {
-    private double[] k_cos_table, k_sin_table;
+    private double[][] k_cos_table, k_sin_table;
 
-    public ObservableExtractor(double[] k_cos_table, double[] k_sin_table){
+    public ObservableExtractor(double[][] k_cos_table, double[][] k_sin_table){
         this.k_cos_table=k_cos_table;
         this.k_sin_table=k_sin_table;
     }
@@ -50,17 +50,18 @@ public class ObservableExtractor {
     }
 
 
-    public double calc_mk2(singleSpin[] arr){
-        double mkx=0, mky=0;
-        for (int i=0;i<arr.length;i++){
-            //mkx += arr[i].getSpin()*k_cos_table[i];
-            //mky += arr[i].getSpin()*k_sin_table[i];
-            //mkx += arr[i].getSpin()*arr[i].getSpinSize()*k_cos_table[i];
-            //mky += arr[i].getSpin()*arr[i].getSpinSize()*k_sin_table[i];
-            mkx += arr[i].getSpinSize()*k_cos_table[i];
-            mky += arr[i].getSpinSize()*k_sin_table[i];
+    public double[] calc_mk2(singleSpin[] arr){
+        double[] mk2 = new double[3];
+        for (int dim=0;dim<3;dim++) {
+            double mkCos=0, mkSin=0;
+            for (int i = 0; i < arr.length; i++) {
+                mkCos += arr[i].getSpinSize() * k_cos_table[dim][i];
+                mkSin += arr[i].getSpinSize() * k_sin_table[dim][i];
+            }
+            mk2[dim] = (mkCos*mkCos + mkSin*mkSin)/(arr.length*arr.length);
         }
-        return (mkx*mkx + mky*mky)/(arr.length*arr.length);
+
+        return mk2;
     }
 
 

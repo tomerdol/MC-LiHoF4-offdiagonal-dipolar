@@ -17,13 +17,29 @@ import java.util.Properties;
 public class Main {
 
     // fills the sin and cos tables for mk^2
-    public static void create_cos_sin_tables(singleSpin[] arr, int Lz, int Lx, double[] k_cos_table, double[] k_sin_table){
+    public static void create_cos_sin_tables(singleSpin[] arr, int Lz, int Lx, double[][] k_cos_table, double[][] k_sin_table){
+        // for correlation length along x
         double actual_length = Lx*Constants.a;
         double k = 2*Math.PI/actual_length;
-
         for (int i=0; i<arr.length;i++){
-            k_cos_table[i] = Math.cos(k*arr[i].getX(Lz,Lx));
-            k_sin_table[i] = Math.sin(k*arr[i].getX(Lz,Lx));
+            k_cos_table[0][i] = Math.cos(k*arr[i].getX(Lz,Lx));
+            k_sin_table[0][i] = Math.sin(k*arr[i].getX(Lz,Lx));
+        }
+
+        // for correlation length along y
+        actual_length = Lx*Constants.a;
+        k = 2*Math.PI/actual_length;
+        for (int i=0; i<arr.length;i++){
+            k_cos_table[1][i] = Math.cos(k*arr[i].getY(Lz,Lx));
+            k_sin_table[1][i] = Math.sin(k*arr[i].getY(Lz,Lx));
+        }
+
+        // for correlation length along z
+        actual_length = Lz*Constants.c;
+        k = 2*Math.PI/actual_length;
+        for (int i=0; i<arr.length;i++){
+            k_cos_table[2][i] = Math.cos(k*arr[i].getZ(Lz,Lx));
+            k_sin_table[2][i] = Math.sin(k*arr[i].getZ(Lz,Lx));
         }
     }
 
@@ -628,15 +644,15 @@ public class Main {
 
         int[][] nnArray = exchangeInt(exchangeIntTable, Lx, Lz, J_ex);	// receive the nearest neighbor array and fill exchangeIntTable with the exchange interaction values
 
-        final double[] k_cos_table, k_sin_table;
+        final double[][] k_cos_table, k_sin_table;
         {   // code block: tempLattice is discarded at the end
 
             // temporary lattice objecct used to create k_tables
             Lattice tempLattice = new Lattice(Lx, Lz, extBx, suppressInternalTransFields, spinSize,null, null, null, null, null, null);
 
             // initialize sin, cos tables for mk^2 calculation (correlation length)
-            k_cos_table = new double[tempLattice.getN()];
-            k_sin_table = new double[tempLattice.getN()];
+            k_cos_table = new double[3][tempLattice.getN()];
+            k_sin_table = new double[3][tempLattice.getN()];
             create_cos_sin_tables(tempLattice.getArray(), Lz, Lx, k_cos_table, k_sin_table);
         }
 
@@ -732,7 +748,7 @@ public class Main {
                     // initialize new simulation
                     Lattice lattice = new Lattice(Lx, Lz, extBx, suppressInternalTransFields, spinSize, intTable, exchangeIntTable, nnArray, energyTable, momentTable, measure);
                     rnd[i] = new MersenneTwister(seeds[i]);
-                    subSimulations[i] = new SingleTMonteCarloSimulation(T[i], i, T.length, lattice, 32, maxSweeps, seeds[i], rnd[i], continueFromSave,
+                    subSimulations[i] = new SingleTMonteCarloSimulation(T[i], i, T.length, lattice, 36, maxSweeps, seeds[i], rnd[i], continueFromSave,
                             realTimeEqTest, outputWriter, saveState, maxIter, alpha, outProblematicConfigs, spinSize, tol, J_ex);
                     // print parameters and table headers
                     subSimulations[i].printRunParameters(VERSION, T, "# unsuccessful reading checkpoint... Starting new state."+System.lineSeparator()+outputWriter.makeTableHeader(), seed, tempScheduleFileName, parallelTemperingOff);

@@ -608,7 +608,7 @@ public class Lattice implements Serializable {
         return measure.meanField(lattice);
     }
 
-    public double getMK2(){ return measure.calc_mk2(lattice); }
+    public double[] getMK2(){ return measure.calc_mk2(lattice); }
 
     public double getMagnetization(){
         return measure.calcMagnetization(lattice);
