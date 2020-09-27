@@ -52,6 +52,7 @@ def get_simulations(all_L, all_folderName, all_Bex, all_mech, T=None):
                 curr_simulations['T']=closest_temperatures
             curr_simulations[['L','folderName','Bex','mech']] = x
             simulations = simulations.append(curr_simulations)
+    simulations.reset_index(inplace=True)
     print(simulations)
     return simulations
 
@@ -87,9 +88,12 @@ def get_simulation(L, folderName, Bex, mech, T):
 def get_table_data_by_fname(fname, print_prog=True):
     try:
         col_names = pd.read_csv(fname, delim_whitespace=True, error_bad_lines=False, comment='#', nrows=0).columns
-        types_dict = {'index': int, 'swap': int, 'bin' : int}
+        types_dict = {'index': int, 'swap': int, 'bin' : int, 'n' : int}
         types_dict.update({col: np.float64 for col in col_names if col not in types_dict})
-        index_col = 'index' if 'index' in col_names else 'bin'
+        possible_index_column_names = ['index', 'bin', 'n']
+        index_col = [name for name in possible_index_column_names if name in col_names]
+        if len(index_col) != 1:
+            raise Exception("Error finding index column. Possible matches: " + str(index_col))
         y = pd.read_csv(fname, delim_whitespace=True, error_bad_lines=False, index_col=index_col, comment='#',dtype=types_dict)
 
     except Exception as e:
