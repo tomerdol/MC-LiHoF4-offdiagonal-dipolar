@@ -23,7 +23,7 @@ sub() {
 temp="$1"
 max_sweeps="$2"
 runs="$3"
-extra_par="_0.058"
+extra_par="_0.029"
 
 temp_initial="$(echo $temp | head -c 1)"
 

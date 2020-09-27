@@ -101,7 +101,7 @@ def main_plot(L, L_equilibrated_min_value, tau_dict, boot_num, h_ex, mech, folde
                 #L_equilibrated_min_value[L]=int(y.shape[0]/2)
                 if (not L in L_equilibrated_min_value) and start_in_middle==True:
                     L_equilibrated_min_value[L]=int(len(y.index)*0.5)
-                mk2 = y['mk2'].loc[L_equilibrated_min_value[L]::tau_dict[L]]
+                mk2 = y['mk2x'].loc[L_equilibrated_min_value[L]::tau_dict[L]]
                 energy = y['Energy'].loc[L_equilibrated_min_value[L]::tau_dict[L]]
                 mag = y['Magnetization'].loc[L_equilibrated_min_value[L]::tau_dict[L]]
                 if 'Magnetization^2' in y.columns:

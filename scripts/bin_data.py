@@ -183,7 +183,7 @@ def main_bin(simulations):
         #print(glob.glob(path))
         for fname in glob.glob(path):
             tmp_fname_bin = fname.split('/')
-            tmp_fname_bin.insert(3,'binned_data')
+            tmp_fname_bin.insert(4,'binned_data')
             fname_bin='/'.join(tmp_fname_bin)
 
             # first check if there are enough data for a new bin

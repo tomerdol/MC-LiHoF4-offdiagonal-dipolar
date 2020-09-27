@@ -171,7 +171,7 @@ def main():
     print('done.')
     
     print('Testing equilibration... ')
-    to_check = ['Energy','|Magnetization|','Magnetization^2','mk2']
+    to_check = ['Energy','|Magnetization|','Magnetization^2','mk2x']
     simulations = plot_equilibration_pdf_bin.main_check_equilibration(simulations, to_check)
     print('done.')
     # iterate over the 2 mech options. within the loop 'simulations_mech' is a DataFrame for just one of the options

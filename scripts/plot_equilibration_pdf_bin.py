@@ -41,7 +41,7 @@ def to_plot_col_index(to_plot):
         return 2
     if to_plot=='Magnetization^2':
         return 3
-    if to_plot=='mk2':
+    if to_plot=='mk2x':
         return 15
 
 def save_equilibration_data(sim_name, equilibrated_bin):
@@ -143,7 +143,7 @@ def main_plot(simulations, to_plot, L, Bex, folderName, mech):
         #fig.savefig('../figures/plot_equilibration_%s.pdf'%Bex)
 
 def main():
-    to_plot = ['Energy','|Magnetization|','Magnetization^2','mk2']
+    to_plot = ['Energy','|Magnetization|','Magnetization^2','mk2x']
     L = sys.argv[4:]
     Bex = sys.argv[1]
     folderName = sys.argv[2]

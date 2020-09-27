@@ -138,7 +138,7 @@ def main():
     else: 
         folderName_dict={k:folderName_list[i] for i,k in enumerate(all_L)}
     
-    to_check = ['Energy','Magnetization','Magnetization^2','mk2']
+    to_check = ['Energy','Magnetization','Magnetization^2','mk2x']
     
     # file to write results to
     f = open("phase_diagram_%s_%s_res.txt"%(mech,'_'.join(map(str,all_L))), "w")

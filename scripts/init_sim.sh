@@ -3,7 +3,7 @@
 source ./scripts/sub.sh
 
 # this should override the definitions from sub.sh
-name="res_test"
+name="res_test_0.029"
 arrayMech=( "false" "true" )
 arrayL=( 6 5 4 )
 arrayH=( 0.0 0.3 )
@@ -34,7 +34,7 @@ gen_temp_schedules $minT_false $maxT_false "false" "temp_"
 
 # run initial temporary run
 sub "temp_" 513 20
-
+fi
 # wait until temporary runs finish
 running_jobs=$(qstat -u tomerdol | awk '$3 ~ /^tr/' | awk 'END {print NR}')
 while [ $running_jobs -gt 0 ]
@@ -157,7 +157,6 @@ done
 done
 #*************************************************************************
 
-fi
 
 # run simulations
 echo "running simulations"

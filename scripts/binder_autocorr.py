@@ -119,7 +119,7 @@ def plot_relax_times(simulations, to_plot):
     fig.savefig('../figures/plot_relax_times.png',dpi=300)
 
 def main():
-    to_plot = ['Energy','|m|','m2','mk2']
+    to_plot = ['Energy','|m|','m2','mk2x']
     L = sys.argv[4:]
     Bex = sys.argv[1]
     folderName = sys.argv[2]

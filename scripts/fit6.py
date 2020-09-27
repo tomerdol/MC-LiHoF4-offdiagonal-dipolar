@@ -225,7 +225,7 @@ def fit_main(all_L, L_equilibrated_min_value, tau_dict, boot_num, h_ex, mech, fo
                 #print('read %s'%fname)
                 if (not L in L_equilibrated_min_value) and start_in_middle==True:
                     L_equilibrated_min_value[L]=int(len(y.index)*0.5)
-                mk2 = y['mk2'].loc[L_equilibrated_min_value[L]::tau_dict[L]]
+                mk2 = y['mk2x'].loc[L_equilibrated_min_value[L]::tau_dict[L]]
                 if 'Magnetization^2' in y.columns: 
                     m2 = y['Magnetization^2'].loc[L_equilibrated_min_value[L]::tau_dict[L]]
                 else:
@@ -328,7 +328,7 @@ def fit_bin(simulations, boot_num, min_x, max_x, initial_xc, fit_options):
     for i, sim in enumerate(simulations.itertuples()):
         y = bin_data.read_binned_data(sim, use_latest=False)
         for boot_index in range(boot_num):
-            results[i,boot_index] = fit_options['func'](y['Magnetization^2'].sample(frac=1,replace=True),y['Magnetization^4'].sample(frac=1,replace=True),y['mk2'].sample(frac=1,replace=True),sim.L)
+            results[i,boot_index] = fit_options['func'](y['Magnetization^2'].sample(frac=1,replace=True),y['Magnetization^4'].sample(frac=1,replace=True),y['mk2x'].sample(frac=1,replace=True),sim.L)
     
     for col in results.T:
         # now iterating over the bootstrap datasets

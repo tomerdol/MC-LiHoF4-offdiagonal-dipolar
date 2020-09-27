@@ -145,7 +145,7 @@ def check_equilib(T, to_check, L, Bex, folderName, mech, folder='../data/results
     return min_steps_dict
 
 def main():
-    to_check = ['Energy','Magnetization','Magnetization^2','mk2']
+    to_check = ['Energy','Magnetization','Magnetization^2','mk2x']
     L = sys.argv[4:]
     Bex = sys.argv[1]
     folderName = sys.argv[2]
