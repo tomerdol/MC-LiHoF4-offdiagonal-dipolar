@@ -35,9 +35,13 @@ def main_hist(simulations, to_plot):
         all_simulations.append(data)
     all_simulations = pd.concat(all_simulations, axis=0, ignore_index=True)
 
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(10,10))
+    histograms_to_plot=[]
+    histogram_labels=[]
     for (label, df) in all_simulations.groupby('Simulation'):
-        plt.hist(df[to_plot], bins=30, alpha=0.5, label=str(simulations.loc[int(label)].values.tolist()))
+        histograms_to_plot.append(df[to_plot].to_numpy())
+        histogram_labels.append(str(simulations.loc[int(label)].values.tolist()))
+    plt.hist(histograms_to_plot, bins=30, alpha=0.5, label=histogram_labels)
     # plot = all_simulations.hist(column=to_plot, by='Simulation', grid=True, sharex=True)
     plt.legend()
     fig.savefig('../figures/foo.png')

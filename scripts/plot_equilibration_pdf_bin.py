@@ -69,7 +69,7 @@ def main_check_equilibration(simulations, to_check):
         if group_df['overwrite'].any():
             max_bin=0
             for i, sim in enumerate(group_df.itertuples()):
-                data=bin_data.read_binned(sim, use_latest=False)
+                data = bin_data.read_binned(sim, use_latest=False)
                 for to_check_now in to_check:
                     a_index=data[0][:,0]
                     a=data[0][:,to_plot_col_index(to_check_now)]

@@ -95,7 +95,7 @@ def main_plot(simulations, boot_num, plot_options, to_plot=''):
         for boot_index in range(boot_num):
             if to_plot=='':
                 # this means a scaling function (Binder ratio or correlation length should be plotted, according to what is defined in plot_options)
-                single_ydata.append(plot_options['func'](y['Magnetization^2'].sample(frac=1,replace=True),y['Magnetization^4'].sample(frac=1,replace=True),y['mk2'].sample(frac=1,replace=True),sim.L))  # current y value
+                single_ydata.append(plot_options['func'](y['Magnetization^2'].sample(frac=1,replace=True),y['Magnetization^4'].sample(frac=1,replace=True),y['mk2x'].sample(frac=1,replace=True),sim.L))  # current y value
             else:
                 # this means 'to_plot' should be plotted
                 single_ydata.append(plot_options['func'](y[to_plot].sample(frac=1,replace=True)))

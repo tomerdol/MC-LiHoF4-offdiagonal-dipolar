@@ -3,7 +3,7 @@
 source ./scripts/sub.sh
 
 # this should override the definitions from sub.sh
-name="res_test_0.029"
+name="res_test_0.014"
 arrayMech=( "false" "true" )
 arrayL=( 6 5 4 )
 arrayH=( 0.0 0.3 )
@@ -26,7 +26,7 @@ echo "generated ./temperature_schedules/temp_schedule_${L}_${L}_$4${name}_${H}_$
 done
 done
 }
-if false; then
+if true; then
 # generate temporary temperature schedules for "true"
 gen_temp_schedules $minT_true $maxT_true "true" "temp_"
 # generate temporary temperature schedules for "false"

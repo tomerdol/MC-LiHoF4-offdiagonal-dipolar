@@ -10,6 +10,7 @@ import itertools
 import subprocess
 
 def bin_single_column_data(a, start_bin):
+    # samples that do no fill the last bin are practically discarded
     num_of_bins = int(math.log2(a.size+1))
     
     array = np.empty((num_of_bins,2), dtype=float)
@@ -18,8 +19,13 @@ def bin_single_column_data(a, start_bin):
         N = a.loc[2**(i)-1:2**(i+1)-2].size # number of samples in current bin
         if N > 0:
             # pandas .loc[] function is inclusive on both ends!
-            array[i,0] = np.sum(a.loc[2**(i)-1:2**(i+1)-2]) / N
-            array[i,1] = np.sum(a.loc[2**(i)-1:2**(i+1)-2]**2) / N
+            bin_arr = a.loc[2**(i)-1:2**(i+1)-2].to_numpy()
+            if np.isnan(bin_arr).any():
+                array[i,0] = np.nan
+                array[i,1] = np.nan
+            else:
+                array[i,0] = np.sum(bin_arr) / N
+                array[i,1] = np.sum(bin_arr**2) / N
             if (array[i,1] - array[i,0]**2 > 0):
                 array[i,1] = math.sqrt((array[i,1] - array[i,0]**2)/(N-1))
             else:
@@ -96,8 +102,8 @@ def read_binned(sim, use_latest=True):
         first_iter=False
         arrays.append(curr_array)
         seeds.append(fname.split("_")[-1].split(".")[0])    # extract and save seed from file name
-    if abs(max_bins-min_bins)>1:
-        print('one of the simulations might be lagging behind: max_bins=%s, min_bins=%s'%(max_bins,min_bins))
+    if abs(max_bins-min_bins)>0:
+        raise Exception('one of the simulations might be lagging behind: max_bins=%s, min_bins=%s \n Simulation details: %s \n Seed: %s'%(max_bins,min_bins,sim,seeds[-1]))
     if use_latest:
         # remove any runs that have length smaller than max_bins, so only the most advanced runs are used
         arrays = list(filter(lambda x: len(x)==max_bins, arrays))
@@ -159,24 +165,63 @@ def bin_by_fname(fname, fname_bin, l, start_bin=0):
             binned_data.to_string(outfile,index=False)
 
 
+def reverse_readline(filename, buf_size=8192):
+    """A generator that returns the lines of a file in reverse order"""
+    with open(filename) as fh:
+        segment = None
+        offset = 0
+        fh.seek(0, os.SEEK_END)
+        file_size = remaining_size = fh.tell()
+        while remaining_size > 0:
+            offset = min(file_size, offset + buf_size)
+            fh.seek(file_size - offset)
+            buffer = fh.read(min(remaining_size, buf_size))
+            remaining_size -= buf_size
+            lines = buffer.split('\n')
+            # The first line of the buffer is probably not a complete line so
+            # we'll save it and append it to the last line of the next buffer
+            # we read
+            if segment is not None:
+                # If the previous chunk starts right from the beginning of line
+                # do not concat the segment to the last line of new chunk.
+                # Instead, yield the segment first
+                if buffer[-1] != '\n':
+                    lines[-1] += segment
+                else:
+                    yield segment
+            segment = lines[0]
+            for index in range(len(lines) - 1, 0, -1):
+                if lines[index]:
+                    yield lines[index]
+        # Don't yield None if the file was empty
+        if segment is not None:
+            yield segment
+
+
 def last_index(fname):
     try:
         # get last line from the binned_data file (and suppress stderr)
-        with open(os.devnull, 'w') as devnull:
-            line = subprocess.check_output(['tail', '-1', fname], stderr=devnull)
-        line = line.split()
-        return int(line[0]) + 1
+        for line in reverse_readline(fname):
+            if line[0] != '#':
+                return int(line.split()[0])
+        # ret=0
+        # while ret == 0:
+        #     num_of_lines_from_end = 10
+        #     with open(os.devnull, 'w') as devnull:
+        #         lines = subprocess.check_output(['tail', '-'+str(num_of_lines_from_end), fname], stderr=devnull)
+        #     lines = lines.splitlines(False)[-1].split() # Split to lines and then by whitespace
+        #     ret = int(lines[0])
     except subprocess.CalledProcessError:
         # most probably the file just hasn't been created yet, but any other problem just means we bin the data from the beginning
         return 0
-    except ValueError as e:
+    except ValueError:
         # probably the file has been created but has no data yet (just headers)
-        return -1 
+        return -1
+    except OSError:
+        return -1
 
 
 def main_bin(simulations):
-    
-
     for sim in simulations.itertuples(index=False):
         mkdir('../data/results/'+sim.folderName+'/binned_data')
         path='../data/results/'+sim.folderName+'/table_'+str(sim.L)+'_'+str(sim.L)+'_'+str(sim.Bex)+'_'+str(sim.T)+'_'+str(sim.mech)+'_'+'*'+'.txt'
@@ -189,13 +234,16 @@ def main_bin(simulations):
             # first check if there are enough data for a new bin
             last_bin = last_index(fname_bin)
             last_sample = last_index(fname)
-            if last_sample>=0 and (2*(2**(last_bin+1) - 1) <= last_sample): 
-                print('rewriting bins for simulation: %s. seed: %s' % (str(sim),fname.split("_")[-1].split(".")[0]))
-                bin_by_fname(fname, fname_bin, sim.L)
+            if last_sample<0:
+                print('No data in simulation: %s. seed: %s. Skipping.' % (str(sim),fname.split("_")[-1].split(".")[0]))
             else:
-                print('not writing bins for simulation: %s. seed: %s' % (str(sim),fname.split("_")[-1].split(".")[0]))
-                # not enough data for another bin
-                pass
+                if (2*(2**(last_bin+1) - 1) <= last_sample):
+                    print('rewriting bins for simulation: %s. seed: %s' % (str(sim),fname.split("_")[-1].split(".")[0]))
+                    bin_by_fname(fname, fname_bin, sim.L)
+                else:
+                    print('not writing bins for simulation: %s. seed: %s' % (str(sim),fname.split("_")[-1].split(".")[0]))
+                    # not enough data for another bin
+                    pass
             
 def main():
     L = sys.argv[4:]
