@@ -143,7 +143,7 @@ def plot_multiple(f, all_L, param, err_pfit, xdata, all_ydata, err_y, h_ex, mech
     fig.savefig('../figures/fit_%s_%s_%s_%s.eps'%(h_ex,mech,'_'.join(map(str,all_L)),index),format='eps')
 
 
-def plot_multiple_bin(f, simulations, param, err_pfit, err_y, h_ex, mech, plot_options, index=''):
+def plot_multiple_bin(f, simulations, param, err_pfit, err_y, h_ex, mech, folderName, plot_options, index=''):
     
     markers=['o','s','^','D','v']
     
@@ -187,8 +187,8 @@ def plot_multiple_bin(f, simulations, param, err_pfit, err_y, h_ex, mech, plot_o
     #fig.tight_layout(rect=[0, 0.03, 1, 0.95])
     plt.tight_layout(pad=1.08)
     
-    fig.savefig('../figures/fit_%s_%s_%s_%s.eps'%(h_ex,mech,'_'.join(map(str,simulations['L'].unique().tolist())),index),format='eps')
-    fig.savefig('../figures/fit_%s_%s_%s_%s.png'%(h_ex,mech,'_'.join(map(str,simulations['L'].unique().tolist())),index),dpi=300)
+    fig.savefig('../figures/fit_%s_%s_%s_%s_%s.eps'%(h_ex,mech,'_'.join(map(str,simulations['L'].unique().tolist())), folderName, index),format='eps')
+    fig.savefig('../figures/fit_%s_%s_%s_%s_%s.png'%(h_ex,mech,'_'.join(map(str,simulations['L'].unique().tolist())), folderName, index),dpi=300)
 
 def str_with_err(value, error):
     digits = -int(math.floor(math.log10(error)))
@@ -365,7 +365,7 @@ def fit_bin(simulations, boot_num, min_x, max_x, initial_xc, fit_options):
     mean_pfit = np.mean(ps,0)
     err_pfit = Nsigma * np.std(ps,0)
     
-    plot_multiple_bin(f, simulations, mean_pfit, err_pfit, err_y, simulations['Bex'].iloc[0], simulations['mech'].iloc[0], fit_options)
+    plot_multiple_bin(f, simulations, mean_pfit, err_pfit, err_y, simulations['Bex'].iloc[0], simulations['mech'].iloc[0], simulations['folderName'].iloc[0], fit_options)
     pfit_bootstrap = mean_pfit
     perr_bootstrap = err_pfit
     print('parameters: '+str(pfit_bootstrap))

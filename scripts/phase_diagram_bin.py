@@ -249,7 +249,7 @@ def main():
                         shift=1.53-x_c
                     elif shift==None:
                         shift=0
-                    ax.errorbar(x_c+shift,Bex,yerr=None, xerr=x_c_err, label=folderName)
+                    ax.errorbar(x_c+shift,Bex,yerr=None, xerr=x_c_err, label=folderName, color='b')
                     print("%s\t%s\t%s\n"%(x_c,x_c_err,Bex))
                     # write to file
                     f.write("%s\t%s\t%s\t%s\n"%(x_c,x_c_err,Bex,folderName))
@@ -259,7 +259,7 @@ def main():
         f.close()
     
         #save fig
-        fig.savefig('../figures/phase_diagram_%s_%s.png'%(mech,'_'.join(map(str,all_L))))
+        fig.savefig('../figures/phase_diagram_%s_%s_%s.png'%(mech,'_'.join(map(str,all_L)),folderName_list[0]))
     #os.system("rsync -avzhe ssh ../figures/ tomerdol@newphysnet1:~/graphs/")
     
 if __name__ == "__main__":
