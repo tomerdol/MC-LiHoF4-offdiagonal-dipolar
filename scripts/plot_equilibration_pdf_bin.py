@@ -90,44 +90,53 @@ def main_check_equilibration(simulations, to_check):
     return simulations
 
 
+def legend_without_duplicate_labels(ax):
+    handles, labels = ax.get_legend_handles_labels()
+    unique = [(h, l) for i, (h, l) in enumerate(zip(handles, labels)) if l not in labels[:i]]
+    ax.legend(*zip(*unique))
+
+
 def main_plot(simulations, to_plot, L, Bex, folderName, mech):
-    markers=['o','s','^','D','v']	
+    markers = ['o','s','^','D','v']
+    colors = ("red", "green", "blue", "yellow", "orange")
+    groups = simulations['L'].unique().tolist()
+    fig, ax = plt.subplots()
     with PdfPages('../figures/plot_equilibration_%s_%s.pdf'%(Bex,mech)) as pdf:
         
         for temperature_index, temperature in enumerate(simulations['T'].unique()):
-            fig, axes = plt.subplots(len(to_plot),1, figsize=(7,len(to_plot)*3))
+            pdf_fig, pdf_axes = plt.subplots(len(to_plot),1, figsize=(7,len(to_plot)*3))
             for i, sim in enumerate(simulations[simulations['T']==temperature].itertuples()):
                 data=bin_data.read_binned(sim, use_latest=False)
                 
-                axes[0].set_title("Bex=%s , T=%1.5f"%(sim.Bex,temperature))
+                pdf_axes[0].set_title("Bex=%s , T=%1.5f"%(sim.Bex,temperature))
                 for to_plot_index, to_plot_now in enumerate(to_plot):
                     a_index=data[0][:,0]
                     a=data[0][:,to_plot_col_index(to_plot_now)]
                     a_err=data[1][:,to_plot_col_index(to_plot_now)]
-                    #a=a[12:]
-                    #a_err=a_err[12:]
+                    # a=a[12:]
+                    # a_err=a_err[12:]
                     num_of_bins = len(a)
-                    
-                    
-                    line = axes[to_plot_index].errorbar(a_index,a,yerr=a_err,fmt=markers[i % len(markers)]+'-',label=sim.L,capsize=2,fillstyle='none',mew=.7,linewidth=0.5)
+
+                    line = pdf_axes[to_plot_index].errorbar(a_index,a,yerr=a_err,fmt=markers[i % len(markers)]+'-',label=sim.L,capsize=2,fillstyle='none',mew=.7,linewidth=0.5)
                     equilibrated_bin = check_equilibration(np.stack([a,a_err],axis=-1),3,3)
-                    axes[to_plot_index].annotate('',(equilibrated_bin,a[equilibrated_bin if equilibrated_bin<num_of_bins else equilibrated_bin-1]),xytext=(i,-4),textcoords='offset points',arrowprops=dict(arrowstyle='simple', color=line.lines[0].get_color()))
- 
-                    #axes[to_plot_index].annotate('',(equilibrated_bin,array[equilibrated_bin if equilibrated_bin<num_of_bins else equilibrated_bin-1,0]),xytext=(l_index,-4),textcoords='offset points',arrowprops=dict(arrowstyle='simple', color=line.lines[0].get_color()))
-                    #if max_num_of_bins+1 > int(axes[to_plot_index].get_xticks(minor=False)[-1]):
+                    ax.scatter(temperature, equilibrated_bin, label='L='+str(sim.L), c=colors[groups.index(sim.L)])
+                    pdf_axes[to_plot_index].annotate('',(equilibrated_bin,a[equilibrated_bin if equilibrated_bin<num_of_bins else equilibrated_bin-1]),xytext=(i,-4),textcoords='offset points',arrowprops=dict(arrowstyle='simple', color=line.lines[0].get_color()))
+
+                    # axes[to_plot_index].annotate('',(equilibrated_bin,array[equilibrated_bin if equilibrated_bin<num_of_bins else equilibrated_bin-1,0]),xytext=(l_index,-4),textcoords='offset points',arrowprops=dict(arrowstyle='simple', color=line.lines[0].get_color()))
+                    # if max_num_of_bins+1 > int(axes[to_plot_index].get_xticks(minor=False)[-1]):
                     #    axes[to_plot_index].set_xticks(np.arange(0,max_num_of_bins+1),minor=True)
                     
-                    axes[to_plot_index].set_ylabel(to_plot_now)
-                    axes[to_plot_index].set_xticks(range(math.floor(axes[to_plot_index].get_xlim()[0])+1,math.ceil(axes[to_plot_index].get_xlim()[1])))
+                    pdf_axes[to_plot_index].set_ylabel(to_plot_now)
+                    pdf_axes[to_plot_index].set_xticks(range(math.floor(pdf_axes[to_plot_index].get_xlim()[0])+1,math.ceil(pdf_axes[to_plot_index].get_xlim()[1])))
             
-            handles, labels = axes[0].get_legend_handles_labels()
+            handles, labels = pdf_axes[0].get_legend_handles_labels()
             plt.figlegend(handles, labels, loc='upper right',prop={'size': 10})
             #fig.text(0.5, 0.04, r'MCS bin ($2^{i-1}$ to $2^{i}-1$)', ha='center')
             plt.xlabel(r'MCS bin ($2^{i}-1$ to $2(2^{i}-1)$)')
             plt.xticks(range(math.floor(plt.xlim()[0])+1,math.ceil(plt.xlim()[1])+1))
             
             try:
-                fig.tight_layout()
+                pdf_fig.tight_layout()
             except:
                 pass
             pdf.savefig()
@@ -141,6 +150,11 @@ def main_plot(simulations, to_plot, L, Bex, folderName, mech):
         #plt.xscale('log')
         #plt.show()
         #fig.savefig('../figures/plot_equilibration_%s.pdf'%Bex)
+    legend_without_duplicate_labels(ax)
+    ax.set_xlabel('T')
+    ax.set_ylabel('Equilibrated bin')
+    fig.savefig('../figures/plot_equilibration_%s.png'%Bex)
+
 
 def main():
     to_plot = ['Energy','|Magnetization|','Magnetization^2','mk2x']
@@ -151,7 +165,7 @@ def main():
 
     simulations = analysis_tools.get_simulations(L, folderName, Bex, mech)
     main_plot(simulations, to_plot, L, Bex, folderName, mech)
-    print(main_check_equilibration(simulations, to_plot))
+    # print(main_check_equilibration(simulations, to_plot))
 
 
 if __name__ == "__main__":
