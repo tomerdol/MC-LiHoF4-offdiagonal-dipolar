@@ -6,14 +6,14 @@ arrayL=( 6 7 8 )
 arrayH=( 0.0 0.3 )
 
 # Check input
-if [[ ! $# = 1 || ! $1 =~ ^[0-9]+$ ]]
+if [[ ! $# >= 1 || ! $1 =~ ^[0-9]+$ ]]
 then
-echo "Usage: $0 [# of sweeps]"
+echo "Usage: $0 [# of sweeps] [extra parameter]"
 exit
 fi
 
 max_sweeps=$1
-
+extra=$2
 i=0
 
 for H in "${arrayH[@]}"
@@ -46,7 +46,7 @@ do
       fi
       fi
 
-      qsub -pe shared 24 -l mem_free=40G -V -S /bin/bash -cwd -N tr"$L"_"$H"_"$COUNT"_"$mech_initial" -o ./output/ -e ./output/ -q "$queues" ./scripts/met_with_t.sh "$L" "$L" "$max_sweeps" "$H" "$mech" "$name" "$seed"
+      qsub -pe shared 24 -l mem_free=40G -V -S /bin/bash -cwd -N r"$L"_"$H"_"$COUNT"_"$mech_initial" -o ./output/ -e ./output/ -q "$queues" ./scripts/met_with_t.sh "$L" "$L" "$max_sweeps" "$H" "$mech" "$name" "$seed" "$extra"
       #echo "${seeds[$i]}"
 
       ((COUNT++))

@@ -177,7 +177,7 @@ def main():
     # iterate over the 2 mech options. within the loop 'simulations_mech' is a DataFrame for just one of the options
     for mech, simulations_mech in simulations.groupby(['mech']):
         # file to write results to
-        f = open("phase_diagram_%s_%s_res.txt"%(mech,'_'.join(map(str,all_L))), "w")
+        f = open("phase_diagram_%s_%s_%s_res.txt"%(mech,'_'.join(map(str,all_L)), '_'.join(map(str,folderName_list))), "w")
         f.write('Tc\tTc_err\tBx\tSimulation_name\n')
         
         fig, ax = plt.subplots()
