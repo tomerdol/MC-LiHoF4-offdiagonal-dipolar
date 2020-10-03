@@ -328,7 +328,7 @@ def fit_bin(simulations, boot_num, min_x, max_x, initial_xc, fit_options):
     for i, sim in enumerate(simulations.itertuples()):
         y = bin_data.read_binned_data(sim, use_latest=False)
         for boot_index in range(boot_num):
-            results[i,boot_index] = fit_options['func'](y['Magnetization^2'].sample(frac=1,replace=True),y['Magnetization^4'].sample(frac=1,replace=True),y['mk2x'].sample(frac=1,replace=True),sim.L)
+            results[i,boot_index] = fit_options['func'](y['Magnetization^2'].sample(frac=1,replace=True),y['Magnetization^4'].sample(frac=1,replace=True),y['mk2'+fit_options['corr_length_axis']].sample(frac=1,replace=True),sim.L)
     
     for col in results.T:
         # now iterating over the bootstrap datasets
