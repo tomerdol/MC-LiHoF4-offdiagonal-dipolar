@@ -96,6 +96,12 @@ def get_table_data_by_fname(fname, print_prog=True):
             raise Exception("Error finding index column. Possible matches: " + str(index_col))
         y = pd.read_csv(fname, delim_whitespace=True, error_bad_lines=False, index_col=index_col, comment='#',dtype=types_dict)
 
+        if not y.index.is_unique:
+            # non unique index read from file.
+            # This is rare but could happen if the simulation is stopped exactly between the point at which it writes
+            # the results to file and between the point at which it writes the checkpoint
+            print("Non unique indices found in file %s. Removing duplicates, but the file should also be inspected manually." % fname)
+            y = y.reset_index().drop_duplicates(keep='first').set_index('index')
     except Exception as e:
         print(fname + ' is empty')
         print(e)
