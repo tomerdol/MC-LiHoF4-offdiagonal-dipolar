@@ -24,6 +24,43 @@ def parse_arguments():
     return args
 
 
+def main_hist2(simulations, to_plot, flip=False):
+    fig, ax = plt.subplots(figsize=(10,10))
+    for to_plot_now in to_plot:
+        for i, sim in enumerate(simulations.itertuples()):
+            path='../data/lattice_output/'+sim.folderName+'/table_'+str(sim.L)+'_'+str(sim.L)+'_'+str(sim.Bex)+'_'+str(sim.T)+'_'+str(sim.mech)+'_'+'*'+'.txt'
+
+            file_list = glob.glob(path)
+            data=[]
+            groups=[]
+            num_independent_runs=len(file_list)
+            for i, file in enumerate(file_list):
+                shift = 0 if to_plot_now != 'localBx' else float(simulations['Bex'].iloc[0])
+                temp_data=analysis_tools.get_table_data_by_fname(file)[to_plot_now].to_numpy() - shift
+                data.append(temp_data)
+                groups.append(np.full(temp_data.size,i))
+            data=np.array(data)
+            groups=np.array(groups)
+
+            shared_bins = np.histogram_bin_edges(data, bins='auto')
+            histograms = np.zeros((num_independent_runs, len(shared_bins)-1))
+            for i in range(num_independent_runs):
+                histograms[i], _ = np.histogram(data[groups == i], bins=shared_bins)
+
+            np.mean(histograms,axis=0)
+            plt.hist(np.mean(histograms,axis=0), bins=shared_bins, label=str(sim.tolist()))
+
+            if flip:
+                plt.hist(-np.mean(histograms,axis=0), bins=shared_bins, label="Flipped " + str(sim.tolist()), alpha=0.5)
+
+    plt.legend()
+    plt.title('Distribution of ' + to_plot_now)
+    ax.set_ylabel('# of spins')
+    ax.set_xlabel(to_plot_now + ('' if shift == 0 else ' - ' + str(shift)))
+    fig.savefig('../figures/hist_%s_%s_%s_%s_%s.png'%('_'.join(map(str,simulations['Bex'].unique().tolist())),'_'.join(map(str,simulations['mech'].unique().tolist())),'_'.join(map(str,simulations['L'].unique().tolist())),'_'.join(map(str,simulations['folderName'].unique().tolist())),to_plot_now), dpi=300)
+    plt.close(fig)
+
+
 def main_hist(simulations, to_plot, flip=False):
 
     all_simulations=[]
@@ -72,7 +109,7 @@ def main():
     flip=args.flip
 
     simulations = analysis_tools.get_simulations(L, folderName, h_ex, mech, T=T)
-    main_hist(simulations, to_plot, flip=flip)
+    main_hist2(simulations, to_plot, flip=flip)
 
 
 if __name__ == "__main__":

@@ -48,20 +48,6 @@ def plot_multiple(all_L, xdata, all_ydata, err_y, h_ex):
 
     fig.savefig('../figures/plot_%s.png'%h_ex)
 
-def get_binder(m2,m4):
-    m2=np.mean(m2)
-    m4=np.mean(m4)
-    return 0.5*(3-(m4/(m2**2)))
-
-def get_correlation_length(mk2,m2,L):
-    m2=np.mean(m2)
-    mk2=np.mean(mk2)
-    try:
-        correlation_length=math.sqrt((m2/mk2)-1)/(2*L*math.sin(math.pi/L))
-    except ValueError:
-        correlation_length=0
-    return correlation_length
-
 def calc_error_correction(arr, iter):
     binned_arr=np.copy(arr)
     error_est_arr = np.zeros(iter)
@@ -80,15 +66,10 @@ def get_binned_array(arr):
 def main_plot(simulations, boot_num, plot_options, to_plot=''):
     Nsigma=1.
     markers=['o','s','^','D','v']
-    
 
     all_y_curves = []
     
     for i, sim in enumerate(simulations.itertuples()):
-        y_to_plot=[]
-        y_err_to_plot=[]
-        
-        
         y = bin_data.read_binned_data(sim, use_latest=False, use_bin=sim.eq_bin)
 
         single_ydata=[]
@@ -104,19 +85,14 @@ def main_plot(simulations, boot_num, plot_options, to_plot=''):
         all_yboot=np.array(single_ydata)
         
         y_to_plot = pd.Series([np.mean(all_yboot,0), Nsigma * np.std(all_yboot,0)],index=['y_to_plot','y_to_plot_err'])
-        #y_err_to_plot = Nsigma * np.std(all_yboot,0)
-        
         y_to_plot=y_to_plot.append(pd.Series(sim._asdict()))
-        #y_err_to_plot=y_err_to_plot.append(pd.Series(sim._asdict()))
-        
         #print('Curve to be plotted (L=%s): '%sim.L)
         #print(y_to_plot)
         all_y_curves.append(y_to_plot)
         #all_y_curves_err.append(y_err_to_plot)
        
     all_y_curves = pd.DataFrame(all_y_curves)
-    
-    
+
     fig, ax = plt.subplots(figsize=(8,6))
     
     for (label, df), marker in zip(all_y_curves.groupby(['Bex','L','folderName','mech']), cycle(markers)):
@@ -166,10 +142,11 @@ def main():
     to_plot = args.to_plot
     
     simulations = analysis_tools.get_simulations(L, folderName, h_ex, mech)
-    
+    simulations['eq_bin']=10
     from fit6 import get_binder, get_correlation_length
     #plot_options = {'Name':'g', 'axis_yscale':'linear', 'func':get_binder}
-    plot_options = {'Name':r'$\xi_{L} / L$', 'axis_yscale':'log', 'func':get_correlation_length}
+    corr_length_axis='z'
+    plot_options = {'Name':r'$\xi^{(%s)}_{L} / L$'%corr_length_axis, 'axis_yscale':'log', 'func':get_correlation_length, 'corr_length_axis':corr_length_axis, 'unit_cell_length':2.077294686}
     
     main_plot(simulations, boot_num, plot_options)
     #os.system("rsync -avzhe ssh ../figures/ tomerdol@newphysnet1:~/graphs/")
