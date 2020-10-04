@@ -253,7 +253,7 @@ def fit_main(all_L, L_equilibrated_min_value, tau_dict, boot_num, h_ex, mech, fo
                 ps.append(curr_fit_param.x)
             else:
                 warnings.warn("Fitting did not converge for bootstrap index: %s "%boot_index,stacklevel=2)
-            np.seterr(default_err)
+            np.seterr(**default_err)
 
         #print('boot index: ' + str(boot_index))
     # error is 1 sigma:
@@ -328,7 +328,7 @@ def fit_bin(simulations, boot_num, min_x, max_x, initial_xc, fit_options):
     for i, sim in enumerate(simulations.itertuples()):
         y = bin_data.read_binned_data(sim, use_latest=False)
         for boot_index in range(boot_num):
-            results[i,boot_index] = fit_options['func'](y['Magnetization^2'].sample(frac=1,replace=True),y['Magnetization^4'].sample(frac=1,replace=True),y['mk2'+fit_options['corr_length_axis']].sample(frac=1,replace=True),sim.L)
+            results[i,boot_index] = fit_options['func'](y['Magnetization^2'].sample(frac=1,replace=True),y['Magnetization^4'].sample(frac=1,replace=True),y['mk2'+fit_options['corr_length_axis']].sample(frac=1,replace=True),sim.L*fit_options['unit_cell_length'])
     
     for col in results.T:
         # now iterating over the bootstrap datasets
@@ -346,7 +346,7 @@ def fit_bin(simulations, boot_num, min_x, max_x, initial_xc, fit_options):
                 ps.append(curr_fit_param.x)
             else:
                 warnings.warn("Fitting did not converge for bootstrap index: %s "%boot_index,stacklevel=2)
-            np.seterr(default_err)
+            np.seterr(**default_err)
 
         #print('boot index: ' + str(boot_index))
     # error is 1 sigma:

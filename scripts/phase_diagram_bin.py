@@ -151,12 +151,13 @@ def main():
     mech_list = args.mech
     folderName_list = args.folder_list
     overwrite_tmp = args.overwrite_tmp
-    
+    unit_cell_length_by_axis = {'x':1.0, 'y':1.0, 'z':2.077294686}
+
     # option packages for plotting and fitting: either binder ratio or finite-size correlation length/L
     if args.scaling_func=='binder':
-        plot_options = {'Name':'g', 'axis_yscale':'linear', 'func':fit6.get_binder, 'corr_length_axis':args.corr_length_axis}
+        plot_options = {'Name':'g', 'axis_yscale':'linear', 'func':fit6.get_binder, 'corr_length_axis':args.corr_length_axis, 'unit_cell_length':unit_cell_length_by_axis[args.corr_length_axis]}
     elif args.scaling_func=='corr_length':
-        plot_options = {'Name':r'$\xi^{(%s)}_{L} / L$'%args.corr_length_axis, 'axis_yscale':'log', 'func':fit6.get_correlation_length, 'corr_length_axis':args.corr_length_axis}
+        plot_options = {'Name':r'$\xi^{(%s)}_{L} / L$'%args.corr_length_axis, 'axis_yscale':'log', 'func':fit6.get_correlation_length, 'corr_length_axis':args.corr_length_axis, 'unit_cell_length':unit_cell_length_by_axis[args.corr_length_axis]}
     else:
         raise Exception('Invalid scaling function given! Either \'binder\' or \'corr_length\' are allowed.') 
 
