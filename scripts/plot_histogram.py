@@ -42,16 +42,17 @@ def main_hist2(simulations, to_plot, flip=False):
             data=np.array(data)
             groups=np.array(groups)
 
-            shared_bins = np.histogram_bin_edges(data, bins='auto')
+            shared_bins = np.histogram_bin_edges(data, bins=60)
+
             histograms = np.zeros((num_independent_runs, len(shared_bins)-1))
             for i in range(num_independent_runs):
                 histograms[i], _ = np.histogram(data[groups == i], bins=shared_bins)
-
-            np.mean(histograms,axis=0)
-            plt.hist(np.mean(histograms,axis=0), bins=shared_bins, label=str(sim.tolist()))
+            plt.bar(shared_bins[:-1], np.mean(histograms,axis=0), align='edge', width=[shared_bins[i+1]-shared_bins[i] for i in range(len(shared_bins)-1)], label=list(sim),
+                    yerr=np.std(histograms,axis=0)/np.sqrt(num_independent_runs-1))
 
             if flip:
-                plt.hist(-np.mean(histograms,axis=0), bins=shared_bins, label="Flipped " + str(sim.tolist()), alpha=0.5)
+                plt.bar(-shared_bins[1:], np.mean(histograms,axis=0), align='edge', width=[shared_bins[i+1]-shared_bins[i] for i in range(len(shared_bins)-1)], label=list(sim), alpha=0.5,
+                        yerr=np.std(histograms,axis=0)/np.sqrt(num_independent_runs-1), ecolor='b')
 
     plt.legend()
     plt.title('Distribution of ' + to_plot_now)
