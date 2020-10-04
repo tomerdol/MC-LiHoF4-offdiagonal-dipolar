@@ -25,25 +25,24 @@ def parse_arguments():
     "be used (which probably means older results)."))
     parser.add_argument( "-s", "--scaling_func", choices=['binder','corr_length'], help = "Scaling function to use for finite-size scaling analysis. Possible choices are \'binder\' for the Binder ratio or \'corr_length\' for the finite-size correlation length"
                                                                                           " divided by the linear system size. Default is \'corr_length_x\'." , required=False, default='corr_length')
-    parser.add_argument( "-a", "--corr_length_axis", choices=['x','y','z'], help = "The axis along which the correlation length should be measured for the finite-size correlation length.", required=False, default='x')
+    parser.add_argument( "-a", "--corr_length_axis", nargs='?', choices=['x','y','z'], help = "The axis along which the correlation length should be measured for the finite-size correlation length.", required=False, default='x', const='x')
 
     args = parser.parse_args()
     if len(args.L)<2:
         parser.error("-L must have at least 2 different system sizes for finite size scaling analysis.")
     if len(args.folder_list)>1 and len(args.folder_list)!=len(args.L): 
         parser.error("--folder_list and -L argument number mismatch.")
-    if len(args.corr_length_axis) > 0 and args.scaling_func!='corr_length':
-        parser.error("--corr_length_axis given even though the chosen scaling function is not corr_length.")
-
         
     return args
 
 def find_initial_xc(all_y_curves):
     arr_x=[]
     arr_y=[]
+    y_column = 'y_to_plot' if 'y_to_plot' in all_y_curves.columns else 'scaling_func'
     for L, L_group in all_y_curves.groupby('L'):
         arr_x.append(L_group['T'].to_numpy())
-        arr_y.append(L_group['y_to_plot'].to_numpy())
+        arr_y.append(L_group[y_column].to_numpy())
+
     return find_initial_xc_from_arr(arr_x,arr_y)
 
 def find_initial_xc_from_arr(arr_x,arr_y):
@@ -155,9 +154,9 @@ def main():
     
     # option packages for plotting and fitting: either binder ratio or finite-size correlation length/L
     if args.scaling_func=='binder':
-        plot_options = {'Name':'g', 'axis_yscale':'linear', 'func':fit6.get_binder, 'corr_length_axis':''}
+        plot_options = {'Name':'g', 'axis_yscale':'linear', 'func':fit6.get_binder, 'corr_length_axis':args.corr_length_axis}
     elif args.scaling_func=='corr_length':
-        plot_options = {'Name':r'$\xi^(%s)_{L} / L$'%args.corr_length_axis, 'axis_yscale':'log', 'func':fit6.get_correlation_length, 'corr_length_axis':args.corr_length_axis}
+        plot_options = {'Name':r'$\xi^{(%s)}_{L} / L$'%args.corr_length_axis, 'axis_yscale':'log', 'func':fit6.get_correlation_length, 'corr_length_axis':args.corr_length_axis}
     else:
         raise Exception('Invalid scaling function given! Either \'binder\' or \'corr_length\' are allowed.') 
 
