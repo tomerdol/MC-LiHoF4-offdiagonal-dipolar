@@ -193,28 +193,11 @@ public class Main {
 
                     // nearest neighbors to 0th base atom, including periodic boundary conditions
                     int focusSpin = i*Lx*Lz*4+j*Lz*4+k*4+0;
-                    int neighbor1=-1, neighbor2=-1, neighbor3=-1, neighbor4=-1;
 
-                    neighbor1=i*Lx*Lz*4+j*Lz*4+k*4+1;
-                    if (i==0)
-                        neighbor2=(Lx-1)*Lx*Lz*4+j*Lz*4+k*4+1;
-                    else
-                        neighbor2=(i-1)*Lx*Lz*4+j*Lz*4+k*4+1;
-                    if (k==0)
-                        neighbor4=i*Lx*Lz*4+j*Lz*4+(Lz-1)*4+3;
-                    else
-                        neighbor4=i*Lx*Lz*4+j*Lz*4+(k-1)*4+3;
-
-                    if (j==0 && k==0)
-                        neighbor3=i*Lx*Lz*4+(Lx-1)*Lz*4+(Lz-1)*4+3;
-                    else if(j==0){
-                        neighbor3=i*Lx*Lz*4+(Lx-1)*Lz*4+(k-1)*4+3;
-                    }
-                    else if(k==0){
-                        neighbor3=i*Lx*Lz*4+(j-1)*Lz*4+(Lz-1)*4+3;
-                    }else{
-                        neighbor3=i*Lx*Lz*4+(j-1)*Lz*4+(k-1)*4+3;
-                    }
+                    int neighbor1=i*Lx*Lz*4+j*Lz*4+k*4+1;
+                    int neighbor2=((Lx+i-1)%Lx)*Lx*Lz*4+j*Lz*4+k*4+1;
+                    int neighbor3=i*Lx*Lz*4+((Lx+j-1)%Lx)*Lz*4+((Lz+k-1)%Lz)*4+3;
+                    int neighbor4=i*Lx*Lz*4+j*Lz*4+((Lz+k-1)%Lz)*4+3;
 
                     // put interactions in intTable and nearest neighbor indices in nnArray
                     addExchangeToNeighbor(focusSpin, neighbor1, neighbor2, neighbor3, neighbor4, nnArray, nnArray_test, intTable, J_ex);
@@ -224,16 +207,9 @@ public class Main {
 
                     neighbor3=i*Lx*Lz*4+j*Lz*4+k*4+1;
                     neighbor2=i*Lx*Lz*4+j*Lz*4+k*4+3;
-                    if (i==Lx-1)
-                        neighbor1=(0)*Lx*Lz*4+j*Lz*4+k*4+3;
-                    else
-                        neighbor1=(i+1)*Lx*Lz*4+j*Lz*4+k*4+3;
-                    if (j==Lx-1)
-                        neighbor4=i*Lx*Lz*4+(0)*Lz*4+k*4+1;
-                    else
-                        neighbor4=i*Lx*Lz*4+(j+1)*Lz*4+k*4+1;
-
-                        // put interactions in intTable and nearest neighbor indices in nnArray
+                    neighbor1=((i+1)%Lx)*Lx*Lz*4+j*Lz*4+k*4+3;
+                    neighbor4=i*Lx*Lz*4+((j+1)%Lx)*Lz*4+k*4+1;
+                    // put interactions in intTable and nearest neighbor indices in nnArray
                     addExchangeToNeighbor(focusSpin, neighbor1, neighbor2, neighbor3, neighbor4, nnArray, nnArray_test, intTable, J_ex);
 
                 }
