@@ -25,8 +25,12 @@ def parse_arguments():
 
 
 def main_hist2(simulations, to_plot, flip=False):
+    from fit6 import str_with_err
     fig, ax = plt.subplots(figsize=(10,10))
     for to_plot_now in to_plot:
+        num_of_simulations_to_plot=len(simulations)
+        multiple_sim_data=[]
+        multiple_sim_groups=[]
         for i, sim in enumerate(simulations.itertuples()):
             path='../data/lattice_output/'+sim.folderName+'/table_'+str(sim.L)+'_'+str(sim.L)+'_'+str(sim.Bex)+'_'+str(sim.T)+'_'+str(sim.mech)+'_'+'*'+'.txt'
 
@@ -39,22 +43,54 @@ def main_hist2(simulations, to_plot, flip=False):
                 temp_data=analysis_tools.get_table_data_by_fname(file)[to_plot_now].to_numpy() - shift
                 data.append(temp_data)
                 groups.append(np.full(temp_data.size,i))
-            data=np.array(data)
-            groups=np.array(groups)
+            data=np.concatenate(data).ravel()
+            groups=np.concatenate(groups).ravel()
+            multiple_sim_data.append(data)
+            multiple_sim_groups.append(groups)
+            if flip:
+                multiple_sim_data.append(-data)
+                multiple_sim_groups.append(groups)
+        shared_bins = np.histogram_bin_edges(np.concatenate(multiple_sim_data).ravel(), bins=120)
 
-            shared_bins = np.histogram_bin_edges(data, bins=60)
+        for i, sim in enumerate(simulations.itertuples()):
+            sim_index=i if not flip else i*2
+            data=multiple_sim_data[sim_index]
+            groups=multiple_sim_groups[sim_index]
+            shared_bins_to_plot = shared_bins[:-1] + i*np.diff(shared_bins)/num_of_simulations_to_plot
 
             histograms = np.zeros((num_independent_runs, len(shared_bins)-1))
+            simple_values=np.zeros(num_independent_runs)
+            abs_values=np.zeros(num_independent_runs)
+            standard_deviations=np.zeros(num_independent_runs)
             for i in range(num_independent_runs):
+                simple_values[i] = np.mean(data[groups==i])
+                abs_values[i] = np.mean(np.abs(data[groups==i]))
+                standard_deviations[i] = np.sqrt(np.mean(data[groups==i]**2))
                 histograms[i], _ = np.histogram(data[groups == i], bins=shared_bins)
-            plt.bar(shared_bins[:-1], np.mean(histograms,axis=0), align='edge', width=[shared_bins[i+1]-shared_bins[i] for i in range(len(shared_bins)-1)], label=list(sim),
+            simple_values_mean = simple_values.mean()
+            simple_values_err = simple_values.std()/np.sqrt(simple_values.size-1)
+            abs_values_mean = abs_values.mean()
+            abs_values_err = abs_values.std()/np.sqrt(abs_values.size-1)
+            sd_mean = standard_deviations.mean()
+            sd_err = standard_deviations.std()/np.sqrt(standard_deviations.size-1)
+            print(list(sim))
+            print("-"*len(str(list(sim))))
+            print("MEAN: " + str(simple_values_mean) + ' +- ' + str(simple_values_err))
+            print("ABS: " + str(abs_values_mean) + ' +- ' + str(abs_values_err))
+            print("SD: " + str(sd_mean) + ' +- ' + str(sd_err))
+            plt.bar(shared_bins_to_plot, np.mean(histograms,axis=0), align='edge', width=np.diff(shared_bins)/num_of_simulations_to_plot, label="%s, MEAN=%s, ABS=%s, SD=%s" % (list(sim), str_with_err(simple_values_mean,simple_values_err), str_with_err(abs_values_mean,abs_values_err), str_with_err(sd_mean,sd_err)),
                     yerr=np.std(histograms,axis=0)/np.sqrt(num_independent_runs-1))
 
             if flip:
-                plt.bar(-shared_bins[1:], np.mean(histograms,axis=0), align='edge', width=[shared_bins[i+1]-shared_bins[i] for i in range(len(shared_bins)-1)], label=list(sim), alpha=0.5,
+                data=multiple_sim_data[sim_index+1]
+                groups=multiple_sim_groups[sim_index+1]
+                for i in range(num_independent_runs):
+                    histograms[i], _ = np.histogram(data[groups == i], bins=shared_bins)
+                plt.bar(shared_bins_to_plot, np.mean(histograms,axis=0), align='edge', width=np.diff(shared_bins)/num_of_simulations_to_plot, label='Flipped %s' % list(sim), alpha=0.5,
                         yerr=np.std(histograms,axis=0)/np.sqrt(num_independent_runs-1), ecolor='b')
 
     plt.legend()
+    plt.grid()
     plt.title('Distribution of ' + to_plot_now)
     ax.set_ylabel('# of spins')
     ax.set_xlabel(to_plot_now + ('' if shift == 0 else ' - ' + str(shift)))

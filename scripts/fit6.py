@@ -194,6 +194,7 @@ def str_with_err(value, error):
     digits = -int(math.floor(math.log10(error)))
     return "{0:.{2}f}({1:.0f})".format(value, error*10**digits, digits)
 
+
 def get_binder(m2,m4,mk2,L):
     m2=np.mean(m2)
     m4=np.mean(m4)
