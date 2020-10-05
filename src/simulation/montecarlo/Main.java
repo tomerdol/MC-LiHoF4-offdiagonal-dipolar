@@ -201,19 +201,19 @@ public class Main {
                     else
                         neighbor2=(i-1)*Lx*Lz*4+j*Lz*4+k*4+1;
                     if (k==0)
-                        neighbor3=i*Lx*Lz*4+j*Lz*4+(Lz-1)*4+3;
+                        neighbor4=i*Lx*Lz*4+j*Lz*4+(Lz-1)*4+3;
                     else
-                        neighbor3=i*Lx*Lz*4+j*Lz*4+(k-1)*4+3;
+                        neighbor4=i*Lx*Lz*4+j*Lz*4+(k-1)*4+3;
 
                     if (j==0 && k==0)
-                        neighbor4=i*Lx*Lz*4+(Lx-1)*Lz*4+(Lz-1)*4+3;
+                        neighbor3=i*Lx*Lz*4+(Lx-1)*Lz*4+(Lz-1)*4+3;
                     else if(j==0){
-                        neighbor4=i*Lx*Lz*4+(Lx-1)*Lz*4+(k-1)*4+3;
+                        neighbor3=i*Lx*Lz*4+(Lx-1)*Lz*4+(k-1)*4+3;
                     }
                     else if(k==0){
-                        neighbor4=i*Lx*Lz*4+(j-1)*Lz*4+(Lz-1)*4+3;
+                        neighbor3=i*Lx*Lz*4+(j-1)*Lz*4+(Lz-1)*4+3;
                     }else{
-                        neighbor4=i*Lx*Lz*4+(j-1)*Lz*4+(k-1)*4+3;
+                        neighbor3=i*Lx*Lz*4+(j-1)*Lz*4+(k-1)*4+3;
                     }
 
                     // put interactions in intTable and nearest neighbor indices in nnArray
