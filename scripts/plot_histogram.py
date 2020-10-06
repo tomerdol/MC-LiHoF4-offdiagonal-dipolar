@@ -33,7 +33,6 @@ def main_hist2(simulations, to_plot, flip=False):
         multiple_sim_groups=[]
         for i, sim in enumerate(simulations.itertuples()):
             path='../data/lattice_output/'+sim.folderName+'/table_'+str(sim.L)+'_'+str(sim.L)+'_'+str(sim.Bex)+'_'+str(sim.T)+'_'+str(sim.mech)+'_'+'*'+'.txt'
-
             file_list = glob.glob(path)
             data=[]
             groups=[]

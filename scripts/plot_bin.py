@@ -1,3 +1,5 @@
+import glob
+
 import matplotlib
 matplotlib.use('Agg')
 import numpy as np
@@ -114,13 +116,69 @@ def main_plot(simulations, boot_num, plot_options, to_plot=''):
     return all_y_curves
 
 
+
+def plot_lattice_correlators(simulations, plot_options, axes, to_plot='spinSize'):
+    import scipy.stats
+    Nsigma=1.
+    markers=['o','s','^','D','v']
+
+    all_y_curves = []
+    fig, ax = plt.subplots(figsize=(8,6))
+    for i, sim in enumerate(simulations.itertuples()):
+        Lx=int(sim.L)
+        Lz=int(sim.L)
+        path='../data/lattice_output/'+sim.folderName+'/table_'+str(sim.L)+'_'+str(sim.L)+'_'+str(sim.Bex)+'_'+str(sim.T)+'_'+str(sim.mech)+'_'+'*'+'.txt'
+        file_list = glob.glob(path)
+        data=[]
+        for i, file in enumerate(file_list):
+            data.append(analysis_tools.get_table_data_by_fname(file)[to_plot].to_numpy())
+        data=np.array(data)
+
+        x_correlator=np.mean(data*np.roll(data,Lx*Lz*4,axis=1))
+        x_correlator_err=scipy.stats.sem(np.mean(data*np.roll(data,Lx*Lz*4,axis=1),axis=0))
+
+        y_correlator=np.mean(data*np.roll(data,Lz*4,axis=1))
+        y_correlator_err=scipy.stats.sem(np.mean(data*np.roll(data,Lz*4,axis=1),axis=0))
+
+        z_correlator=np.mean(data*np.roll(data,4,axis=1))
+        z_correlator_err=scipy.stats.sem(np.mean(data*np.roll(data,4,axis=1),axis=0))
+
+        y_to_plot = pd.Series([x_correlator, Nsigma * x_correlator_err, y_correlator, y_correlator_err, z_correlator, z_correlator_err],
+                              index=['x_correlator','x_correlator_err','y_correlator','y_correlator_err','z_correlator','z_correlator_err'])
+        y_to_plot=y_to_plot.append(pd.Series(sim._asdict()))
+        #print('Curve to be plotted (L=%s): '%sim.L)
+        #print(y_to_plot)
+        all_y_curves.append(y_to_plot)
+        #all_y_curves_err.append(y_err_to_plot)
+
+    all_y_curves = pd.DataFrame(all_y_curves)
+
+    for (label, df), marker in zip(all_y_curves.groupby(['Bex','L','folderName','mech']), cycle(markers)):
+        for axis in axes:
+            df.plot(x='T',y=axis+'_correlator', yerr=axis+'_correlator_err', ax=ax, label=str(label) + ' ' + axis + ' correlator', capsize=3, marker=marker)
+
+    ax.set_xlabel('T')
+
+    ax.set_yscale(plot_options['axis_yscale'])
+    plt.ylabel(plot_options['Name'])
+
+    plt.legend(loc='best')
+    plt.tight_layout()
+
+    fig.savefig('../figures/plot_corr_%s_%s_%s_%s_%s.png'%(to_plot,'_'.join(map(str,simulations['Bex'].unique().tolist())),'_'.join(map(str,simulations['mech'].unique().tolist())),'_'.join(map(str,simulations['L'].unique().tolist())),'_'.join(map(str,simulations['folderName'].unique().tolist()))), dpi=300)
+    fig.savefig('../figures/plot_corr_%s_%s_%s_%s_%s.eps'%(to_plot,'_'.join(map(str,simulations['Bex'].unique().tolist())),'_'.join(map(str,simulations['mech'].unique().tolist())),'_'.join(map(str,simulations['L'].unique().tolist())),'_'.join(map(str,simulations['folderName'].unique().tolist()))))
+    plt.close()
+    #return ([xdata[l] for l in sorted(xdata.keys())],all_y_curves)
+    return all_y_curves
+
+
 def parse_arguments():  
     from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
     
     parser = ArgumentParser(description="Analyzes Monte Carlo results and plots correlation length curves for LiHoF4", formatter_class=ArgumentDefaultsHelpFormatter)
     parser.add_argument( "-L", nargs='+', type=int, required=True, help = "Linear system sizes. At least 2 required.")
     parser.add_argument( "-b", "--boot_num", type=int, default = 100, help = "Number of bootstrap samples.")
-    parser.add_argument( "--h_ex", type=float, help = "External magnetic field value, Bex." , required=True)
+    parser.add_argument( "--h_ex", type=float, nargs='+', help = "External magnetic field value, Bex." , required=True)
     parser.add_argument( "-m", "--mech", nargs='+', choices=['true','false'], help = ("Whether internal fields are suppressed or not. \'false\' means "
     "that they aren't so the mechanism is on, and \'true\' means that they are and the mechanism is off." ), required=True)
     parser.add_argument( "-f", "--folder_list", nargs='+', type=str, help = "List of folders in \'data/results/\' in which results should be found. " , required=True)
@@ -145,10 +203,11 @@ def main():
     simulations['eq_bin']=10
     from fit6 import get_binder, get_correlation_length
     #plot_options = {'Name':'g', 'axis_yscale':'linear', 'func':get_binder}
-    corr_length_axis='z'
-    plot_options = {'Name':r'$\xi^{(%s)}_{L} / L$'%corr_length_axis, 'axis_yscale':'log', 'func':get_correlation_length, 'corr_length_axis':corr_length_axis, 'unit_cell_length':2.077294686}
-    
-    main_plot(simulations, boot_num, plot_options)
+    # corr_length_axis='z'
+    # plot_options = {'Name':r'$\xi^{(%s)}_{L} / L$'%corr_length_axis, 'axis_yscale':'log', 'func':get_correlation_length, 'corr_length_axis':corr_length_axis, 'unit_cell_length':2.077294686}
+    plot_options = {'Name':'Correlator', 'axis_yscale':'linear'}
+    # main_plot(simulations, boot_num, plot_options)
+    plot_lattice_correlators(simulations, plot_options, ['x','y','z'], to_plot='spinSize')
     #os.system("rsync -avzhe ssh ../figures/ tomerdol@newphysnet1:~/graphs/")
 
 if __name__ == "__main__":
