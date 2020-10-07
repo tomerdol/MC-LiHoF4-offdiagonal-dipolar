@@ -87,7 +87,7 @@ def main_check_equilibration(simulations, to_check):
             equilibrated_bin_dict[group_name]=read_equilibration_data(group_name)
     # add column eq_bin with equilibrated bin
     # simulations['eq_bin']=simulations.apply(lambda row: equilibrated_bin_dict[(row['Bex'],row['L'],row['folderName'],row['mech'])], axis=1)
-    simulations['eq_bin']=10
+    simulations['eq_bin']=11
     return simulations
 
 

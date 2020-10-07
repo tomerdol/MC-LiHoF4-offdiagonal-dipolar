@@ -98,7 +98,7 @@ def main_plot(simulations, boot_num, plot_options, to_plot=''):
     fig, ax = plt.subplots(figsize=(8,6))
     
     for (label, df), marker in zip(all_y_curves.groupby(['Bex','L','folderName','mech']), cycle(markers)):
-        df.plot(x='T',y='y_to_plot', yerr='y_to_plot_err', ax=ax, label=str(label), capsize=3, marker=marker)
+        df.plot(x='T',y='y_to_plot', yerr='y_to_plot_err', ax=ax, label=format_label(label), capsize=3, marker=marker)
     
     ax.set_xlabel('T')
     
@@ -116,14 +116,20 @@ def main_plot(simulations, boot_num, plot_options, to_plot=''):
     return all_y_curves
 
 
+def format_label(label_list, format=['Bex','L','folderName','mech']):
+    mech_name = label_list[format.index('mech')]
+    mech_name = 'incl.' if mech_name=='false' else 'excl.'
+    return '$B_{x}=%s$, L=%s, name=%s, ODD=%s' \
+           %(label_list[format.index('Bex')], label_list[format.index('L')], label_list[format.index('folderName')], mech_name)
 
-def plot_lattice_correlators(simulations, plot_options, axes, to_plot='spinSize'):
+
+def plot_lattice_correlators(simulations, plot_options, axes, to_plot='spinSize', shift_T=True):
     import scipy.stats
     Nsigma=1.
     markers=['o','s','^','D','v']
 
     all_y_curves = []
-    fig, ax = plt.subplots(figsize=(8,6))
+    fig, ax = plt.subplots(figsize=(10,8))
     for i, sim in enumerate(simulations.itertuples()):
         Lx=int(sim.L)
         Lz=int(sim.L)
@@ -134,13 +140,13 @@ def plot_lattice_correlators(simulations, plot_options, axes, to_plot='spinSize'
             data.append(analysis_tools.get_table_data_by_fname(file)[to_plot].to_numpy())
         data=np.array(data)
 
-        x_correlator=np.mean(data*np.roll(data,Lx*Lz*4,axis=1))
+        x_correlator=np.mean(data*np.roll(data,Lx*Lz*4,axis=1)) - np.mean(data)**2
         x_correlator_err=scipy.stats.sem(np.mean(data*np.roll(data,Lx*Lz*4,axis=1),axis=0))
 
-        y_correlator=np.mean(data*np.roll(data,Lz*4,axis=1))
+        y_correlator=np.mean(data*np.roll(data,Lz*4,axis=1)) - np.mean(data)**2
         y_correlator_err=scipy.stats.sem(np.mean(data*np.roll(data,Lz*4,axis=1),axis=0))
 
-        z_correlator=np.mean(data*np.roll(data,4,axis=1))
+        z_correlator=np.mean(data*np.roll(data,4,axis=1)) - np.mean(data)**2
         z_correlator_err=scipy.stats.sem(np.mean(data*np.roll(data,4,axis=1),axis=0))
 
         y_to_plot = pd.Series([x_correlator, Nsigma * x_correlator_err, y_correlator, y_correlator_err, z_correlator, z_correlator_err],
@@ -152,12 +158,19 @@ def plot_lattice_correlators(simulations, plot_options, axes, to_plot='spinSize'
         #all_y_curves_err.append(y_err_to_plot)
 
     all_y_curves = pd.DataFrame(all_y_curves)
-
+    if shift_T:
+        all_y_curves.loc[(all_y_curves['mech']=='false') & (all_y_curves['Bex']==0.0),'T'] -= 1.5824758958651635
+        all_y_curves.loc[(all_y_curves['mech']=='true') & (all_y_curves['Bex']==0.0),'T'] -= 1.7650756636778697
+        all_y_curves.loc[(all_y_curves['mech']=='false') & (all_y_curves['Bex']==0.3),'T'] -= 1.591939036664854
+        all_y_curves.loc[(all_y_curves['mech']=='true') & (all_y_curves['Bex']==0.3),'T'] -= 1.7626781407441243
     for (label, df), marker in zip(all_y_curves.groupby(['Bex','L','folderName','mech']), cycle(markers)):
         for axis in axes:
-            df.plot(x='T',y=axis+'_correlator', yerr=axis+'_correlator_err', ax=ax, label=str(label) + ' ' + axis + ' correlator', capsize=3, marker=marker)
+            df.plot(x='T',y=axis+'_correlator', yerr=axis+'_correlator_err', ax=ax, label=format_label(label) + ' | ' + axis + ' correlator', capsize=3, marker=marker)
 
-    ax.set_xlabel('T')
+    if shift_T:
+        ax.set_xlabel('T (shifted by $T_c$)')
+    else:
+        ax.set_xlabel('T')
 
     ax.set_yscale(plot_options['axis_yscale'])
     plt.ylabel(plot_options['Name'])
@@ -205,9 +218,10 @@ def main():
     #plot_options = {'Name':'g', 'axis_yscale':'linear', 'func':get_binder}
     # corr_length_axis='z'
     # plot_options = {'Name':r'$\xi^{(%s)}_{L} / L$'%corr_length_axis, 'axis_yscale':'log', 'func':get_correlation_length, 'corr_length_axis':corr_length_axis, 'unit_cell_length':2.077294686}
-    plot_options = {'Name':'Correlator', 'axis_yscale':'linear'}
+    plot_options = {'Name':'Local $B_x$ Correlator', 'axis_yscale':'linear'}
+    # plot_options = {'Name':'spin size', 'axis_yscale':'linear'}
     # main_plot(simulations, boot_num, plot_options)
-    plot_lattice_correlators(simulations, plot_options, ['x','y','z'], to_plot='spinSize')
+    plot_lattice_correlators(simulations, plot_options, ['x','y','z'], to_plot='localBx', shift_T=True)
     #os.system("rsync -avzhe ssh ../figures/ tomerdol@newphysnet1:~/graphs/")
 
 if __name__ == "__main__":
