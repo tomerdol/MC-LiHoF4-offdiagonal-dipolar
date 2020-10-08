@@ -65,7 +65,7 @@ def get_binned_array(arr):
         return 0.5*(arr[:-1:2]+arr[1::2])
     
 
-def main_plot(simulations, boot_num, plot_options, to_plot=''):
+def main_plot(simulations, boot_num, plot_options, to_plot='', shift_T=False):
     Nsigma=1.
     markers=['o','s','^','D','v']
 
@@ -94,14 +94,22 @@ def main_plot(simulations, boot_num, plot_options, to_plot=''):
         #all_y_curves_err.append(y_err_to_plot)
        
     all_y_curves = pd.DataFrame(all_y_curves)
+    if shift_T:
+        all_y_curves.loc[(all_y_curves['mech']=='false') & (all_y_curves['Bex']==0.0),'T'] -= 1.5824758958651635
+        all_y_curves.loc[(all_y_curves['mech']=='true') & (all_y_curves['Bex']==0.0),'T'] -= 1.7650756636778697
+        all_y_curves.loc[(all_y_curves['mech']=='false') & (all_y_curves['Bex']==0.3),'T'] -= 1.591939036664854
+        all_y_curves.loc[(all_y_curves['mech']=='true') & (all_y_curves['Bex']==0.3),'T'] -= 1.7626781407441243
 
     fig, ax = plt.subplots(figsize=(8,6))
     
     for (label, df), marker in zip(all_y_curves.groupby(['Bex','L','folderName','mech']), cycle(markers)):
         df.plot(x='T',y='y_to_plot', yerr='y_to_plot_err', ax=ax, label=format_label(label), capsize=3, marker=marker)
     
-    ax.set_xlabel('T')
-    
+    if shift_T:
+        ax.set_xlabel('T (shifted by $T_c$)')
+    else:
+        ax.set_xlabel('T')
+ 
     ax.set_yscale(plot_options['axis_yscale'])
     plt.ylabel(plot_options['Name'])
 
@@ -216,12 +224,14 @@ def main():
     simulations['eq_bin']=10
     from fit6 import get_binder, get_correlation_length
     #plot_options = {'Name':'g', 'axis_yscale':'linear', 'func':get_binder}
-    # corr_length_axis='z'
+    corr_length_axis='z'
     # plot_options = {'Name':r'$\xi^{(%s)}_{L} / L$'%corr_length_axis, 'axis_yscale':'log', 'func':get_correlation_length, 'corr_length_axis':corr_length_axis, 'unit_cell_length':2.077294686}
-    plot_options = {'Name':'Local $B_x$ Correlator', 'axis_yscale':'linear'}
+    #plot_options = {'Name':'Local $B_x$ Correlator', 'axis_yscale':'linear'}
+    plot_options = {'Name':'E', 'axis_yscale':'linear', 'func':lambda x: np.mean(x), 'corr_length_axis':corr_length_axis, 'unit_cell_length':2.077294686}
+
     # plot_options = {'Name':'spin size', 'axis_yscale':'linear'}
-    # main_plot(simulations, boot_num, plot_options)
-    plot_lattice_correlators(simulations, plot_options, ['x','y','z'], to_plot='localBx', shift_T=True)
+    main_plot(simulations, boot_num, plot_options, to_plot='Energy', shift_T=True)
+    #plot_lattice_correlators(simulations, plot_options, ['x','y','z'], to_plot='localBx', shift_T=True)
     #os.system("rsync -avzhe ssh ../figures/ tomerdol@newphysnet1:~/graphs/")
 
 if __name__ == "__main__":

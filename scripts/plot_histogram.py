@@ -49,7 +49,7 @@ def main_hist2(simulations, to_plot, flip=False):
             if flip:
                 multiple_sim_data.append(-data)
                 multiple_sim_groups.append(groups)
-        shared_bins = np.histogram_bin_edges(np.concatenate(multiple_sim_data).ravel(), bins=120)
+        shared_bins = np.histogram_bin_edges(np.concatenate(multiple_sim_data).ravel(), bins=60)
 
         for i, sim in enumerate(simulations.itertuples()):
             sim_index=i if not flip else i*2
