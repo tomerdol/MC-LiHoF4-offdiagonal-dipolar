@@ -12,7 +12,7 @@ def parse_arguments():
 
     parser = ArgumentParser(description="Plots histograms from lattice output files for LiHoF4", formatter_class=ArgumentDefaultsHelpFormatter)
     parser.add_argument( "-L", nargs='+', type=int, required=True, help = "Linear system sizes.")
-    parser.add_argument( "--h_ex", type=float, help = "External magnetic field value, Bex." , required=True)
+    parser.add_argument( "--h_ex", nargs='+', type=float, help = "External magnetic field value, Bex." , required=True)
     parser.add_argument( "-m", "--mech", nargs='+', choices=['true','false'], help = ("Whether internal fields are suppressed or not. \'false\' means "
                                                                                       "that they aren't so the mechanism is on, and \'true\' means that they are and the mechanism is off." ), required=True)
     parser.add_argument( "-f", "--folder_list", nargs='+', type=str, help = "List of folders in \'data/results/\' in which results should be found. " , required=True)
@@ -38,7 +38,7 @@ def main_hist2(simulations, to_plot, flip=False):
             groups=[]
             num_independent_runs=len(file_list)
             for i, file in enumerate(file_list):
-                shift = 0 if to_plot_now != 'localBx' else float(simulations['Bex'].iloc[0])
+                shift = 0 if to_plot_now != 'localBx' else float(sim.Bex)
                 temp_data=analysis_tools.get_table_data_by_fname(file)[to_plot_now].to_numpy() - shift
                 data.append(temp_data)
                 groups.append(np.full(temp_data.size,i))
@@ -49,7 +49,7 @@ def main_hist2(simulations, to_plot, flip=False):
             if flip:
                 multiple_sim_data.append(-data)
                 multiple_sim_groups.append(groups)
-        shared_bins = np.histogram_bin_edges(np.concatenate(multiple_sim_data).ravel(), bins=60)
+        shared_bins = np.histogram_bin_edges(np.concatenate(multiple_sim_data).ravel(), bins=120)
 
         for i, sim in enumerate(simulations.itertuples()):
             sim_index=i if not flip else i*2
@@ -113,8 +113,10 @@ def main_hist(simulations, to_plot, flip=False):
         fig, ax = plt.subplots(figsize=(10,10))
         histograms_to_plot=[]
         histogram_labels=[]
-        shift = 0 if to_plot_now != 'localBx' else float(simulations['Bex'].iloc[0])
+
         for (label, df) in all_simulations.groupby('Simulation'):
+
+            shift = 0 if to_plot_now != 'localBx' else float(df['Bex'].iloc[0])
             histograms_to_plot.append(df[to_plot_now].to_numpy() - shift)
             histogram_labels.append(str(simulations.loc[int(label)].values.tolist()))
 
