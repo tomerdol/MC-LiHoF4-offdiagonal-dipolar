@@ -1,12 +1,12 @@
 #!/bin/bash
 unset module
-name="res_test_0.029"
+name="temp_parallel_test2"
 arrayMech=( "false" "true" )
-arrayL=( 4 5 6 )
+arrayL=( 6 7 8 )
 arrayH=( 0.0 0.3 )
 
 # Check input
-if [[ ! $# > 0 || ! $1 =~ ^[0-9]+$ ]]
+if [[ ! $# >= 1 || ! $1 =~ ^[0-9]+$ ]]
 then
 echo "Usage: $0 [# of sweeps] [extra parameter]"
 exit
