@@ -126,12 +126,12 @@ for i, bz in enumerate(Bz):
 				temp = energy_up
 				energy_up = energy_down
 				energy_down = temp
-
-			H_zeeman = u_B*g_L*(bx*jx + by*jy + 0.3*jz)    # zeeman term
+			effectivie_bz = bx*1.1
+			H_zeeman = u_B*g_L*(bx*jx + by*jy + effectivie_bz*jz)    # zeeman term
 			H = H_cf - H_zeeman                 # full hamiltonian
 			w,v = LA.eigh(H)
 			magnetic_moment_up = np.real(np.diagonal(np.conj(v.T)@jz@v)[0])
-			H_zeeman = u_B*g_L*(bx*jx + by*jy + -0.3*jz)    # zeeman term
+			H_zeeman = u_B*g_L*(bx*jx + by*jy + -effectivie_bz*jz)    # zeeman term
 			H = H_cf - H_zeeman                 # full hamiltonian
 			w,v = LA.eigh(H)
 			magnetic_moment_down = np.real(np.diagonal(np.conj(v.T)@jz@v)[0])
