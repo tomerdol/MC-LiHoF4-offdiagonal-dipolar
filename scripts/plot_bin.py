@@ -127,8 +127,11 @@ def main_plot(simulations, boot_num, plot_options, to_plot='', shift_T=False):
 def format_label(label_list, format=['Bex','L','folderName','mech']):
     mech_name = label_list[format.index('mech')]
     mech_name = 'incl.' if mech_name=='false' else 'excl.'
-    return '$B_{x}=%s$, L=%s, name=%s, ODD=%s' \
-           %(label_list[format.index('Bex')], label_list[format.index('L')], label_list[format.index('folderName')], mech_name)
+    return_string = '$B_{x}=%s$, L=%s, name=%s, ODD=%s' \
+                    %(label_list[format.index('Bex')], label_list[format.index('L')], label_list[format.index('folderName')], mech_name)
+    if 'T' in format:
+        return_string += ', T=%s' % label_list[format.index('T')]
+    return return_string
 
 
 def plot_lattice_correlators(simulations, plot_options, axes, to_plot='spinSize', shift_T=True):
