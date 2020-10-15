@@ -4,15 +4,15 @@
 #arrayMech=( "false" "true" )
 #arrayL=( 6 5 4 )
 #arrayH=( 0.0 0.3 )
-name="res_test"
+#name="res_test"
 #arrayMech=( "false" "true" )
 #arrayL=( 5 4 )
 #arrayH=( 0.0 )
 
 #next:
-arrayMech=( "true" )
-arrayL=( 6 )
-arrayH=( 0.0 )
+#arrayMech=( "true" )
+#arrayL=( 6 )
+#arrayH=( 0.0 )
 
 #next next:
 #arrayMech=( "false" "true" )
@@ -23,7 +23,7 @@ sub() {
 temp="$1"
 max_sweeps="$2"
 runs="$3"
-extra_par="_0.014"
+extra_par="_const"
 
 temp_initial="$(echo $temp | head -c 1)"
 

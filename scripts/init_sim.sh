@@ -3,8 +3,8 @@
 source ./scripts/sub.sh
 
 # this should override the definitions from sub.sh
-name="res_test_0.014"
-arrayMech=( "false" "true" )
+name="res_test_const"
+arrayMech=( "false" )
 arrayL=( 6 5 4 )
 arrayH=( 0.0 0.3 )
 minT_false=1.4

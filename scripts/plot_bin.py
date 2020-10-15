@@ -72,7 +72,7 @@ def main_plot(simulations, boot_num, plot_options, to_plot='', shift_T=False):
     all_y_curves = []
     
     for i, sim in enumerate(simulations.itertuples()):
-        y = bin_data.read_binned_data(sim, use_latest=False, use_bin=sim.eq_bin)
+        y = bin_data.read_binned_data(sim, use_latest=True)
 
         single_ydata=[]
         for boot_index in range(boot_num):
@@ -221,16 +221,16 @@ def main():
     to_plot = args.to_plot
     
     simulations = analysis_tools.get_simulations(L, folderName, h_ex, mech)
-    simulations['eq_bin']=10
+    #simulations['eq_bin']=10
     from fit6 import get_binder, get_correlation_length
     #plot_options = {'Name':'g', 'axis_yscale':'linear', 'func':get_binder}
-    corr_length_axis='z'
-    # plot_options = {'Name':r'$\xi^{(%s)}_{L} / L$'%corr_length_axis, 'axis_yscale':'log', 'func':get_correlation_length, 'corr_length_axis':corr_length_axis, 'unit_cell_length':2.077294686}
+    corr_length_axis='x'
+    plot_options = {'Name':r'$\xi^{(%s)}_{L} / L$'%corr_length_axis, 'axis_yscale':'log', 'func':get_correlation_length, 'corr_length_axis':corr_length_axis, 'unit_cell_length':2.077294686}
     #plot_options = {'Name':'Local $B_x$ Correlator', 'axis_yscale':'linear'}
-    plot_options = {'Name':'E', 'axis_yscale':'linear', 'func':lambda x: np.mean(x), 'corr_length_axis':corr_length_axis, 'unit_cell_length':2.077294686}
+    #plot_options = {'Name':'E', 'axis_yscale':'linear', 'func':lambda x: np.mean(x), 'corr_length_axis':corr_length_axis, 'unit_cell_length':2.077294686}
 
     # plot_options = {'Name':'spin size', 'axis_yscale':'linear'}
-    main_plot(simulations, boot_num, plot_options, to_plot='Energy', shift_T=True)
+    main_plot(simulations, boot_num, plot_options)
     #plot_lattice_correlators(simulations, plot_options, ['x','y','z'], to_plot='localBx', shift_T=True)
     #os.system("rsync -avzhe ssh ../figures/ tomerdol@newphysnet1:~/graphs/")
 
