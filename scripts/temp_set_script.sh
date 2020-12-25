@@ -23,7 +23,7 @@ Tset <- function(step_){
 		Tset_ <- 1:nT
 		Tset_[1] <- T
 		for(i in 2:nT){
-			Tset_[i] <- T <- uniroot(cost,c(T,10*T),tol=1e-17)$root
+			Tset_[i] <- T <- uniroot(cost,c(T,10*T),tol=1e-15)$root
 		}
 	return(Tset_)
 }

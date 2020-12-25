@@ -215,7 +215,8 @@ def main():
                     continue
                 
                 good_fit=False
-                delta=0.04
+                delta=min(0.04,min(simulations_mech_folderName_Bex['T'].max()-initial_xc,initial_xc-simulations_mech_folderName_Bex['T'].min()))
+                #delta=0.04
                 while not good_fit and delta<0.2:
                     min_x = initial_xc-delta
                     max_x = initial_xc+delta

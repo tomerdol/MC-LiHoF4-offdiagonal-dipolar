@@ -1,9 +1,9 @@
 #!/bin/bash
 
-#name="res_test"
-#arrayMech=( "false" "true" )
-#arrayL=( 6 5 4 )
-#arrayH=( 0.0 0.3 )
+name="res_test_const3"
+arrayMech=( "false" )
+arrayL=( 6 5 4 )
+arrayH=( 2.0 )
 #name="res_test"
 #arrayMech=( "false" "true" )
 #arrayL=( 5 4 )
@@ -54,7 +54,7 @@ COUNT=0
 while [ $COUNT -lt $runs ]; do
     used_slots=`free_slot smoshe.q | grep sge1081 | cut -d' ' -f 2 | cut -d'/' -f 1`
     #exclude sge1081 to leave at least 30 cores available for other users
-    queues="lublin.q,smoshe.q@sge1082,smoshe.q@sge190,fairshare.q"
+    queues="lublin.q,smoshe.q@sge1082,smoshe.q@sge190,fairshare.q,smoshe.q@sge247"
     
     if [ "$used_slots" != "" ]; then
     if [ $used_slots -le 24 ]; then

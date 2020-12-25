@@ -1,5 +1,5 @@
 #!/bin/bash
-#$ -q smoshe.q@sge1081,smoshe.q@sge1082,lublin.q
+#$ -q smoshe.q@sge1081,smoshe.q@sge1082
 #$ -S /bin/bash
 #$ -V
 #$ -cwd
@@ -7,11 +7,11 @@
 # get tunneling info
 node=$(hostname -s)
 user=$(whoami)
-cluster="hpcin"
+cluster="hpcgate"
 port=8889
 
 # print tunneling instructions jupyter-notebook
-echo -e "
+>&2 echo -e "
 Command to create ssh tunnel:
 ssh -N -f -L ${port}:${node}:${port} ${user}@${cluster}.bgu.ac.il
 

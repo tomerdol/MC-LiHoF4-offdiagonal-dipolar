@@ -3,11 +3,11 @@
 source ./scripts/sub.sh
 
 # this should override the definitions from sub.sh
-name="res_test_const"
-arrayMech=( "false" )
+name="res_test_const2"
+arrayMech=( "true" )
 arrayL=( 6 5 4 )
-arrayH=( 0.0 0.3 )
-minT_false=1.4
+arrayH=( 0.0 0.3 0.6 1.0 1.5 2.0 )
+minT_false=1.3
 maxT_false=1.85
 minT_true=1.55
 maxT_true=2.0
@@ -160,6 +160,6 @@ done
 
 # run simulations
 echo "running simulations"
-sub "" 4096 50
+sub "" 4096 25
 echo "done"
 exit 0

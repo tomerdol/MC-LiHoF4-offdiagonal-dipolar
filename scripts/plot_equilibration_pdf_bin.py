@@ -86,8 +86,9 @@ def main_check_equilibration(simulations, to_check):
         else:
             equilibrated_bin_dict[group_name]=read_equilibration_data(group_name)
     # add column eq_bin with equilibrated bin
-    # simulations['eq_bin']=simulations.apply(lambda row: equilibrated_bin_dict[(row['Bex'],row['L'],row['folderName'],row['mech'])], axis=1)
-    simulations['eq_bin']=11
+    simulations['eq_bin']=simulations.apply(lambda row: equilibrated_bin_dict[(row['Bex'],row['L'],row['folderName'],row['mech'])], axis=1)
+    print(simulations)
+    # simulations['eq_bin']=11
     return simulations
 
 
@@ -101,7 +102,6 @@ def main_plot(simulations, to_plot, L, Bex, folderName, mech):
     markers = ['o','s','^','D','v']
     colors = ("red", "green", "blue", "yellow", "orange")
     groups = simulations['L'].unique().tolist()
-
     fig, ax = plt.subplots()
     with PdfPages('../figures/plot_equilibration_%s_%s.pdf'%(Bex,mech)) as pdf:
         
@@ -157,7 +157,7 @@ def main_plot(simulations, to_plot, L, Bex, folderName, mech):
     legend_without_duplicate_labels(ax)
     ax.set_xlabel('T')
     ax.set_ylabel('Equilibrated bin')
-    ax.axhline(num_of_bins - 1)
+    ax.axhline(num_of_bins)
     fig.savefig('../figures/plot_equilibration_%s.png'%Bex)
 
 

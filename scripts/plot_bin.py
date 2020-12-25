@@ -109,7 +109,7 @@ def main_plot(simulations, boot_num, plot_options, to_plot='', shift_T=False):
         ax.set_xlabel('T (shifted by $T_c$)')
     else:
         ax.set_xlabel('T')
- 
+
     ax.set_yscale(plot_options['axis_yscale'])
     plt.ylabel(plot_options['Name'])
 
@@ -170,10 +170,13 @@ def plot_lattice_correlators(simulations, plot_options, axes, to_plot='spinSize'
 
     all_y_curves = pd.DataFrame(all_y_curves)
     if shift_T:
-        all_y_curves.loc[(all_y_curves['mech']=='false') & (all_y_curves['Bex']==0.0),'T'] -= 1.5824758958651635
+        all_y_curves.loc[(all_y_curves['mech']=='false') & (all_y_curves['Bex']==0.0),'T'] -= 1.5559215348091224
         all_y_curves.loc[(all_y_curves['mech']=='true') & (all_y_curves['Bex']==0.0),'T'] -= 1.7650756636778697
-        all_y_curves.loc[(all_y_curves['mech']=='false') & (all_y_curves['Bex']==0.3),'T'] -= 1.591939036664854
+        all_y_curves.loc[(all_y_curves['mech']=='false') & (all_y_curves['Bex']==0.3),'T'] -= 1.547928848272695
         all_y_curves.loc[(all_y_curves['mech']=='true') & (all_y_curves['Bex']==0.3),'T'] -= 1.7626781407441243
+        all_y_curves.loc[(all_y_curves['mech']=='false') & (all_y_curves['Bex']==0.6),'T'] -= 1.534166216592495
+        all_y_curves.loc[(all_y_curves['mech']=='false') & (all_y_curves['Bex']==1.0),'T'] -= 1.5051312414585143
+
     for (label, df), marker in zip(all_y_curves.groupby(['Bex','L','folderName','mech']), cycle(markers)):
         for axis in axes:
             df.plot(x='T',y=axis+'_correlator', yerr=axis+'_correlator_err', ax=ax, label=format_label(label) + ' | ' + axis + ' correlator', capsize=3, marker=marker)
@@ -196,7 +199,7 @@ def plot_lattice_correlators(simulations, plot_options, axes, to_plot='spinSize'
     return all_y_curves
 
 
-def parse_arguments():  
+def parse_arguments():
     from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
     
     parser = ArgumentParser(description="Analyzes Monte Carlo results and plots correlation length curves for LiHoF4", formatter_class=ArgumentDefaultsHelpFormatter)
@@ -228,13 +231,13 @@ def main():
     from fit6 import get_binder, get_correlation_length
     #plot_options = {'Name':'g', 'axis_yscale':'linear', 'func':get_binder}
     corr_length_axis='x'
-    plot_options = {'Name':r'$\xi^{(%s)}_{L} / L$'%corr_length_axis, 'axis_yscale':'log', 'func':get_correlation_length, 'corr_length_axis':corr_length_axis, 'unit_cell_length':2.077294686}
+    #plot_options = {'Name':r'$\xi^{(%s)}_{L} / L$'%corr_length_axis, 'axis_yscale':'log', 'func':get_correlation_length, 'corr_length_axis':corr_length_axis, 'unit_cell_length':2.077294686}
     #plot_options = {'Name':'Local $B_x$ Correlator', 'axis_yscale':'linear'}
     #plot_options = {'Name':'E', 'axis_yscale':'linear', 'func':lambda x: np.mean(x), 'corr_length_axis':corr_length_axis, 'unit_cell_length':2.077294686}
 
-    # plot_options = {'Name':'spin size', 'axis_yscale':'linear'}
-    main_plot(simulations, boot_num, plot_options)
-    #plot_lattice_correlators(simulations, plot_options, ['x','y','z'], to_plot='localBx', shift_T=True)
+    plot_options = {'Name':'spin size', 'axis_yscale':'linear'}
+    #main_plot(simulations, boot_num, plot_options)
+    plot_lattice_correlators(simulations, plot_options, ['x','y','z'], to_plot='spin', shift_T=False)
     #os.system("rsync -avzhe ssh ../figures/ tomerdol@newphysnet1:~/graphs/")
 
 if __name__ == "__main__":
