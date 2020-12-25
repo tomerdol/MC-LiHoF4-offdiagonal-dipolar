@@ -103,7 +103,7 @@ def read_binned(sim, use_latest=True):
         arrays.append(curr_array)
         seeds.append(fname.split("_")[-1].split(".")[0])    # extract and save seed from file name
     if abs(max_bins-min_bins)>0:
-        raise Exception('one of the simulations might be lagging behind: max_bins=%s, min_bins=%s \n Simulation details: %s \n Seed: %s'%(max_bins,min_bins,sim,seeds[-1]))
+        print('WARNING: one of the simulations might be lagging behind: max_bins=%s, min_bins=%s \n Simulation details: %s \n Seed: %s'%(max_bins,min_bins,sim,seeds[-1]), file=sys.stderr)
     if use_latest:
         # remove any runs that have length smaller than max_bins, so only the most advanced runs are used
         arrays = list(filter(lambda x: len(x)==max_bins, arrays))

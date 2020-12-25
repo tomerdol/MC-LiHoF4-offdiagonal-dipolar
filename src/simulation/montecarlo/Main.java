@@ -219,6 +219,8 @@ public class Main {
                     // put interactions in intTable and nearest neighbor indices in nnArray
                     addExchangeToNeighbor(focusSpin, neighbor1, neighbor2, neighbor3, neighbor4, nnArray, nnArray_test, intTable, J_ex);
 
+
+
                     // now nearest neighbors to 2nd base atom, including periodic boundary conditions
                     focusSpin = i*Lx*Lz*4+j*Lz*4+k*4+2;
 

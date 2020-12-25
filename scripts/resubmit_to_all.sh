@@ -1,11 +1,13 @@
 #!/bin/bash
 
-num_of_queued_jobs=$(qstat -u tomerdol | grep r5_ | awk '$5=="qw" {count++} END {print count}')
+search_key=$1
+num_of_jobs_to_resubmit=$2
+num_of_queued_jobs=$(qstat -u tomerdol | grep "$search_key" | awk '$5=="qw" {count++} END {print count}')
 
 count=0
-while [[ $num_of_queued_jobs -gt 0 && count -lt 50 ]]
+while [[ $num_of_queued_jobs -gt 0 && count -lt "$num_of_jobs_to_resubmit" ]]
 do
-    jobid=$(qstat -u tomerdol | grep qw | grep r5_ | head -n1 | awk '{print $1}')
+    jobid=$(qstat -u tomerdol | grep qw | grep "$search_key" | head -n1 | awk '{print $1}')
     args=$(qstat -j ${jobid} | grep job_args | awk '{print $2}')
     jobname=$(qstat -j ${jobid} | grep job_name | awk '{print $2}')
 
@@ -18,5 +20,5 @@ do
     ((count++))
     sleep 10
 
-    num_of_queued_jobs=$(qstat -u tomerdol | grep r5_ | awk '$5=="qw" {count++} END {print count}')
+    num_of_queued_jobs=$(qstat -u tomerdol | grep "$search_key" | awk '$5=="qw" {count++} END {print count}')
 done

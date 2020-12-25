@@ -69,7 +69,7 @@ def main_check_equilibration(simulations, to_check):
         if group_df['overwrite'].any():
             max_bin=0
             for i, sim in enumerate(group_df.itertuples()):
-                data = bin_data.read_binned(sim, use_latest=False)
+                data = bin_data.read_binned(sim, use_latest=True)
                 for to_check_now in to_check:
                     a_index=data[0][:,0]
                     a=data[0][:,to_plot_col_index(to_check_now)]
@@ -86,8 +86,9 @@ def main_check_equilibration(simulations, to_check):
         else:
             equilibrated_bin_dict[group_name]=read_equilibration_data(group_name)
     # add column eq_bin with equilibrated bin
-    # simulations['eq_bin']=simulations.apply(lambda row: equilibrated_bin_dict[(row['Bex'],row['L'],row['folderName'],row['mech'])], axis=1)
-    simulations['eq_bin']=10
+    simulations['eq_bin']=simulations.apply(lambda row: equilibrated_bin_dict[(row['Bex'],row['L'],row['folderName'],row['mech'])], axis=1)
+    print(simulations)
+    # simulations['eq_bin']=11
     return simulations
 
 
@@ -101,13 +102,14 @@ def main_plot(simulations, to_plot, L, Bex, folderName, mech):
     markers = ['o','s','^','D','v']
     colors = ("red", "green", "blue", "yellow", "orange")
     groups = simulations['L'].unique().tolist()
+
     fig, ax = plt.subplots()
     with PdfPages('../figures/plot_equilibration_%s_%s.pdf'%(Bex,mech)) as pdf:
         
         for temperature_index, temperature in enumerate(simulations['T'].unique()):
             pdf_fig, pdf_axes = plt.subplots(len(to_plot),1, figsize=(7,len(to_plot)*3))
             for i, sim in enumerate(simulations[simulations['T']==temperature].itertuples()):
-                data=bin_data.read_binned(sim, use_latest=False)
+                data = bin_data.read_binned(sim, use_latest=True)
                 
                 pdf_axes[0].set_title("Bex=%s , T=%1.5f"%(sim.Bex,temperature))
                 for to_plot_index, to_plot_now in enumerate(to_plot):
@@ -118,9 +120,11 @@ def main_plot(simulations, to_plot, L, Bex, folderName, mech):
                     # a_err=a_err[12:]
                     num_of_bins = len(a)
 
-                    line = pdf_axes[to_plot_index].errorbar(a_index,a,yerr=a_err,fmt=markers[i % len(markers)]+'-',label=sim.L,capsize=2,fillstyle='none',mew=.7,linewidth=0.5)
+                    line = pdf_axes[to_plot_index].errorbar(a_index,a,yerr=a_err,fmt=markers[i % len(markers)]+'-',
+                                                            color=colors[groups.index(sim.L) % len(colors)],label=sim.L,
+                                                            capsize=2,fillstyle='none',mew=.7,linewidth=0.5)
                     equilibrated_bin = check_equilibration(np.stack([a,a_err],axis=-1),3,3)
-                    ax.scatter(temperature, equilibrated_bin, label='L='+str(sim.L), c=colors[groups.index(sim.L)])
+                    ax.scatter(temperature, equilibrated_bin, label='L='+str(sim.L), c=colors[groups.index(sim.L) % len(colors)])
                     pdf_axes[to_plot_index].annotate('',(equilibrated_bin,a[equilibrated_bin if equilibrated_bin<num_of_bins else equilibrated_bin-1]),xytext=(i,-4),textcoords='offset points',arrowprops=dict(arrowstyle='simple', color=line.lines[0].get_color()))
 
                     # axes[to_plot_index].annotate('',(equilibrated_bin,array[equilibrated_bin if equilibrated_bin<num_of_bins else equilibrated_bin-1,0]),xytext=(l_index,-4),textcoords='offset points',arrowprops=dict(arrowstyle='simple', color=line.lines[0].get_color()))
@@ -154,6 +158,7 @@ def main_plot(simulations, to_plot, L, Bex, folderName, mech):
     legend_without_duplicate_labels(ax)
     ax.set_xlabel('T')
     ax.set_ylabel('Equilibrated bin')
+    ax.axhline(num_of_bins)
     fig.savefig('../figures/plot_equilibration_%s.png'%Bex)
 
 
