@@ -622,7 +622,7 @@ public class Main {
         final int N=Lx*Lx*Lz*4;
         for (int i=0;i<N;i++){
             for (int j=0;j<N;j++){
-                intTable[2][i][j] += -0.5*J_ex/(Constants.mu_B*Constants.g_L);
+                intTable[2][i][j] += -0.5*exchangeIntTable[i][j]/(Constants.mu_B*Constants.g_L);
             }
         }
 
