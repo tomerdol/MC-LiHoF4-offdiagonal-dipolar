@@ -695,7 +695,7 @@ public class Lattice implements Serializable {
                     }
 
                 }
-                System.exit(0);
+
                 if (print) {
                     System.out.print((sum / lattice.length) + " ");
                 }
