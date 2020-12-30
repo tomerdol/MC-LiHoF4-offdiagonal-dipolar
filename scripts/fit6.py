@@ -74,9 +74,9 @@ def fit_multiple_bin(data, initial_xc, bounds=False, input_p_global=[ -0.4, 0.2,
     #print(success)
     #err_toplot=err_global(p_best, all_L, all_xdata, all_ydata)
     ss_tot = np.sum((ydata-np.mean(ydata))**2)
-    print('R^2 = ' + str(1-p_best.cost/ss_tot))
-    # R^2 < 0.95
-    if 1-p_best.cost/ss_tot < 0.95:
+    # print('R^2 = ' + str(1-p_best.cost/ss_tot))
+    # R^2 < 0.98
+    if 1-p_best.cost/ss_tot < 0.98:
         p_best['success'] = False
     return p_best
 
@@ -154,6 +154,7 @@ def plot_multiple_bin(f, simulations, param, err_pfit, err_y, h_ex, mech, folder
     
     toplot_rescaled=[]
     fig, (ax1, ax2) = plt.subplots(1,2, sharey='row',figsize=(10,7))
+    simulations['rescaled_T']=(simulations['L']**(1/param[5]))*(simulations['T']-param[0])
     simulations['rescaled_T']=(simulations['L']**(1/param[5]))*(simulations['T']-param[0])
     ax1.set_ylabel(plot_options['Name'],fontsize=16)
 
@@ -340,15 +341,25 @@ def fit_bin(simulations, boot_num, min_x, max_x, initial_xc, fit_options):
     # find initial parameters (based on bootstrap mean of the results)
     data = np.column_stack((simulations[['L','T']].to_numpy(),np.mean(results,axis=1))).astype(np.float64)
     initial_fit_successful = False
-    initial_fit_attempt=0
+    initial_fit_attempt = 0
     while not initial_fit_successful:
-        initial_fit_param=fit_multiple_bin(data, initial_xc, bounds=False, max_nfev=40000)
+        initial_fit_param = fit_multiple_bin(data, initial_xc, bounds=False, max_nfev=40000)
         initial_fit_successful = initial_fit_param.success
         initial_fit_attempt += 1
-        data = np.column_stack((simulations[['L','T']].to_numpy(),results[:,initial_fit_attempt])).astype(np.float64)
+        print('initial fit attempt #%s: R^2=%s'%(initial_fit_attempt, 1-initial_fit_param.cost/(np.sum((data[:,2]-np.mean(data[:,2]))**2))))
+        if not initial_fit_successful:
+            if initial_fit_attempt < boot_num:
+                # try bootstrap samples, one of which might be easier to fit initially
+                data = np.column_stack((simulations[['L','T']].to_numpy(),results[:,initial_fit_attempt])).astype(np.float64)
+            else:
+                # add noise to existing bootstrap mean
+                print('Not enough bootstrap samples for initial fitting. Using random noise.')
+                y_noise = 0.1 * np.random.normal(size=results.shape[0])
+                data = np.column_stack((simulations[['L','T']].to_numpy(),y_noise+np.mean(results,axis=1))).astype(np.float64)
         if initial_fit_attempt > 20:
             raise Exception("Unable to find initial fitting parameters. Number of attempts > 20!")
     initial_fit_params = initial_fit_param.x[2:].tolist()   # ignore T_c and p0 for which we have good initial guesses anyway
+    print('Initial fitting parameters found: ' + str(initial_fit_params))
 
     for index, col in enumerate(results.T):
         # now iterating over the bootstrap datasets
@@ -357,12 +368,6 @@ def fit_bin(simulations, boot_num, min_x, max_x, initial_xc, fit_options):
 
         if curr_fit_param.success:
             ps.append(curr_fit_param.x)
-            print('successful fit: ' + str(curr_fit_param.x))
-            #print(curr_fit_param)
-            temp_simulations=simulations.copy(deep=True)
-            temp_simulations['scaling_func']=col
-            temp_simulations['scaling_func_err']=0.001
-            plot_multiple_bin(f, temp_simulations, curr_fit_param.x, 0.001*np.ones(len(curr_fit_param.x)), 0.001, simulations['Bex'].iloc[0], simulations['mech'].iloc[0], simulations['folderName'].iloc[0], fit_options,index=index)
         else:
             # try fitting again with bounds on parameters
             default_err=np.seterr(all='raise')
