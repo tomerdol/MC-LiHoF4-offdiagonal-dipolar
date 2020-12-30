@@ -58,21 +58,26 @@ def f_bin(par, data):
         print(e)
         print(par, file=sys.stderr)
 
-def fit_multiple_bin(data, initial_xc, bounds=False):
+def fit_multiple_bin(data, initial_xc, bounds=False, input_p_global=[ -0.4, 0.2, -0.06, 0.6 ], max_nfev=None):
     # format of data columns: 0-L, 1-T, 2-y
     xdata=data[:,0:2]
     ydata=data[:,2]
     max_val = ydata.max()
     min_val = ydata.min()
-    p_global=[ initial_xc, 0.5*(max_val+min_val), -0.4, 0.2, -0.06, 0.6]
-    
+
+    p_global = [initial_xc, 0.5*(max_val+min_val)] + input_p_global
+
     if not bounds:
-        p_best=optimize.least_squares(lambda p, x, y: f_bin(p, x) - y, p_global, args=(xdata,ydata))
+        p_best=optimize.least_squares(lambda p, x, y: f_bin(p, x) - y, p_global, args=(xdata,ydata), max_nfev=max_nfev)
     else:
         p_best=optimize.least_squares(lambda p, x, y: f_bin(p, x) - y, p_global, args=(xdata,ydata), bounds=([0,min_val,-np.inf,-np.inf,-np.inf,0.0],[3,max_val,np.inf,np.inf,np.inf,np.inf]))
     #print(success)
     #err_toplot=err_global(p_best, all_L, all_xdata, all_ydata)
-    
+    ss_tot = np.sum((ydata-np.mean(ydata))**2)
+    # print('R^2 = ' + str(1-p_best.cost/ss_tot))
+    # R^2 < 0.98
+    if 1-p_best.cost/ss_tot < 0.98:
+        p_best['success'] = False
     return p_best
 
 def bootstrap_resample(X, n=None):
@@ -149,6 +154,7 @@ def plot_multiple_bin(f, simulations, param, err_pfit, err_y, h_ex, mech, folder
     
     toplot_rescaled=[]
     fig, (ax1, ax2) = plt.subplots(1,2, sharey='row',figsize=(10,7))
+    simulations['rescaled_T']=(simulations['L']**(1/param[5]))*(simulations['T']-param[0])
     simulations['rescaled_T']=(simulations['L']**(1/param[5]))*(simulations['T']-param[0])
     ax1.set_ylabel(plot_options['Name'],fontsize=16)
 
@@ -328,13 +334,37 @@ def fit_bin(simulations, boot_num, min_x, max_x, initial_xc, fit_options):
     
     for i, sim in enumerate(simulations.itertuples()):
         y = bin_data.read_binned_data(sim, use_latest=False)
+
         for boot_index in range(boot_num):
             results[i,boot_index] = fit_options['func'](y['Magnetization^2'].sample(frac=1,replace=True),y['Magnetization^4'].sample(frac=1,replace=True),y['mk2'+fit_options['corr_length_axis']].sample(frac=1,replace=True),sim.L*fit_options['unit_cell_length'])
-    
-    for col in results.T:
+
+    # find initial parameters (based on bootstrap mean of the results)
+    data = np.column_stack((simulations[['L','T']].to_numpy(),np.mean(results,axis=1))).astype(np.float64)
+    initial_fit_successful = False
+    initial_fit_attempt = 0
+    while not initial_fit_successful:
+        initial_fit_param = fit_multiple_bin(data, initial_xc, bounds=False, max_nfev=40000)
+        initial_fit_successful = initial_fit_param.success
+        initial_fit_attempt += 1
+        print('initial fit attempt #%s: R^2=%s'%(initial_fit_attempt, 1-initial_fit_param.cost/(np.sum((data[:,2]-np.mean(data[:,2]))**2))))
+        if not initial_fit_successful:
+            if initial_fit_attempt < boot_num:
+                # try bootstrap samples, one of which might be easier to fit initially
+                data = np.column_stack((simulations[['L','T']].to_numpy(),results[:,initial_fit_attempt])).astype(np.float64)
+            else:
+                # add noise to existing bootstrap mean
+                print('Not enough bootstrap samples for initial fitting. Using random noise.')
+                y_noise = 0.1 * np.random.normal(size=results.shape[0])
+                data = np.column_stack((simulations[['L','T']].to_numpy(),y_noise+np.mean(results,axis=1))).astype(np.float64)
+        if initial_fit_attempt > 20:
+            raise Exception("Unable to find initial fitting parameters. Number of attempts > 20!")
+    initial_fit_params = initial_fit_param.x[2:].tolist()   # ignore T_c and p0 for which we have good initial guesses anyway
+    print('Initial fitting parameters found: ' + str(initial_fit_params))
+
+    for index, col in enumerate(results.T):
         # now iterating over the bootstrap datasets
         data = np.column_stack((simulations[['L','T']].to_numpy(),col)).astype(np.float64)
-        curr_fit_param=fit_multiple_bin(data, initial_xc, bounds=False)
+        curr_fit_param=fit_multiple_bin(data, initial_xc, bounds=False, input_p_global=initial_fit_params)
 
         if curr_fit_param.success:
             ps.append(curr_fit_param.x)
@@ -342,7 +372,8 @@ def fit_bin(simulations, boot_num, min_x, max_x, initial_xc, fit_options):
             # try fitting again with bounds on parameters
             default_err=np.seterr(all='raise')
             print('could not fit. trying again with bounds.',file=sys.stderr)
-            curr_fit_param=fit_multiple_bin(data, initial_xc, bounds=True)
+            print('info: ' + str(curr_fit_param),file=sys.stderr)
+            curr_fit_param=fit_multiple_bin(data, initial_xc, bounds=True, input_p_global=initial_fit_params)
             if curr_fit_param.success:
                 ps.append(curr_fit_param.x)
             else:
@@ -439,7 +470,9 @@ def main():
     else:
         initial_xc=0.5*(max_x+min_x)
     
-    print('\n'.join(map(str,fit_bin(simulations, boot_num, min_x, max_x, initial_xc))))
+    corr_length_axis='x'
+    plot_options = {'Name':r'$\xi^{(%s)}_{L} / L$'%corr_length_axis, 'axis_yscale':'log', 'func':get_correlation_length, 'corr_length_axis':corr_length_axis, 'unit_cell_length':1.0}
+    print('\n'.join(map(str,fit_bin(simulations, boot_num, min_x, max_x, initial_xc, plot_options))))
     
     #os.system("rsync -avzhe ssh ../figures/ tomerdol@newphysnet1:~/graphs/")
    
