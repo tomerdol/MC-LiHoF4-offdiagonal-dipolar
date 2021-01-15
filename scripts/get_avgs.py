@@ -24,7 +24,7 @@ for file in os.listdir(output_directory):
         try:
             with open('../output/' + fname) as f:
                 seed = f.readline().strip()
-            stream = os.popen("find ../data/results -name '*" + seed + ".txt' -exec head -n2 {} \\; -quit")
+            stream = os.popen("find ../data/results -name '*" + seed + ".txt' -not -path '*binned_data*' -exec head -n2 {} \\; -quit")
             start_time = stream.read().strip()
             start_time = start_time.split('#')[-1]
             y=pd.read_csv('../output/' + fname,header=None,skiprows=0,parse_dates=True,infer_datetime_format=True, comment='S')
