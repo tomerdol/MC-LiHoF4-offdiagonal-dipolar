@@ -3,15 +3,17 @@
 source ./scripts/sub.sh
 
 # this should override the definitions from sub.sh
-name="res_test_const2"
+name="res_test_ex_0.014"
 arrayMech=( "true" )
-arrayL=( 6 5 4 )
-arrayH=( 0.0 0.3 0.6 1.0 1.5 2.0 )
+arrayL=( 4 5 6 7 )
+arrayH=( 1.5 2.0 )
 minT_false=1.3
 maxT_false=1.85
-minT_true=1.55
-maxT_true=2.0
-delta=0.05
+#minT_true=1.55
+#maxT_true=2.0
+minT_true=0.8
+maxT_true=1.7
+delta=0.08
 
 gen_temp_schedules() {
 # generate temporary temperature schedules

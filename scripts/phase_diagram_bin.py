@@ -136,6 +136,8 @@ def add_overwrite_col(overwrite_tmp, simulations):
     return simulations
 
 def validate_simulation_table(simulations):
+    if simulations.empty:
+        raise Exception('No simulations found matching the given arguments.')
     for Bex, df in simulations.groupby(['folderName','Bex']):
         if (df['L'] == df['L'].iloc[0]).all():
             raise Exception('For finite size scaling there should be different linear system sizes (L) for each given Bex. \n' \

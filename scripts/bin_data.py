@@ -112,7 +112,7 @@ def read_binned(sim, use_latest=True):
         # remove last bins after min_bin so that all arrays have same dimensions
         arrays = [np.resize(a, (min_bins,a.shape[1])) for a in arrays]
         #print(list(map(len,arrays)))
-    print(sim + ": Using %s independent simulations with %s bins in each." % (len(arrays), len(arrays[0])))
+    print(str(sim) + ": Using %s independent simulations with %s bins in each." % (len(arrays), len(arrays[0])))
     return (np.mean(arrays, axis=0), np.sqrt(np.std(arrays, axis=0)/(len(arrays)-1)))
     
 def read_binned_data(sim, use_latest=False, use_bin=-1):

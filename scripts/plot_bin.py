@@ -233,11 +233,11 @@ def main():
     corr_length_axis='x'
     #plot_options = {'Name':r'$\xi^{(%s)}_{L} / L$'%corr_length_axis, 'axis_yscale':'log', 'func':get_correlation_length, 'corr_length_axis':corr_length_axis, 'unit_cell_length':2.077294686}
     #plot_options = {'Name':'Local $B_x$ Correlator', 'axis_yscale':'linear'}
-    #plot_options = {'Name':'E', 'axis_yscale':'linear', 'func':lambda x: np.mean(x), 'corr_length_axis':corr_length_axis, 'unit_cell_length':2.077294686}
+    plot_options = {'Name':'Bz', 'axis_yscale':'linear', 'func':lambda x: np.mean(x), 'corr_length_axis':corr_length_axis, 'unit_cell_length':1.0}
 
-    plot_options = {'Name':'spin size', 'axis_yscale':'linear'}
-    #main_plot(simulations, boot_num, plot_options)
-    plot_lattice_correlators(simulations, plot_options, ['x','y','z'], to_plot='spin', shift_T=False)
+    #plot_options = {'Name':'spin size', 'axis_yscale':'linear'}
+    main_plot(simulations, boot_num, plot_options, to_plot=to_plot)
+    #plot_lattice_correlators(simulations, plot_options, ['x','y','z'], to_plot='spin', shift_T=False)
     #os.system("rsync -avzhe ssh ../figures/ tomerdol@newphysnet1:~/graphs/")
 
 if __name__ == "__main__":

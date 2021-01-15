@@ -1,9 +1,9 @@
 #!/bin/bash
 
-name="res_test_const3"
-arrayMech=( "false" )
-arrayL=( 6 5 4 )
-arrayH=( 2.0 )
+#name="res_test_ex_0.014"
+#arrayMech=( "true" )
+#arrayL=( 6 5 4 )
+#arrayH=( 0.0 0.3 0.6 1.0 )
 #name="res_test"
 #arrayMech=( "false" "true" )
 #arrayL=( 5 4 )
@@ -23,7 +23,7 @@ sub() {
 temp="$1"
 max_sweeps="$2"
 runs="$3"
-extra_par="_const"
+extra_par="_0.014"
 
 temp_initial="$(echo $temp | head -c 1)"
 

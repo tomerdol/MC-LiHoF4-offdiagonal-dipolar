@@ -1,6 +1,6 @@
 #!/bin/sh
 
-arrayH=( 1.5 2.0 )
+arrayH=( 0.6 1.0 )
 
 for H in "${arrayH[@]}"
 do
