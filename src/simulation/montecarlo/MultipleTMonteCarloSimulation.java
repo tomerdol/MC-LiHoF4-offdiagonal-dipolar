@@ -92,11 +92,11 @@ public class MultipleTMonteCarloSimulation extends MonteCarloSimulation implemen
                 }
             }
             sweeps++;
-            if (sweeps%simulations[0].getOutWriter().getNumOfBufferedRows()==0 || sweeps==maxSweeps) {    // every obsPrintSweepNum sweeps or at the last one
+            if (sweeps%simulations[0].getOutWriter().getNumOfBufferedRows()==0 || sweeps==maxSweeps || sweeps==1) {    // every obsPrintSweepNum sweeps or at the last one
                 if (checkpoint) {
                     checkpointer.writeCheckpoint(this);
                 }
-                System.out.println(LocalDateTime.now());
+                System.out.println(sweeps==maxSweeps ? "Done: " : "" + LocalDateTime.now());
             }
 
             if (simulations[0].getOutWriter().isPrintProgress()) System.out.println(String.format("%.2f",100.0*sweeps/maxSweeps) + "% complete                ");
