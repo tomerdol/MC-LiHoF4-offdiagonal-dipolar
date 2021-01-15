@@ -616,9 +616,17 @@ public class Main {
                 }
             }
         }
-
-
         int[][] nnArray = exchangeInt(exchangeIntTable, Lx, Lz, J_ex);	// receive the nearest neighbor array and fill exchangeIntTable with the exchange interaction values
+
+        // add exchange to intTable
+
+        final int N=Lx*Lx*Lz*4;
+        for (int i=0;i<N;i++){
+            for (int j=0;j<N;j++){
+                intTable[2][i][j] += -0.5*exchangeIntTable[i][j]*Constants.k_B/(Constants.mu_B*Constants.g_L);
+            }
+        }
+
 
         final double[][] k_cos_table, k_sin_table;
         {   // code block: tempLattice is discarded at the end

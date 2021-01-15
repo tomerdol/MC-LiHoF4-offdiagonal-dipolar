@@ -528,8 +528,7 @@ final public class FieldTable {
             //bx, by or bz are outside the range of the table
             // so the the value calculated directly
             // this takes a lot of time and is not recommended as a frequent solution
-
-            // the call and name "magnetic_moment_up_broyden" is kept to preserve compatibility with the python script
+//            System.out.println("(Bx, By, Bz) = (" + bx + "," + by + "," + bz + ")");
             ret = manualCalcValue(bx, by, bz, this.name.startsWith("magnetic_moment"));
             status=false;
             //System.err.println("field was not in table. " + name.substring(0, name.length() - 20) + " had to be calculated manually using python. Bx=" + bx + " By=" + by + " Bz=" + bz + "|| the value calculated is: " + ret);

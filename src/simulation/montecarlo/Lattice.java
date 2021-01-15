@@ -693,7 +693,9 @@ public class Lattice implements Serializable {
 
                         sum += Math.abs(prevSpinSize - lattice[index].getSpinSize());
                     }
+
                 }
+
                 if (print) {
                     System.out.print((sum / lattice.length) + " ");
                 }
