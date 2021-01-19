@@ -96,7 +96,7 @@ public class MultipleTMonteCarloSimulation extends MonteCarloSimulation implemen
                 if (checkpoint) {
                     checkpointer.writeCheckpoint(this);
                 }
-                System.out.println(sweeps==maxSweeps ? "Done: " : "" + LocalDateTime.now());
+                System.out.println((sweeps==maxSweeps ? "Done: " : "") + LocalDateTime.now());
             }
 
             if (simulations[0].getOutWriter().isPrintProgress()) System.out.println(String.format("%.2f",100.0*sweeps/maxSweeps) + "% complete                ");
