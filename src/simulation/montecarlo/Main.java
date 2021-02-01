@@ -169,8 +169,11 @@ public class Main {
     // also returns an array of nearest neighbors
     public static int[][] exchangeInt(double[][] intTable, int Lx, int Lz, double J_ex){
         final int N = Lx*Lx*Lz*4;
+        final int numOfNeighbors = (Lx==1 && Lz==1) ? 2 : 4;    // number of nearest neighbors for each spin.
+                                                                // Lx=Lz=1 is a unique case where each spin has only 2
+                                                                // distinct neighbors
+        int[][] nnArray = new int[N][4];;	// nearest neighbor array
 
-        int[][] nnArray = new int[N][4];	// nearest neighbor array
         boolean[][] nnArray_test = new boolean[N][N];	// for testing
 
         // neighbor numbers are as follows, for the 0th and 2nd atoms in the base (with respect to ion positions_1.pdf):
@@ -224,7 +227,7 @@ public class Main {
             for (int j=0;j<nnArray_test[i].length && validNNArray;j++){
                 if (nnArray_test[i][j]) countNearestNeighbors++;
             }
-            if (countNearestNeighbors!=4) validNNArray=false;
+            if (countNearestNeighbors!=numOfNeighbors) validNNArray=false;
         }
         if (validNNArray){ return nnArray; }
         else {

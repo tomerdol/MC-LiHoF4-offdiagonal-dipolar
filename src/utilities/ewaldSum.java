@@ -328,7 +328,7 @@ public class ewaldSum {
 				interaction = ewaldSum.calcSum3D(arr[i], arr[j], Lz, Lx, alpha, real_cutoff, k_cutoff);
 				
 				//System.out.println(Double.toString(-D*interaction));
-
+				System.out.println("("+i+","+j+")" + " : " + interaction[0] + "," + interaction[1] + "," + interaction[2]);
 				out.write(df.format(interaction[0])+","+df.format(interaction[1])+","+df.format(interaction[2]));	// print 10 significant digits
 				out.newLine();
 			}	

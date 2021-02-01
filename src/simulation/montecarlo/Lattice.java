@@ -1,5 +1,6 @@
 package simulation.montecarlo;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.math3.random.MersenneTwister;
 import simulation.mmsolve.ConvergenceException;
 import simulation.mmsolve.fi_xi;
@@ -335,7 +336,7 @@ public class Lattice implements Serializable {
 
         }
 
-        /*
+
         // check all spins were queued
         boolean verify=true;
         for (int i=0;i<visited.length && verify;i++)  verify = verify && visited[i];
@@ -348,7 +349,7 @@ public class Lattice implements Serializable {
             System.err.println("error with orderBFS. not all spins were inserted into the ordered array.");
             System.exit(1);
         }
-        */
+
         return bfs;
     }
 
@@ -903,6 +904,61 @@ public class Lattice implements Serializable {
                             .setIndex(i)
                             .setConvergenceDistance(magneticMomentConvergence())
                             .build();
+                    throw e;
+                }
+            }
+        }
+
+
+        public void homotopicSolve3(int[] bfsOrder, int maxIter, double tol, int flipSpin, double alpha) throws ConvergenceException {
+            // This function smoothly changes the magnetic moment target function of the flipped spin while keeping it injective
+            int numOfStepsLeft = 0;
+            double perc = 1.0, prevPerc = 0.0;
+            int i = 0;
+            double BzRange=5.0; // the smooth change of the target function goes from -BzRange to +BzRange
+
+            while (numOfStepsLeft >= 0) {
+                i++;
+                //System.out.print(" homotopy step: " + i++ + "(" + perc+"%) ("+numOfStepsLeft+")");
+
+                singleSpin[] tempLattice = Lattice.copyLattice(lattice);
+//                removeSpecificSpinConstibution(flipSpin, lattice[flipSpin].getSpinSize());
+                double magneticMoment = (1 - perc) * momentTable.getValue(lattice[flipSpin].getLocalBx(), lattice[flipSpin].getLocalBy(), lattice[flipSpin].getLocalBz(),
+                        lattice[flipSpin].getSpin(), lattice[flipSpin].getPrevBIndices()) + perc * momentTable.getValue(lattice[flipSpin].getLocalBx(), lattice[flipSpin].getLocalBy(), lattice[flipSpin].getLocalBz(), -1 * lattice[flipSpin].getSpin(), lattice[flipSpin].getPrevBIndices());
+                0.5*(1+Math.tanh(exact_x_arr-x0))*exact_res_arr[0] + 0.5*(1-Math.tanh(exact_x_arr-x0))*exact_res_arr[1]
+
+//                addMixedSpinField(flipSpin, magneticMoment);
+                lattice[flipSpin].setSpinSize(magneticMoment);
+                updateAllMagneticMoments(bfsOrder, maxIter, tol, alpha, flipSpin, false, perc);
+
+                //System.out.print(" - "+(magneticMomentConvergence(lattice, momentTable, extBx, flipSpin,perc)<tol ? "success ("+magneticMomentConvergence(lattice, momentTable, extBx, flipSpin,perc)+"), " : "failure ("+magneticMomentConvergence(lattice, momentTable, extBx, flipSpin,perc)+"), "));
+                if (magneticMomentConvergence(flipSpin, perc) > tol) {
+                    //System.err.print("backtracking: " + perc);
+                    numOfStepsLeft = (numOfStepsLeft + 1) * 2;
+                    maxIter = (int) (1.1 * maxIter);
+                    lattice = tempLattice;
+                    perc = prevPerc;
+                }
+                prevPerc = perc;
+                if (numOfStepsLeft > 0) perc = perc + (1.0 - perc) / numOfStepsLeft;
+                numOfStepsLeft--;
+
+
+                if (numOfStepsLeft < 0) { // last step
+                    lattice[flipSpin].flipSpin();
+                }
+
+                // too many iterations, so this is not going anywhere (unless this was the last step):
+                if ((i > 100 || numOfStepsLeft > Math.pow(2, 5)) && numOfStepsLeft >= 0) {
+                    lattice[flipSpin].flipSpin();   // this does nothing. it is only so that magneticMomentConvergence that is called
+                    // for the error information is run correctly.
+                    ConvergenceException e = new ConvergenceException.Builder("Too many homotopic step taken without convergence. numOfStepsLeft=" + numOfStepsLeft +
+                            ", i=" + i, "homotopic")
+                            .setIndex(i)
+                            .setConvergenceDistance(magneticMomentConvergence())
+                            .build();
+
+                    numOfStepsLeft = -1;  // this ends the loop (just in case the throw is removed)
                     throw e;
                 }
             }
