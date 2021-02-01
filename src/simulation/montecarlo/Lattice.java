@@ -182,7 +182,7 @@ public class Lattice implements Serializable {
         singleSpin[] tempLattice = Lattice.copyLattice(lattice);    // save original lattice. This is before the spin is actually flipped.
 
         boolean success=false;
-        int[] methodsToTry = new int[]{1, 8, 2, 18, 3, 5, 15, 4, 13, 7, 16, 17, 10, 14, 6, 11, 12, 9};
+        int[] methodsToTry = new int[]{1, 8, 2, 18, 3, 5, 15, 4, 13, 7, 16, 17, 10, 14, 6, 11, 12, 9, 19};
 
         String errorMessage="There was an error flipping spin " + flipSpin + ". The methods tried and the resulting errors are as follows:\n" +
                 Arrays.toString(methodsToTry) + "\n";
@@ -209,7 +209,7 @@ public class Lattice implements Serializable {
         iterativeSolver.updateAllMagneticMoments(maxIter, tol, alpha, true);
     }
     private singleSpin[] solveSelfConsistentCalc(int maxIter, double tol, int flipSpin, int method, int[][] nnArray, double alpha, MersenneTwister rnd) throws ConvergenceException {
-        if (method>=1 && method<=3){
+        if ((method>=1 && method<=3) || method==19){
             int[] bfsOrder=null;
             if (nnArray!=null) {
                 bfsOrder = orderBFS(lattice.length, flipSpin);
@@ -234,12 +234,14 @@ public class Lattice implements Serializable {
 
                 iterativeSolver.homotopicSolve(bfsOrder, maxIter, tol, flipSpin, alpha);
 
-            }else {	// method==3
+            }else if (method==3){	// method==3
                 // homotopic (iterative) method
 
                 iterativeSolver.homotopicSolve2(bfsOrder, maxIter, tol, flipSpin, alpha);
+            }else{  //method==19
+                iterativeSolver.homotopicSolve3(bfsOrder, maxIter, tol, flipSpin, alpha);
             }
-        }else if (method>=4 && method<=18){
+        }else if (method>=4 && method<=18) {
             // broyden's or newton's method
 
             lattice[flipSpin].flipSpin();
@@ -247,45 +249,43 @@ public class Lattice implements Serializable {
             double[] x = new double[lattice.length];
 
             // initialize x:
-            if (method<=8) {
+            if (method <= 8) {
                 // method numbers in the range 3<=method<=7 use the given initial guess
                 for (int j = 0; j < lattice.length; j++) x[j] = lattice[j].getSpinSize();
-            }
-            else if (method>=9 && method<=13){
+            } else if (method >= 9 && method <= 13) {
                 // method numbers in the range 8<=method<=12 use a random initial guess
                 for (int j = 0; j < x.length; j++) x[j] = spinSize * rnd.nextDouble() * (rnd.nextBoolean() ? 1 : -1);
-                method-=5;
-            }
-            else if (method>=14 && method <=18){
+                method -= 5;
+            } else if (method >= 14 && method <= 18) {
                 // method numbers in the range 13<=method<=17 use a "good" initial guess
                 for (int j = 0; j < x.length; j++) x[j] = spinSize * lattice[j].getSpin();
-                method-=10;
+                method -= 10;
             }
 
             fi_xi funcToSolve = new func(intTable, momentTable, lattice, extBx, suppressInternalTransFields);
 
             // newton's method
-            if (method==4){
+            if (method == 4) {
                 x = simulation.mmsolve.MagneticMomentsSolve.newt(funcToSolve, x, tol);
             }
             // broyden's method, Jacobian is identity and not changing
-            else if (method==5){
+            else if (method == 5) {
                 x = simulation.mmsolve.MagneticMomentsSolve.broyden(funcToSolve, x, tol, true, false);
             }
             // broyden's method, Jacobian is initialized and not changing
-            else if (method==6){
-                x = simulation.mmsolve.MagneticMomentsSolve.broyden(funcToSolve, x, tol,false, false);
+            else if (method == 6) {
+                x = simulation.mmsolve.MagneticMomentsSolve.broyden(funcToSolve, x, tol, false, false);
             }
             // broyden's method, Jacobian is initialized and changed to identity upon fail
-            else if (method==7){
-                x = simulation.mmsolve.MagneticMomentsSolve.broyden(funcToSolve, x, tol,false, true);
+            else if (method == 7) {
+                x = simulation.mmsolve.MagneticMomentsSolve.broyden(funcToSolve, x, tol, false, true);
             }
             // broyden's method, Jacobian is identity and initialized upon fail
-            else if (method==8){
-                x = simulation.mmsolve.MagneticMomentsSolve.broyden(funcToSolve, x, tol,true, true);
+            else if (method == 8) {
+                x = simulation.mmsolve.MagneticMomentsSolve.broyden(funcToSolve, x, tol, true, true);
             }
 
-            for (int j=0;j<lattice.length;j++) lattice[j].setSpinSize(x[j]);
+            for (int j = 0; j < lattice.length; j++) lattice[j].setSpinSize(x[j]);
 
             this.updateAllLocalFields();
 
@@ -295,10 +295,10 @@ public class Lattice implements Serializable {
                         .setFlippedSpin(flipSpin)
                         .build();
                 if (funcToSolve instanceof func) {
-                    e.setNumManualCalc(((func)funcToSolve).getNumManualCalc());
+                    e.setNumManualCalc(((func) funcToSolve).getNumManualCalc());
                 }
                 throw e;
-            }else{
+            } else {
                 return lattice;
             }
         }else{
@@ -395,7 +395,7 @@ public class Lattice implements Serializable {
 
     }
 
-    private double magneticMomentConvergence(int flipSpin, double frac){
+    private double magneticMomentConvergence(int flipSpin, double frac, boolean smoothHomotopy){
         double converged = 0;
         double max = 0;
 
@@ -407,7 +407,8 @@ public class Lattice implements Serializable {
                 converged += Math.abs(is - shouldBe);
 //                if (Math.abs(is - shouldBe)>max) max=Math.abs(is - shouldBe);
             }else{
-                double shouldBe = (1-frac)*momentTable.getValue(lattice[i].getLocalBx(), lattice[i].getLocalBy(), lattice[i].getLocalBz(), lattice[i].getSpin(), lattice[i].getPrevBIndices())+frac*momentTable.getValue(lattice[i].getLocalBx(), lattice[i].getLocalBy(), lattice[i].getLocalBz(), -1*lattice[i].getSpin(), lattice[i].getPrevBIndices());
+//                double shouldBe = (1-frac)*momentTable.getValue(lattice[i].getLocalBx(), lattice[i].getLocalBy(), lattice[i].getLocalBz(), lattice[i].getSpin(), lattice[i].getPrevBIndices())+frac*momentTable.getValue(lattice[i].getLocalBx(), lattice[i].getLocalBy(), lattice[i].getLocalBz(), -1*lattice[i].getSpin(), lattice[i].getPrevBIndices());
+                double shouldBe = momentTable.getValue(lattice[i].getLocalBx(), lattice[i].getLocalBy(), lattice[i].getLocalBz(), lattice[i].getSpin(), lattice[i].getPrevBIndices(), frac, smoothHomotopy);
                 double is = lattice[i].getSpinSize();
 
                 converged += Math.abs(is - shouldBe);
@@ -418,6 +419,9 @@ public class Lattice implements Serializable {
 
         return Math.abs(converged/lattice.length);
     }
+
+    // standard call
+    private double magneticMomentConvergence(int flipSpin, double frac){ return magneticMomentConvergence(flipSpin, frac, false); }
 
     // calculate the magnetic moment convergence without any frac spins.
     // received array should have all spins in the correct state (flipSpin should have already been flipped)
@@ -636,32 +640,30 @@ public class Lattice implements Serializable {
     private class MagneticMomentsSolveIter {
 
         public void updateAllMagneticMoments(int[] sweepOrder, int maxIter, double tol, double alpha, boolean retryWithLowerAlpha) {
-            updateAllMagneticMoments(sweepOrder, maxIter, tol, alpha, -1, false, 0, retryWithLowerAlpha);
+            updateAllMagneticMoments(sweepOrder, maxIter, tol, alpha, -1, false, 0, retryWithLowerAlpha, false);
         }
 
         public void updateAllMagneticMoments(int[] sweepOrder, int maxIter, double tol, double alpha, int flipSpin) {
-            updateAllMagneticMoments(sweepOrder, maxIter, tol, alpha, flipSpin, false, 0, false);
+            updateAllMagneticMoments(sweepOrder, maxIter, tol, alpha, flipSpin, false, 0, false, false);
         }
 
         public void updateAllMagneticMoments(int maxIter, double tol, double alpha) {
-            updateAllMagneticMoments(null, maxIter, tol, alpha, -1, false, 0, false);
+            updateAllMagneticMoments(null, maxIter, tol, alpha, -1, false, 0, false, false);
         }
 
         public void updateAllMagneticMoments(int maxIter, double tol, double alpha, int flipSpin, double frac) {
-            updateAllMagneticMoments(null, maxIter, tol, alpha, flipSpin, false, frac, false);
+            updateAllMagneticMoments(null, maxIter, tol, alpha, flipSpin, false, frac, false, false);
         }
 
         public void updateAllMagneticMoments(int maxIter, double tol, double alpha, boolean retryWithLowerAlpha) {
-            updateAllMagneticMoments(null, maxIter, tol, alpha, -1, false, 0, retryWithLowerAlpha);
+            updateAllMagneticMoments(null, maxIter, tol, alpha, -1, false, 0, retryWithLowerAlpha, false);
         }
 
         public void updateAllMagneticMoments(int[] sweepOrder, int maxIter, double tol, double alpha, int flipSpin, boolean print, double frac) {
-            updateAllMagneticMoments(sweepOrder, maxIter, tol, alpha, flipSpin, print, frac, false);
+            updateAllMagneticMoments(sweepOrder, maxIter, tol, alpha, flipSpin, print, frac, false, false);
         }
 
-        public void updateAllMagneticMoments(int[] sweepOrder, int maxIter, double tol, double alpha, int flipSpin, boolean print, double frac, boolean retryWithLowerAlpha) {
-
-
+        public void updateAllMagneticMoments(int[] sweepOrder, int maxIter, double tol, double alpha, int flipSpin, boolean print, double frac, boolean retryWithLowerAlpha, boolean smoothHomotopy) {
             boolean converged = false;
             int iter;
             int index;
@@ -688,7 +690,8 @@ public class Lattice implements Serializable {
                         //}
                     } else {
                         prevSpinSize = lattice[index].getSpinSize();
-                        newSpinSize = (1 - frac) * momentTable.getValue(lattice[index].getLocalBx(), lattice[index].getLocalBy(), lattice[index].getLocalBz(), lattice[index].getSpin(), lattice[i].getPrevBIndices()) + frac * momentTable.getValue(lattice[index].getLocalBx(), lattice[index].getLocalBy(), lattice[index].getLocalBz(), -1 * lattice[index].getSpin(), lattice[i].getPrevBIndices());
+//                        newSpinSize = (1 - frac) * momentTable.getValue(lattice[index].getLocalBx(), lattice[index].getLocalBy(), lattice[index].getLocalBz(), lattice[index].getSpin(), lattice[i].getPrevBIndices()) + frac * momentTable.getValue(lattice[index].getLocalBx(), lattice[index].getLocalBy(), lattice[index].getLocalBz(), -1 * lattice[index].getSpin(), lattice[i].getPrevBIndices());
+                        newSpinSize = momentTable.getValue(lattice[index].getLocalBx(), lattice[index].getLocalBy(), lattice[index].getLocalBz(), lattice[index].getSpin(), lattice[i].getPrevBIndices(), frac, smoothHomotopy);
                         lattice[index].setSpinSize(prevSpinSize * (1 - alpha) + alpha * newSpinSize);
                         updateFieldsAfterSpinSizeChange(index, prevSpinSize);
 
@@ -709,21 +712,16 @@ public class Lattice implements Serializable {
             }
             if (print) {
                 //for (int i = 0; i < maxIter - iter; i++) System.out.print(tol+" ");
-
-
                 System.out.println();
-
             }
             if (!converged && retryWithLowerAlpha) {
                 //System.out.println(sum/lattice.length);
                 //System.out.println("initiating underrelaxed gauss-seidel");
                 //System.out.println();
-                updateAllMagneticMoments(sweepOrder, 2 * maxIter, tol, 0.5 * alpha, flipSpin, print, frac, false);
+                updateAllMagneticMoments(sweepOrder, 2 * maxIter, tol, 0.5 * alpha, flipSpin, print, frac, false, smoothHomotopy);
             } else {
                 //System.out.print(iter + "/" + maxIter + "," + momentTable.getValue(lattice[flipSpin].getLocalBx(), lattice[flipSpin].getLocalBy(), lattice[flipSpin].getLocalBz(), lattice[flipSpin].getSpin()) + "," + momentTable.getValue(lattice[flipSpin].getLocalBx(), lattice[flipSpin].getLocalBy(), lattice[flipSpin].getLocalBz(), -1 * lattice[flipSpin].getSpin()) + ",");
             }
-
-
         }
 
 
@@ -923,16 +921,15 @@ public class Lattice implements Serializable {
 
                 singleSpin[] tempLattice = Lattice.copyLattice(lattice);
 //                removeSpecificSpinConstibution(flipSpin, lattice[flipSpin].getSpinSize());
-                double magneticMoment = (1 - perc) * momentTable.getValue(lattice[flipSpin].getLocalBx(), lattice[flipSpin].getLocalBy(), lattice[flipSpin].getLocalBz(),
-                        lattice[flipSpin].getSpin(), lattice[flipSpin].getPrevBIndices()) + perc * momentTable.getValue(lattice[flipSpin].getLocalBx(), lattice[flipSpin].getLocalBy(), lattice[flipSpin].getLocalBz(), -1 * lattice[flipSpin].getSpin(), lattice[flipSpin].getPrevBIndices());
-                0.5*(1+Math.tanh(exact_x_arr-x0))*exact_res_arr[0] + 0.5*(1-Math.tanh(exact_x_arr-x0))*exact_res_arr[1]
+//                double magneticMoment = (1 - perc) * momentTable.getValue(lattice[flipSpin].getLocalBx(), lattice[flipSpin].getLocalBy(), lattice[flipSpin].getLocalBz(),
+//                        lattice[flipSpin].getSpin(), lattice[flipSpin].getPrevBIndices()) + perc * momentTable.getValue(lattice[flipSpin].getLocalBx(), lattice[flipSpin].getLocalBy(), lattice[flipSpin].getLocalBz(), -1 * lattice[flipSpin].getSpin(), lattice[flipSpin].getPrevBIndices());
 
 //                addMixedSpinField(flipSpin, magneticMoment);
-                lattice[flipSpin].setSpinSize(magneticMoment);
-                updateAllMagneticMoments(bfsOrder, maxIter, tol, alpha, flipSpin, false, perc);
+//                lattice[flipSpin].setSpinSize(magneticMoment);
+                updateAllMagneticMoments(bfsOrder, maxIter, tol, alpha, flipSpin, false, perc, false, true);
 
                 //System.out.print(" - "+(magneticMomentConvergence(lattice, momentTable, extBx, flipSpin,perc)<tol ? "success ("+magneticMomentConvergence(lattice, momentTable, extBx, flipSpin,perc)+"), " : "failure ("+magneticMomentConvergence(lattice, momentTable, extBx, flipSpin,perc)+"), "));
-                if (magneticMomentConvergence(flipSpin, perc) > tol) {
+                if (magneticMomentConvergence(flipSpin, perc, true) > tol) {
                     //System.err.print("backtracking: " + perc);
                     numOfStepsLeft = (numOfStepsLeft + 1) * 2;
                     maxIter = (int) (1.1 * maxIter);
@@ -949,9 +946,9 @@ public class Lattice implements Serializable {
                 }
 
                 // too many iterations, so this is not going anywhere (unless this was the last step):
-                if ((i > 100 || numOfStepsLeft > Math.pow(2, 5)) && numOfStepsLeft >= 0) {
+                if ((i > 300 || numOfStepsLeft > Math.pow(2, 8)) && numOfStepsLeft >= 0) {
                     lattice[flipSpin].flipSpin();   // this does nothing. it is only so that magneticMomentConvergence that is called
-                    // for the error information is run correctly.
+                                                    // for the error information is run correctly.
                     ConvergenceException e = new ConvergenceException.Builder("Too many homotopic step taken without convergence. numOfStepsLeft=" + numOfStepsLeft +
                             ", i=" + i, "homotopic")
                             .setIndex(i)

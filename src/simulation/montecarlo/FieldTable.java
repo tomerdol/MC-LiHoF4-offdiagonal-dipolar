@@ -550,6 +550,28 @@ final public class FieldTable {
     /**
      * @see #getValue(double, double, double, double, boolean, int[][])
      */
+    public double getValue(double bx, double by, double bz, double s, int[][] prevBIndices, double frac, boolean smoothHomotopy) {
+        if (!smoothHomotopy) {
+            return (1 - frac) * getValue(bx, by, bz, s, false, prevBIndices).getValue()
+                    + frac * getValue(bx, by, bz, -1 * s, false, prevBIndices).getValue();
+        }else{
+            double Bz0 = -4.0 + 4.0*2*frac; // we shift tanh(x) from -4.0 to +4.0
+            // the edges are treated explicitly so that the convergence is exact
+            if (frac==0){
+                return getValue(bx, by, bz, s, false, prevBIndices).getValue();
+            } else if (frac==1){
+                return getValue(bx, by, bz, -1 * s, false, prevBIndices).getValue();
+            } else {
+                return (0.5 * (1 + Math.tanh(bz - Bz0))) * getValue(bx, by, bz, s, false, prevBIndices).getValue()
+                        + (0.5 * (1 - Math.tanh(bz - Bz0))) * getValue(bx, by, bz, -1 * s, false, prevBIndices).getValue();
+            }
+        }
+//        return getValue(bx,by,bz,s,false, prevBIndices).getValue();
+    }
+
+    /**
+     * @see #getValue(double, double, double, double, boolean, int[][])
+     */
     public double getValue(double bx, double by, double bz, double s) {
         return getValue(bx,by,bz,s,false, null).getValue();
     }
