@@ -1,6 +1,5 @@
 package simulation.montecarlo;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.math3.random.MersenneTwister;
 import simulation.mmsolve.ConvergenceException;
 import simulation.mmsolve.fi_xi;
@@ -336,7 +335,7 @@ public class Lattice implements Serializable {
 
         }
 
-
+        /*
         // check all spins were queued
         boolean verify=true;
         for (int i=0;i<visited.length && verify;i++)  verify = verify && visited[i];
@@ -349,7 +348,7 @@ public class Lattice implements Serializable {
             System.err.println("error with orderBFS. not all spins were inserted into the ordered array.");
             System.exit(1);
         }
-
+        */
         return bfs;
     }
 
