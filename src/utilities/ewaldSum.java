@@ -55,7 +55,7 @@ public class ewaldSum {
 		int i=(int)(Lx/2);
 		int j=(int)(Lx/2);
 		int k=(int)(Lz/2);
-		int testSpin=(i)*Lx*Lz*4+(j)*Lz*4+(k)*4+0;
+		int testSpin=(i)*Lx*Lz*Constants.num_in_cell+(j)*Lz*Constants.num_in_cell+(k)*Constants.num_in_cell+0;
 		int neighbor1=-1, neighbor2=-1, neighbor3=-1, neighbor4=-1;
 
 		neighbor1=i*Lx*Lz*4+j*Lz*4+k*4+1;
@@ -80,8 +80,8 @@ public class ewaldSum {
 		}
 		double alpha;
 
-		final double[][][] intTable = new double[3][4*Lx*Lx*Lz][4*Lx*Lx*Lz];
-		final double[][] exchangeIntTable = new double[4*Lx*Lx*Lz][4*Lx*Lx*Lz];	// all zeros
+		final double[][][] intTable = new double[3][Constants.num_in_cell*Lx*Lx*Lz][Constants.num_in_cell*Lx*Lx*Lz];
+		final double[][] exchangeIntTable = new double[Constants.num_in_cell*Lx*Lx*Lz][Constants.num_in_cell*Lx*Lx*Lz];	// all zeros
 
 
 		//System.out.println("alpha\txz\tyz\tzz");
@@ -95,7 +95,7 @@ public class ewaldSum {
 				fillIntTable(lattice.getArray(), Lz, Lx, alpha, real_cutoff, k_cutoff, intTable);
 				lattice.checkerBoard();
 				lattice.updateAllLocalFields();
-				System.out.print("\t" + (calcEnergy(lattice)/(Lx*Lx*Lz*4)));
+				System.out.print("\t" + (calcEnergy(lattice)/(Lx*Lx*Lz*Constants.num_in_cell)));
 				//System.out.println((alpha * Lz) + "\t" + ewald_result[0] + "\t" + ewald_result[1] + "\t" + ewald_result[2]);
 			}
 			System.out.println();
@@ -108,7 +108,7 @@ public class ewaldSum {
 		int i=(int)(Lx/2);
 		int j=(int)(Lx/2);
 		int k=(int)(Lz/2);
-		int testSpin=(i)*Lx*Lz*4+(j)*Lz*4+(k)*4+0;
+		int testSpin=(i)*Lx*Lz*Constants.num_in_cell+(j)*Lz*Constants.num_in_cell+(k)*Constants.num_in_cell+0;
 		int neighbor1=-1, neighbor2=-1, neighbor3=-1, neighbor4=-1;
 
 		neighbor1=i*Lx*Lz*4+j*Lz*4+k*4+1;

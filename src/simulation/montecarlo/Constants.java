@@ -23,7 +23,7 @@ public class Constants {
         g_L=GetParamValues.getDoubleParam(params, "g_L");	    // g-factor
 
         num_in_cell = GetParamValues.getIntParam(params, "num_in_cell");    // number of spins in unit cell
-        location = new double[num_in_cell][3];	// 3D coordinate location for each of the 4 atoms
+        location = new double[num_in_cell][3];	// 3D coordinate location for each of the atoms in the basis
 
         // fill location:
         for (int l=0;l<location.length;l++){

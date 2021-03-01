@@ -1,6 +1,7 @@
 package utilities;
 
 import org.apache.commons.math3.random.MersenneTwister;
+import simulation.montecarlo.Constants;
 import simulation.montecarlo.CrystalField;
 import simulation.montecarlo.GetParamValues;
 import simulation.montecarlo.singleSpin;
@@ -30,12 +31,12 @@ public class GenerateLattice {
         int i, j, k, l;
         // create the array that will hold the lattice. the array's cells correspond
         // to the unit cells of the LiHo{x}Y{x-1}F4.
-        singleSpin[] arr = new singleSpin[4*Lx*Lx*Lz];
+        singleSpin[] arr = new singleSpin[Constants.num_in_cell*Lx*Lx*Lz];
         
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         // get location matrix (3D coordinates for each of the 4 atoms)
         Properties params = GetParamValues.getParams();
-        double[][] location = new double[4][3];	// 3D coordinate location for each of the 4 atoms
+        double[][] location = new double[Constants.num_in_cell][3];	// 3D coordinate location for each of the atoms in the basis
         
         // fill location:
         for (l=0;l<location.length;l++){
@@ -52,12 +53,12 @@ public class GenerateLattice {
             	{
             		// the spins in each unit cell are designated 0-3. see documentation for further info
             		// a lattice is created with all spins +1
-            		for (l = 0; l < 4; l++)
+            		for (l = 0; l < Constants.num_in_cell; l++)
             		{
 	            		if (rnd_spin!=null && rnd_spin.nextDouble()<dilution){
 	            			int s=1;
 	            			//if (rnd_spin.nextBoolean()) s=-1;
-	            			arr[i*Lx*Lz*4+j*Lz*4+k*4+l]=new singleSpin(1,i*Lx*Lz*4+j*Lz*4+k*4+l, spinSize);
+	            			arr[i*Lx*Lz*Constants.num_in_cell+j*Lz*Constants.num_in_cell+k*Constants.num_in_cell+l]=new singleSpin(1,i*Lx*Lz*Constants.num_in_cell+j*Lz*Constants.num_in_cell+k*Constants.num_in_cell+l, spinSize);
 	            		}else{
 		                	arr[i*Lx*Lz*4+j*Lz*4+k*4+l]=new singleSpin(0,i*Lx*Lz*4+j*Lz*4+k*4+l, spinSize);
 	            		}
