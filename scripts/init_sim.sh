@@ -6,12 +6,13 @@ source ./scripts/sub.sh
 name="res_test_ex_0.014"
 arrayMech=( "true" )
 arrayL=( 4 5 6 7 )
-arrayH=( 1.5 2.0 )
+arrayLexclude=( 4 5 6 )
+arrayH=( 0.0 0.3 0.6 1.0 )
 minT_false=1.3
 maxT_false=1.85
 #minT_true=1.55
 #maxT_true=2.0
-minT_true=0.8
+minT_true=1.0
 maxT_true=1.7
 delta=0.08
 
@@ -19,6 +20,7 @@ gen_temp_schedules() {
 # generate temporary temperature schedules
 for L in "${arrayL[@]}"
 do
+if [[ ! " ${arrayLexclude[@]} " =~ " ${L} " ]]; then
 for H in "${arrayH[@]}"
 do
 
@@ -26,8 +28,10 @@ yes n | /gpfs0/smoshe/projects/Python-3.8_old/bin/python3 ./scripts/gen_temp_sch
 echo "generated ./temperature_schedules/temp_schedule_${L}_${L}_$4${name}_${H}_$3.txt"
 
 done
+fi
 done
 }
+
 if true; then
 # generate temporary temperature schedules for "true"
 gen_temp_schedules $minT_true $maxT_true "true" "temp_"
@@ -94,6 +98,7 @@ for mech in "${arrayMech[@]}"
 do
 for L in "${arrayL[@]}"
 do
+if [[ ! " ${arrayLexclude[@]} " =~ " ${L} " ]]; then
 for H in "${arrayH[@]}"
 do
 
@@ -131,6 +136,7 @@ sort -t" " -nk1 $tmp_file > ./data/analysis/sample_energy_"$L"_"$H"_temp_"$name"
 rm $tmp_file
 
 done
+fi
 done
 done
 
@@ -151,8 +157,10 @@ echo "Hex=$H mech=$mech : initial Tc = $initial_tc"
 
 for L in "${arrayL[@]}"
 do
+if [[ ! " ${arrayLexclude[@]} " =~ " ${L} " ]]; then
 bash ./scripts/temp_set_script.sh ./data/analysis/sample_energy_"$L"_"$H"_temp_"$name"_"$mech".txt 24 $(bc <<< "$initial_tc-$delta") $(bc <<< "$initial_tc+$delta") | awk -vORS=, '{ print $1 }' | sed 's/,$/\n/' > ./temperature_schedules/temp_schedule_"$L"_"$L"_"$name"_"$H"_"$mech".txt
 echo "created ./temperature_schedules/temp_schedule_${L}_${L}_${name}_${H}_${mech}.txt"
+fi
 done
 
 done

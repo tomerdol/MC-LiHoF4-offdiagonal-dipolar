@@ -7,16 +7,22 @@ import java.util.Properties;
  * Constants to be used throughout the program. They are read from a file (parameters.properties) by the class {@link GetParamValues GetParamValues}
  */
 public class Constants {
-    public static final double a ,c, mu_0, mu_B, g_L, k_B;
+    public static final double a, b, c, mu_0, mu_B, g_L, k_B;
     public static final int num_in_cell;
+    public static final double[][] primitiveLatticeVectors;
     public static final double[][] location;
 
     static{
         // read a,c from parameters file:
         Properties params = GetParamValues.getParams();
         // lattice unit cell sizes:
-        a=GetParamValues.getDoubleParam(params, "a");
-        c=GetParamValues.getDoubleParam(params, "c");
+        primitiveLatticeVectors = new double[3][];    // 3 dimensions
+        primitiveLatticeVectors[0]=GetParamValues.getLatticeVector(params, "a");
+        primitiveLatticeVectors[1]=GetParamValues.getLatticeVector(params, "b");
+        primitiveLatticeVectors[2]=GetParamValues.getLatticeVector(params, "c");
+        a=primitiveLatticeVectors[0][0];    // a is x
+        b=primitiveLatticeVectors[1][1];    // b is y
+        c=primitiveLatticeVectors[2][2];    // c is z
         mu_0=GetParamValues.getDoubleParam(params, "mu_0");	// Vacuum permeability
         mu_B=GetParamValues.getDoubleParam(params, "mu_B");	// Bohr Magneton
         k_B=GetParamValues.getDoubleParam(params,"k_B");    // Boltzmann constant

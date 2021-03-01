@@ -6,6 +6,7 @@ import sys
 import glob
 import analysis_tools
 import pandas as pd
+from scipy.ndimage import gaussian_filter1d
 
 def parse_arguments():
     from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
@@ -60,23 +61,24 @@ def main_hist2(simulations, to_plot, flip=False):
             shared_bins_to_plot = shared_bins[:-1] + i*np.diff(shared_bins)/num_of_simulations_to_plot
 
             histograms = np.zeros((num_independent_runs, len(shared_bins)-1))
-            smooth_histogram_x = np.linspace(shared_bins[0],shared_bins[-1],num=200)
-            smooth_histogram = np.zeros((num_independent_runs, len(smooth_histogram_x)))
+            #smooth_histogram_x = np.linspace(shared_bins[0],shared_bins[-1],num=200)
+            #smooth_histogram = np.zeros((num_independent_runs, len(smooth_histogram_x)))
             simple_values=np.zeros(num_independent_runs)
             abs_values=np.zeros(num_independent_runs)
             standard_deviations=np.zeros(num_independent_runs)
-            window_size=5
+            #window_size=5
             for i in range(num_independent_runs):
                 simple_values[i] = np.mean(data[groups==i])
                 abs_values[i] = np.mean(np.abs(data[groups==i]))
                 standard_deviations[i] = np.sqrt(np.mean(data[groups==i]**2))
                 histograms[i], _ = np.histogram(data[groups == i], bins=shared_bins)
 
-                for idx, x in enumerate(smooth_histogram_x):
-                    bin_width = shared_bins[1]-shared_bins[0]
-                    low_bound = x - bin_width*(window_size*0.5)
-                    upper_bound = x + bin_width*(window_size*0.5)
-                    smooth_histogram[i,idx] = np.sum((groups==i) & (data > low_bound) & (data<upper_bound))/(window_size)
+                #for idx, x in enumerate(smooth_histogram_x):
+                #    bin_width = shared_bins[1]-shared_bins[0]
+                #    low_bound = x - bin_width*(window_size*0.5)
+                #    upper_bound = x + bin_width*(window_size*0.5)
+                #    smooth_histogram[i,idx] = np.sum((groups==i) & (data > low_bound) & (data<upper_bound))/(window_size)
+            smooth_histogram_gauss = gaussian_filter1d(histograms,2,axis=1)
             simple_values_mean = simple_values.mean()
             simple_values_err = simple_values.std()/np.sqrt(simple_values.size-1)
             abs_values_mean = abs_values.mean()
@@ -93,8 +95,8 @@ def main_hist2(simulations, to_plot, flip=False):
                     yerr=np.std(histograms,axis=0)/np.sqrt(num_independent_runs-1), color=next(prop_iter)['color'])
 
 
-            plt.plot(smooth_histogram_x, np.mean(smooth_histogram,axis=0),label="Smooth %s 2"%format_label(list(sim)[2:],format=['L','folderName','Bex','mech','T']), color=next(prop_iter)['color'])
-
+            #plt.plot(smooth_histogram_x, np.mean(smooth_histogram,axis=0),label="Smooth %s 2"%format_label(list(sim)[2:],format=['L','folderName','Bex','mech','T']), color=next(prop_iter)['color'])
+            plt.plot(shared_bins_to_plot + 0.5 * np.diff(shared_bins)/num_of_simulations_to_plot, np.mean(smooth_histogram_gauss, axis=0), label="Gaussian Smooth %s 2"%format_label(list(sim)[2:],format=['L','folderName','Bex','mech','T']), color=next(prop_iter)['color'])
             if flip:
                 data=multiple_sim_data[sim_index+1]
                 groups=multiple_sim_groups[sim_index+1]

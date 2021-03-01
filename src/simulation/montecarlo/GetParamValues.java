@@ -4,6 +4,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
+import java.util.stream.Stream;
 
 /**
  * Get parameters and constants from the parameter file "parameters.properties".
@@ -91,20 +92,43 @@ public class GetParamValues {
 	 * @return location on the ion within the unit cell
 	 */
 	public static double[] getLocation(Properties params, int num){
-		double[] location = new double[3];	// 3 coordinates: x,y,z
+		double[] location;
 		String str = params.getProperty(Integer.toString(num) + "loc");
 		if (str==null)
 			throw new RuntimeException("value not found in parameter file");
 		try{
-			for (int i=0;i<location.length;i++){
-				location[i] = Double.parseDouble(str.split(",")[i]);
-			}
+			location = Stream.of(str.split(","))
+					.mapToDouble(Double::parseDouble)
+					.toArray();
 		}catch(Exception e){
 			throw new RuntimeException("error reading location parameter");
 		}
-		
+
 		return location;
 	}
+
+	/**
+	 * Receive a primitive lattice vector
+	 * @param params Properties object
+	 * @param name of the primitive lattice vector (a, b, c)
+	 * @return A double array with the (x,y,z) components of the primitive lattice vector
+	 */
+	public static double[] getLatticeVector(Properties params, String name){
+		double[] vec;
+		String str = params.getProperty(name);
+		if (str==null)
+			throw new RuntimeException("value not found in parameter file");
+		try{
+			vec = Stream.of(str.split(","))
+					.mapToDouble(Double::parseDouble)
+					.toArray();
+		}catch(Exception e){
+			throw new RuntimeException("error reading location parameter");
+		}
+
+		return vec;
+	}
+
 
 	/**
 	 * Receive a double parameter from the parameter file
