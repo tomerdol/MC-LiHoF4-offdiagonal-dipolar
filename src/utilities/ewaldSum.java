@@ -1,5 +1,7 @@
 package utilities;
 
+import org.apache.commons.math3.complex.Complex;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.special.Erf;
 import simulation.montecarlo.*;
 
@@ -214,8 +216,6 @@ public class ewaldSum {
 	public static void main(String[] args){
 		// read parameters from file:
 		Properties params = GetParamValues.getParams();
-		final double a=GetParamValues.getDoubleParam(params, "a");
-		final double c=GetParamValues.getDoubleParam(params, "c");
 		int real_cutoff=GetParamValues.getIntParam(params, "real_cutoff");
 		int k_cutoff=GetParamValues.getIntParam(params, "k_cutoff");
 		double alpha = GetParamValues.getDoubleParam(params, "alpha");
@@ -269,7 +269,7 @@ public class ewaldSum {
             
             int N = Lx*Lx*Lz*4;
 
-            singleSpin[] arr = GenerateLattice.generate_ising_lattice(Lx, Lz, a, c, 1, 0, null);
+            singleSpin[] arr = GenerateLattice.generate_ising_lattice(Lx, Lz, 1, 0, null);
             /*
             for (int i=0;i<arr.length;i++){
             	if (i%2==0){
@@ -281,7 +281,7 @@ public class ewaldSum {
             */
 
             // fill interactions table and print it to the file 'out'
-            fillIntTable(arr,Lz,Lx,alpha/(c*Lz),real_cutoff,k_cutoff,out);
+            fillIntTable(arr,Lz,Lx,alpha/(Constants.c*Lz),real_cutoff,k_cutoff,out);
 
         }
         catch (IOException e) { System.out.println("bad file"); }
@@ -334,15 +334,135 @@ public class ewaldSum {
 			}	
 		}
 	}
-	
+
+	// Function to find
+	// cross product of two vector array.
+	static double[] crossProduct(double vect_A[], double vect_B[])
+
+	{
+		if (vect_A.length!=3 || vect_B.length!=3){ throw new IllegalArgumentException("Cross product defined only between two 3-component vectors. Arguments must be two length=3 double arrays. Lengths given: " + vect_A.length + "," + vect_B.length);	}
+		double cross_P[] = new double[3];
+		cross_P[0] = vect_A[1] * vect_B[2]
+				- vect_A[2] * vect_B[1];
+		cross_P[1] = vect_A[2] * vect_B[0]
+				- vect_A[0] * vect_B[2];
+		cross_P[2] = vect_A[0] * vect_B[1]
+				- vect_A[1] * vect_B[0];
+		return cross_P;
+	}
+
+	// call calcSum3D with Lx=Ly as is often the case
+	public static double[] calcSum3D(singleSpin i, singleSpin j, int Lz, int Lx, double alpha, int realN_cutoff, int reciprocalN_cutoff){
+		return calcSum3D(i, j, Lz, Lx, Lx, alpha, realN_cutoff, reciprocalN_cutoff);
+	}
 
 	// bottom line: this is the right implementation of ewald sum for this project
 	// returns the zx, zy, zz interations in a size 3 array: {zx, zy, zz}
-	public static double[] calcSum3D(singleSpin i, singleSpin j, int Lz, int Lx, double alpha, int realN_cutoff, int reciprocalN_cutoff){
+	public static double[] calcSum3D(singleSpin i, singleSpin j, int Lz, int Ly, int Lx, double alpha, int realN_cutoff, int reciprocalN_cutoff){
+
+		double realSumZ=0, realSumX=0, realSumY=0;
+		Complex reciprocalSumZ=Complex.ZERO;
+		Complex reciprocalSumY=Complex.ZERO;
+		Complex reciprocalSumX=Complex.ZERO;
+
+		Vector3D rij = i.getLocation(Lz,Ly).subtract(j.getLocation(Lz,Ly));
+
+		Vector3D latticeLz = Constants.primitiveLatticeVectors[2].scalarMultiply(Lz);
+		Vector3D latticeLy = Constants.primitiveLatticeVectors[1].scalarMultiply(Ly);
+		Vector3D latticeLx = Constants.primitiveLatticeVectors[0].scalarMultiply(Lx);
+
+		double r, rx, ry, rz, B, C;
+		int nx,ny,nz;
+
+
+		for (nx=-realN_cutoff;nx<=realN_cutoff;nx++){
+			for (ny=-realN_cutoff;ny<=realN_cutoff;ny++){
+				for (nz=-realN_cutoff;nz<=realN_cutoff;nz++){
+					if (nx!=0 || ny!=0 || nz!=0 || i!=j){	// exclude self interaction
+
+						Vector3D rijCopy = new Vector3D(1, rij);	// distance between i and the copy of j that is located
+																	// nx unit cells along primitive direction 0
+																	// ny unit cells along primitive direction 1 and
+																	// nz unit cells along primitive direction 2
+
+						rijCopy=rijCopy.add(nz,latticeLz);
+						rijCopy=rijCopy.add(ny,latticeLy);
+						rijCopy=rijCopy.add(nx,latticeLx);
+
+						rz=rijCopy.getZ();
+						ry=rijCopy.getY();
+						rx=rijCopy.getX();
+						r = rijCopy.getNorm();
+
+						B = (Erf.erfc(alpha*r) + (2*alpha*r/Math.sqrt(Math.PI))*Math.exp(-alpha*alpha*r*r))/(r*r*r);
+						C = (3*Erf.erfc(alpha*r) + (2*alpha*r/Math.sqrt(Math.PI))*(3+2*alpha*alpha*r*r)*Math.exp(-alpha*alpha*r*r))/(Math.pow(r, 5));
+
+						realSumZ += B - rz*rz*C;
+						realSumX -= rx*rz*C;
+						realSumY -= ry*rz*C;
+					}
+				}
+			}
+		}
+
+		// reciprocal lattice primitive vectors
+		Vector3D b1 =  Vector3D.crossProduct(latticeLy,latticeLz).scalarMultiply(2 * Math.PI / latticeLx.dotProduct(Vector3D.crossProduct(latticeLy,latticeLz)));
+		Vector3D b2 =  Vector3D.crossProduct(latticeLz,latticeLx).scalarMultiply(2 * Math.PI / latticeLx.dotProduct(Vector3D.crossProduct(latticeLy,latticeLz)));
+		Vector3D b3 =  Vector3D.crossProduct(latticeLx,latticeLy).scalarMultiply(2 * Math.PI / latticeLx.dotProduct(Vector3D.crossProduct(latticeLy,latticeLz)));
+
+		for (int mx=-reciprocalN_cutoff;mx<=reciprocalN_cutoff;mx++){
+			for (int my=-reciprocalN_cutoff;my<=reciprocalN_cutoff;my++) {
+				for (int mz = -reciprocalN_cutoff; mz <= reciprocalN_cutoff; mz++) {
+					// this condition implements the condition G!=0
+					if (mx != 0 || my!= 0  || mz!=0) {
+						Vector3D G = Vector3D.ZERO;	// reciprocal lattice vector
+						G=G.add(mz,b3);
+						G=G.add(my,b2);
+						G=G.add(mx,b1);
+
+						double Gz=G.getZ();
+						double Gy=G.getY();
+						double Gx=G.getX();
+						double G2 = G.getNormSq();
+
+						double Gdotrij = G.dotProduct(rij);
+						Complex etoIGdotrij = new Complex(Math.cos(Gdotrij),Math.sin(Gdotrij));
+						reciprocalSumX = reciprocalSumX.add(etoIGdotrij.multiply(((Gx * Gz) / G2) * Math.exp(-G2 / (4 * alpha * alpha))));
+						reciprocalSumY = reciprocalSumY.add(etoIGdotrij.multiply(((Gy * Gz) / G2) * Math.exp(-G2 / (4 * alpha * alpha))));
+						reciprocalSumZ = reciprocalSumZ.add(etoIGdotrij.multiply(((Gz * Gz) / G2) * Math.exp(-G2 / (4 * alpha * alpha))));
+					}
+				}
+			}
+		}
+
+		double[] ret = new double[3];
+
+		// self interaction correction term to be omitted from the zz interaction for i==j:
+		double selfInteraction = i.getN()==j.getN() ? 4*Math.pow(alpha,3)/(3*Math.sqrt(Math.PI)) : 0;
+
+		if (Math.abs(reciprocalSumX.getImaginary())>10e-15 || Math.abs(reciprocalSumY.getImaginary())>10e-15 || Math.abs(reciprocalSumZ.getImaginary())>10e-15){
+			System.err.println("Reciprocal sum not real!");
+			System.err.println(reciprocalSumX);
+			System.err.println(reciprocalSumY);
+			System.err.println(reciprocalSumZ);
+			System.exit(1);
+		}
+		ret[0] = realSumX + (4*Math.PI/(latticeLx.dotProduct(Vector3D.crossProduct(latticeLy,latticeLz))))*reciprocalSumX.getReal();	//zx interaction
+		ret[1] = realSumY + (4*Math.PI/(latticeLx.dotProduct(Vector3D.crossProduct(latticeLy,latticeLz))))*reciprocalSumY.getReal();	//zy interaction
+		ret[2] = realSumZ + (4*Math.PI/(latticeLx.dotProduct(Vector3D.crossProduct(latticeLy,latticeLz))))*reciprocalSumZ.getReal() - selfInteraction;	//zz interaction
+		return ret;
+
+	}
+
+
+	// bottom line: this is the right implementation of ewald sum for this project
+	// returns the zx, zy, zz interations in a size 3 array: {zx, zy, zz}
+	public static double[] calcSum3D2(singleSpin i, singleSpin j, int Lz, int Ly, int Lx, double alpha, int realN_cutoff, int reciprocalN_cutoff){
 		
 		double realSumZ=0, realSumX=0, realSumY=0, reciprocalSumZ=0, reciprocalSumX=0, reciprocalSumY=0;
 		double actual_height = Lz* Constants.c;
 		double actual_length = Lx*Constants.a;
+		double actual_width = Ly*Constants.b;
 
 		double r, rx, ry, rz, B, C;
 		int x,y,z;

@@ -1,6 +1,7 @@
 package simulation.montecarlo;
 
-import java.util.Arrays;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+
 import java.util.Properties;
 
 /**
@@ -9,31 +10,32 @@ import java.util.Properties;
 public class Constants {
     public static final double a, b, c, mu_0, mu_B, g_L, k_B;
     public static final int num_in_cell;
-    public static final double[][] primitiveLatticeVectors;
-    public static final double[][] location;
+    public static final Vector3D[] primitiveLatticeVectors;
+    public static final double[][] basis;
 
     static{
         // read a,c from parameters file:
         Properties params = GetParamValues.getParams();
         // lattice unit cell sizes:
-        primitiveLatticeVectors = new double[3][];    // 3 dimensions
-        primitiveLatticeVectors[0]=GetParamValues.getLatticeVector(params, "a");
-        primitiveLatticeVectors[1]=GetParamValues.getLatticeVector(params, "b");
-        primitiveLatticeVectors[2]=GetParamValues.getLatticeVector(params, "c");
-        a=primitiveLatticeVectors[0][0];    // a is x
-        b=primitiveLatticeVectors[1][1];    // b is y
-        c=primitiveLatticeVectors[2][2];    // c is z
+        primitiveLatticeVectors = new Vector3D[3];    // 3 dimensions
+        primitiveLatticeVectors[0] = new Vector3D(GetParamValues.getLatticeVector(params, "a"));
+        primitiveLatticeVectors[1] = new Vector3D(GetParamValues.getLatticeVector(params, "b"));
+        primitiveLatticeVectors[2] = new Vector3D(GetParamValues.getLatticeVector(params, "c"));
+        a=primitiveLatticeVectors[0].getNorm();    // a is x
+        b=primitiveLatticeVectors[1].getNorm();    // b is y
+        c=primitiveLatticeVectors[2].getNorm();    // c is z
+
         mu_0=GetParamValues.getDoubleParam(params, "mu_0");	// Vacuum permeability
         mu_B=GetParamValues.getDoubleParam(params, "mu_B");	// Bohr Magneton
         k_B=GetParamValues.getDoubleParam(params,"k_B");    // Boltzmann constant
         g_L=GetParamValues.getDoubleParam(params, "g_L");	    // g-factor
 
         num_in_cell = GetParamValues.getIntParam(params, "num_in_cell");    // number of spins in unit cell
-        location = new double[num_in_cell][3];	// 3D coordinate location for each of the atoms in the basis
+        basis = new double[num_in_cell][3];	// 3D coordinate location for each of the atoms in the basis
 
         // fill location:
-        for (int l=0;l<location.length;l++){
-            location[l]=GetParamValues.getLocation(params, l);
+        for (int l=0;l<basis.length;l++){
+            basis[l]=GetParamValues.getLocation(params, l);
         }
 
         params=null;
@@ -45,8 +47,8 @@ public class Constants {
 
     public static String locationsToString(){
         String ret="locations:";
-        for (int i=0;i<location.length;i++){
-            ret = ret + Arrays.toString(location[i]) + "|";
+        for (int i=0;i<basis.length;i++){
+            ret = ret + basis[i].toString() + "|";
         }
         return ret;
     }

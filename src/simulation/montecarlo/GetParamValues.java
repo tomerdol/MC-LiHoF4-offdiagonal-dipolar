@@ -142,7 +142,7 @@ public class GetParamValues {
 		double p = 0;
 		try{
 			// param is expected to be double
-			if (param.equals("a") || param.equals("c") || param.equals("D") || param.equals("J_ex")
+			if (param.equals("D") || param.equals("J_ex")
 					|| param.equals("precision") || param.equals("alpha") || param.equals("tol") || param.equals("mu_0")
 					|| param.equals("mu_B") || param.equals("g_L") || param.equals("s") || param.equals("k_B")){
 				if (params.getProperty(param)!=null)
@@ -154,7 +154,7 @@ public class GetParamValues {
 			}
 
 		}catch(Exception e){
-			throw new RuntimeException("error reading parameter");
+			throw new RuntimeException("error reading parameter "+param);
 		}
 		
 		return p;
