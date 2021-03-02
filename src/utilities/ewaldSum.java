@@ -1,6 +1,5 @@
 package utilities;
 
-import org.apache.commons.math3.complex.Complex;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.special.Erf;
 import simulation.montecarlo.*;
@@ -361,9 +360,9 @@ public class ewaldSum {
 	public static double[] calcSum3D(singleSpin i, singleSpin j, int Lz, int Ly, int Lx, double alpha, int realN_cutoff, int reciprocalN_cutoff){
 
 		double realSumZ=0, realSumX=0, realSumY=0;
-		Complex reciprocalSumZ=Complex.ZERO;
-		Complex reciprocalSumY=Complex.ZERO;
-		Complex reciprocalSumX=Complex.ZERO;
+		double reciprocalSumZ=0;
+		double reciprocalSumY=0;
+		double reciprocalSumX=0;
 
 		Vector3D rij = i.getLocation(Lz,Ly).subtract(j.getLocation(Lz,Ly));
 
@@ -412,9 +411,10 @@ public class ewaldSum {
 
 		for (int mx=-reciprocalN_cutoff;mx<=reciprocalN_cutoff;mx++){
 			for (int my=-reciprocalN_cutoff;my<=reciprocalN_cutoff;my++) {
-				for (int mz = -reciprocalN_cutoff; mz <= reciprocalN_cutoff; mz++) {
-					// this condition implements the condition G!=0
-					if (mx != 0 || my!= 0  || mz!=0) {
+				for (int mz = 0; mz <= reciprocalN_cutoff; mz++) {
+					// this condition makes sure we only count half the (reciprocal) space which is what turns the exp to cos
+					// also implements the condition G!=0
+					if (mz > 0 || (mz==0 && mx>0) || (mz==0 && mx==0 && my>0)) {
 						Vector3D G = Vector3D.ZERO;	// reciprocal lattice vector
 						G=G.add(mz,b3);
 						G=G.add(my,b2);
@@ -426,10 +426,10 @@ public class ewaldSum {
 						double G2 = G.getNormSq();
 
 						double Gdotrij = G.dotProduct(rij);
-						Complex etoIGdotrij = new Complex(Math.cos(Gdotrij),Math.sin(Gdotrij));
-						reciprocalSumX = reciprocalSumX.add(etoIGdotrij.multiply(((Gx * Gz) / G2) * Math.exp(-G2 / (4 * alpha * alpha))));
-						reciprocalSumY = reciprocalSumY.add(etoIGdotrij.multiply(((Gy * Gz) / G2) * Math.exp(-G2 / (4 * alpha * alpha))));
-						reciprocalSumZ = reciprocalSumZ.add(etoIGdotrij.multiply(((Gz * Gz) / G2) * Math.exp(-G2 / (4 * alpha * alpha))));
+						double cosGdotrij = Math.cos(Gdotrij);
+						reciprocalSumX += 2*cosGdotrij*(((Gx * Gz) / G2) * Math.exp(-G2 / (4 * alpha * alpha)));
+						reciprocalSumY += 2*cosGdotrij*(((Gy * Gz) / G2) * Math.exp(-G2 / (4 * alpha * alpha)));
+						reciprocalSumZ += 2*cosGdotrij*(((Gz * Gz) / G2) * Math.exp(-G2 / (4 * alpha * alpha)));
 					}
 				}
 			}
@@ -440,16 +440,9 @@ public class ewaldSum {
 		// self interaction correction term to be omitted from the zz interaction for i==j:
 		double selfInteraction = i.getN()==j.getN() ? 4*Math.pow(alpha,3)/(3*Math.sqrt(Math.PI)) : 0;
 
-		if (Math.abs(reciprocalSumX.getImaginary())>10e-15 || Math.abs(reciprocalSumY.getImaginary())>10e-15 || Math.abs(reciprocalSumZ.getImaginary())>10e-15){
-			System.err.println("Reciprocal sum not real!");
-			System.err.println(reciprocalSumX);
-			System.err.println(reciprocalSumY);
-			System.err.println(reciprocalSumZ);
-			System.exit(1);
-		}
-		ret[0] = realSumX + (4*Math.PI/(latticeLx.dotProduct(Vector3D.crossProduct(latticeLy,latticeLz))))*reciprocalSumX.getReal();	//zx interaction
-		ret[1] = realSumY + (4*Math.PI/(latticeLx.dotProduct(Vector3D.crossProduct(latticeLy,latticeLz))))*reciprocalSumY.getReal();	//zy interaction
-		ret[2] = realSumZ + (4*Math.PI/(latticeLx.dotProduct(Vector3D.crossProduct(latticeLy,latticeLz))))*reciprocalSumZ.getReal() - selfInteraction;	//zz interaction
+		ret[0] = realSumX + (4*Math.PI/(latticeLx.dotProduct(Vector3D.crossProduct(latticeLy,latticeLz))))*reciprocalSumX;	//zx interaction
+		ret[1] = realSumY + (4*Math.PI/(latticeLx.dotProduct(Vector3D.crossProduct(latticeLy,latticeLz))))*reciprocalSumY;	//zy interaction
+		ret[2] = realSumZ + (4*Math.PI/(latticeLx.dotProduct(Vector3D.crossProduct(latticeLy,latticeLz))))*reciprocalSumZ - selfInteraction;	//zz interaction
 		return ret;
 
 	}
