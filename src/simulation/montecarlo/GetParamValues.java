@@ -20,7 +20,7 @@ public class GetParamValues {
 
 		Properties params = new Properties();
 		
-		try (InputStream input = new FileInputStream("parameters.properties")){
+		try (InputStream input = new FileInputStream("parameters_"+System.getProperty("system")+".properties")){
 		
 			// load a properties file
 			params.load(input);
@@ -142,7 +142,7 @@ public class GetParamValues {
 		double p = 0;
 		try{
 			// param is expected to be double
-			if (param.equals("D") || param.equals("J_ex")
+			if (param.equals("J_ex")
 					|| param.equals("precision") || param.equals("alpha") || param.equals("tol") || param.equals("mu_0")
 					|| param.equals("mu_B") || param.equals("g_L") || param.equals("s") || param.equals("k_B")){
 				if (params.getProperty(param)!=null)

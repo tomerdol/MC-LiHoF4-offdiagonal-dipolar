@@ -334,21 +334,6 @@ public class ewaldSum {
 		}
 	}
 
-	// Function to find
-	// cross product of two vector array.
-	static double[] crossProduct(double vect_A[], double vect_B[])
-
-	{
-		if (vect_A.length!=3 || vect_B.length!=3){ throw new IllegalArgumentException("Cross product defined only between two 3-component vectors. Arguments must be two length=3 double arrays. Lengths given: " + vect_A.length + "," + vect_B.length);	}
-		double cross_P[] = new double[3];
-		cross_P[0] = vect_A[1] * vect_B[2]
-				- vect_A[2] * vect_B[1];
-		cross_P[1] = vect_A[2] * vect_B[0]
-				- vect_A[0] * vect_B[2];
-		cross_P[2] = vect_A[0] * vect_B[1]
-				- vect_A[1] * vect_B[0];
-		return cross_P;
-	}
 
 	// call calcSum3D with Lx=Ly as is often the case
 	public static double[] calcSum3D(singleSpin i, singleSpin j, int Lz, int Lx, double alpha, int realN_cutoff, int reciprocalN_cutoff){

@@ -519,7 +519,6 @@ public class Main {
         try {
 
             if (commandLine.hasOption("mode")) tempParallelMode = commandLine.getOptionValue("mode").charAt(0);
-
             Lx = Integer.parseInt(commandLine.getOptionValues("L")[0]);
             Lz = Integer.parseInt(commandLine.getOptionValues("L")[1]);
 

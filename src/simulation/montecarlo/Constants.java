@@ -12,8 +12,11 @@ public class Constants {
     public static final int num_in_cell;
     public static final Vector3D[] primitiveLatticeVectors;
     public static final double[][] basis;
+    public static final String systemName;
 
     static{
+        systemName=System.getProperty("system");
+
         // read a,c from parameters file:
         Properties params = GetParamValues.getParams();
         // lattice unit cell sizes:
