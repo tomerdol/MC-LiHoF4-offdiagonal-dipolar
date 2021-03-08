@@ -72,7 +72,7 @@ public class Main {
                                                                                         // we use Ewald to calc the effective field and not the interaction
 
         int fileLx=0, fileLz=0;
-        final int N=Lx*Lx*Lz*4;
+        final int N=Lx*Lx*Lz*Constants.num_in_cell;
         try (BufferedReader in = new BufferedReader(new FileReader("data" + File.separator + "interactions" + File.separator + "intTable_"+Lx+"_"+Lz+".txt"))){
             String str;
             // verify Lx and Lz make sense
@@ -168,7 +168,7 @@ public class Main {
     //calculates exchange interaction with nearest neighbors
     // also returns an array of nearest neighbors
     public static int[][] exchangeInt(double[][] intTable, int Lx, int Lz, double J_ex){
-        final int N = Lx*Lx*Lz*4;
+        final int N = Lx*Lx*Lz*Constants.num_in_cell;
         final int numOfNeighbors = (Lx==1 && Lz==1) ? 2 : 4;    // number of nearest neighbors for each spin.
                                                                 // Lx=Lz=1 is a unique case where each spin has only 2
                                                                 // distinct neighbors
@@ -195,12 +195,12 @@ public class Main {
                     // notice we are only going through the 0th and 2nd atoms in the base since they participate in all exchange interactions
 
                     // nearest neighbors to 0th base atom, including periodic boundary conditions
-                    int focusSpin = i*Lx*Lz*4+j*Lz*4+k*4+0;
+                    int focusSpin = i*Lx*Lz*Constants.num_in_cell+j*Lz*Constants.num_in_cell+k*Constants.num_in_cell+0;
 
-                    int neighbor1=i*Lx*Lz*4+j*Lz*4+k*4+1;
-                    int neighbor2=((Lx+i-1)%Lx)*Lx*Lz*4+j*Lz*4+k*4+1;
-                    int neighbor3=i*Lx*Lz*4+((Lx+j-1)%Lx)*Lz*4+((Lz+k-1)%Lz)*4+3;
-                    int neighbor4=i*Lx*Lz*4+j*Lz*4+((Lz+k-1)%Lz)*4+3;
+                    int neighbor1=i*Lx*Lz*Constants.num_in_cell+j*Lz*Constants.num_in_cell+k*Constants.num_in_cell+1;
+                    int neighbor2=((Lx+i-1)%Lx)*Lx*Lz*Constants.num_in_cell+j*Lz*Constants.num_in_cell+k*Constants.num_in_cell+1;
+                    int neighbor3=i*Lx*Lz*Constants.num_in_cell+((Lx+j-1)%Lx)*Lz*Constants.num_in_cell+((Lz+k-1)%Lz)*Constants.num_in_cell+3;
+                    int neighbor4=i*Lx*Lz*Constants.num_in_cell+j*Lz*Constants.num_in_cell+((Lz+k-1)%Lz)*Constants.num_in_cell+3;
 
                     // put interactions in intTable and nearest neighbor indices in nnArray
                     addExchangeToNeighbor(focusSpin, neighbor1, neighbor2, neighbor3, neighbor4, nnArray, nnArray_test, intTable, J_ex);
@@ -208,12 +208,12 @@ public class Main {
 
 
                     // now nearest neighbors to 2nd base atom, including periodic boundary conditions
-                    focusSpin = i*Lx*Lz*4+j*Lz*4+k*4+2;
+                    focusSpin = i*Lx*Lz*Constants.num_in_cell+j*Lz*Constants.num_in_cell+k*Constants.num_in_cell+2;
 
-                    neighbor3=i*Lx*Lz*4+j*Lz*4+k*4+1;
-                    neighbor2=i*Lx*Lz*4+j*Lz*4+k*4+3;
-                    neighbor1=((i+1)%Lx)*Lx*Lz*4+j*Lz*4+k*4+3;
-                    neighbor4=i*Lx*Lz*4+((j+1)%Lx)*Lz*4+k*4+1;
+                    neighbor3=i*Lx*Lz*Constants.num_in_cell+j*Lz*Constants.num_in_cell+k*Constants.num_in_cell+1;
+                    neighbor2=i*Lx*Lz*Constants.num_in_cell+j*Lz*Constants.num_in_cell+k*Constants.num_in_cell+3;
+                    neighbor1=((i+1)%Lx)*Lx*Lz*Constants.num_in_cell+j*Lz*Constants.num_in_cell+k*Constants.num_in_cell+3;
+                    neighbor4=i*Lx*Lz*Constants.num_in_cell+((j+1)%Lx)*Lz*Constants.num_in_cell+k*Constants.num_in_cell+1;
                     // put interactions in intTable and nearest neighbor indices in nnArray
                     addExchangeToNeighbor(focusSpin, neighbor1, neighbor2, neighbor3, neighbor4, nnArray, nnArray_test, intTable, J_ex);
 

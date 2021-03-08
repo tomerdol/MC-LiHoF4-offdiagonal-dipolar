@@ -1,9 +1,9 @@
 #!/bin/bash
 unset module
-name="res_test_0.029"
-arrayMech=( "false" "true" )
-arrayL=( 4 5 6 )
-arrayH=( 0.0 0.3 )
+name="temp_res_test_ex_0.014"
+arrayMech=( "true" )
+arrayL=( 4 5 6 7 )
+arrayH=( 2.0 )
 
 # Check input
 if [[ ! $# > 0 || ! $1 =~ ^[0-9]+$ ]]
@@ -38,7 +38,7 @@ do
     else
       used_slots=`free_slot smoshe.q | grep sge1081 | cut -d' ' -f 2 | cut -d'/' -f 1`
       #exclude sge1081 to leave at least 30 cores available for other users
-      queues="lublin.q,smoshe.q@sge1082,smoshe.q@sge190,fairshare.q"
+      queues="lublin.q,smoshe.q@sge1082,smoshe.q@sge190,fairshare.q,smoshe.q@sge247,smoshe.q@sge249"
 
       if [ "$used_slots" != "" ]; then
       if [ $used_slots -le 24 ]; then
@@ -46,7 +46,7 @@ do
       fi
       fi
 
-      qsub -pe shared 24 -l mem_free=40G -V -S /bin/bash -cwd -N r"$L"_"$H"_"$COUNT"_"$mech_initial" -o ./output/ -e ./output/ -q "$queues" ./scripts/met_with_t.sh "$L" "$L" "$max_sweeps" "$H" "$mech" "$name" "$seed" "$extra"
+      qsub -pe shared 24 -l mem_free=40G -V -S /bin/bash -cwd -N tr"$L"_"$H"_"$COUNT"_"$mech_initial" -o ./output/ -e ./output/ -q "$queues" ./scripts/met_with_t.sh "$L" "$L" "$max_sweeps" "$H" "$mech" "$name" "$seed" "$extra"
       #echo "${seeds[$i]}"
 
       ((COUNT++))

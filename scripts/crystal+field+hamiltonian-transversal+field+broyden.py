@@ -82,7 +82,7 @@ maxBz=3.0	# the real max is one less than this
 number=40	# the real number is twice this
 #min_bz=0.0193
 # next:
-min_bz=0.014
+min_bz=0.007
 Bx = np.geomspace(1,maxBx,num=number) - 1 + np.geomspace(1,maxBx,num=number)[1] - np.geomspace(1,maxBx,num=number)[0]
 Bx = np.concatenate((np.flip(-1*Bx),Bx),axis=0)
 Bx += meanBx
@@ -163,12 +163,12 @@ magnetic_moment_down_arr = np.array(res_magnetic_moment_down)
 print("check up and down magnetic moment arrays are the same: " + str(np.allclose((-1)*(np.flip(magnetic_moment_down_arr, 0)), magnetic_moment_up_arr, atol=1e-15)))
 print("check up and down energy arrays are the same: " + str(np.allclose(np.flip(energy_down_arr, 0), energy_up_arr, atol=1e-15)))
 if (np.allclose((-1)*(np.flip(magnetic_moment_down_arr, 0)), magnetic_moment_up_arr, atol=1e-15)):
-	write_to_file('magnetic_moment_up_arr_%1.2f_0.014'%meanBx,magnetic_moment_up_arr, Bx, By, Bz)
+	write_to_file('magnetic_moment_up_arr_%1.2f_0.007'%meanBx,magnetic_moment_up_arr, Bx, By, Bz)
  	#pass
 else:
     print('magnetic moment table not transposable!')
 if (np.allclose(np.flip(energy_down_arr, 0), energy_up_arr, atol=1e-15)):
-	write_to_file('energy_up_arr_%1.2f_0.014'%meanBx,energy_up_arr, Bx, By, Bz)
+	write_to_file('energy_up_arr_%1.2f_0.007'%meanBx,energy_up_arr, Bx, By, Bz)
  	#pass
 else:
     print('energy table not transposable!')

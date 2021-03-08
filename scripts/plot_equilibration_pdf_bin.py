@@ -69,7 +69,7 @@ def main_check_equilibration(simulations, to_check):
         if group_df['overwrite'].any():
             max_bin=0
             for i, sim in enumerate(group_df.itertuples()):
-                data = bin_data.read_binned(sim, use_latest=True)
+                data = bin_data.read_binned(sim, use_latest=False)
                 for to_check_now in to_check:
                     a_index=data[0][:,0]
                     a=data[0][:,to_plot_col_index(to_check_now)]
@@ -108,7 +108,7 @@ def main_plot(simulations, to_plot, L, Bex, folderName, mech):
         for temperature_index, temperature in enumerate(simulations['T'].unique()):
             pdf_fig, pdf_axes = plt.subplots(len(to_plot),1, figsize=(7,len(to_plot)*3))
             for i, sim in enumerate(simulations[simulations['T']==temperature].itertuples()):
-                data = bin_data.read_binned(sim, use_latest=True)
+                data = bin_data.read_binned(sim, use_latest=False)
                 
                 pdf_axes[0].set_title("Bex=%s , T=%1.5f"%(sim.Bex,temperature))
                 for to_plot_index, to_plot_now in enumerate(to_plot):
