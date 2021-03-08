@@ -1,5 +1,30 @@
 # Change log
 
+# v1.2.0b - 08/03/2021
+* Write full lattice state at the end of the simulation
+* Count Bx-maximizing configurations
+* Add fraction of transverse field maximizing configurations to thermal averages
+* Add script print_lattice_from_existing_checkpoints.sh to rerun finished simulations just to write the lattice state
+* Add histogram plotting
+* Tighter verification that no simulations are lagging behind.
+* Add scripts to look for unfinished simulations: find_unfinished_simulations.sh
+* Plot equilibrated bin vs. temperature when running plot_equilibration_pdf_bin.py
+* Option to use correlation lengths along different axes for FSS
+* Changed to more compact way of finding nearest neighbor numbers
+* Add correlator plotting to plot_bin.py
+* Add crystal+field+hamiltonian-transversal+field+const.py to create magnetic moment tables with constant Bz
+* create_crystal_field_table.py: Create tables with hyperfine interactions (and rotation)
+* phase_diagram_bin.py: delta around initial T_c is chosen symmetric even if initial T_c is close to the edge of the temperature range
+* Add option to shift the T axis in plot_bin.py so that multiple Bx's could be compared
+* Fix cluster name in run_jupyter.sh
+* Add exchange interaction directly to dipolar interaction table (so that it participates in the self consistent calculation)
+* CRUCIAL BUGFIX: call to manualCalcValue always called for energy and never for magnetic moment!
+* Improved finding of initial fitting parameters in fit6.py
+* get_avgs.py to get data from all files in /output and calculate runtimes by simulation type 
+* Added new homotopic method for self-consistent calculation
+* Added possibility to exclude system sizes in sub.sh and in init_sim.sh
+* Get user input for system sizes in gen_temp_schedule.py
+
 # v1.1.0b - 24/09/2020
 * Added measurement of mk2 for k in the y and z directions.
 * Added a module that reads old checkpoints and re-saves in new format (with extra column for additional observable).
