@@ -4,12 +4,12 @@ source ./scripts/sub.sh
 
 # this should override the definitions from sub.sh
 name="res_test_ex_0.014"
-arrayMech=( "true" )
-arrayL=( 4 5 6 7 )
-arrayLexclude=( 4 5 6 )
-arrayH=( 0.0 0.3 0.6 1.0 )
-minT_false=1.3
-maxT_false=1.85
+arrayMech=( "false" )
+arrayL=( 5 6 7 )
+arrayLexclude=( )
+arrayH=( 0.0 0.3 0.6 1.0 1.5 2.0 )
+minT_false=1.4
+maxT_false=2.0
 #minT_true=1.55
 #maxT_true=2.0
 minT_true=1.0

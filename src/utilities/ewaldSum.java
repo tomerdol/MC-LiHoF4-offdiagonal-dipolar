@@ -14,17 +14,17 @@ import static simulation.montecarlo.Main.makeDir;
 public class ewaldSum {
 
 	// convergence tests for initial verification of ewald summation in 3D. this compares ewald results with direct calculation
-	public static void convergenceTests(singleSpin[] arr, int Lz, int Lx, double a, double alpha, int N, int real_cutoff, int k_cutoff, int direct_cutoff, double ellipsoidRatio){
+	public static void convergenceTests(singleSpin[] arr, int Lz, int Lx, double alpha, int N, int real_cutoff, int k_cutoff, int direct_cutoff, double ellipsoidRatio){
 		// get 2 close spins
-		int i=(int)(arr.length*0.5);
+		int i=(int)N/2;
 		int j=i+1;
 
 		double ewald_result = calcSum3D(arr[i],arr[j],Lz,Lx,alpha,real_cutoff,k_cutoff)[0];
 		System.out.println("ratio\tewald\tdirect(1)\tdirect(2)\tdirect(3)\tdirect(4)\tdirect(5)\tdirect(6)\tdirect(7)\tdirect(8)\tdirect(9)\tdirect(10)");
 
 		double[][] direct_result;
-		for (double eR=1;eR<ellipsoidRatio;eR=eR+(ellipsoidRatio/1000)) {
-			direct_result = realCalcSum3DE(arr[i], arr[j], Lz, Lx, Lz*direct_cutoff, eR);
+		for (double eR=1;eR<=ellipsoidRatio;eR=eR+(ellipsoidRatio/100)) {
+			direct_result = realCalcSum3DE(arr[i], arr[j], Lz, Lx, Lx, Lz*direct_cutoff, eR);
 			System.out.print(eR + "\t" + ewald_result);
 			for (int index=0;index<direct_result.length;index++){
 				System.out.print("\t" + direct_result[index][0]);
@@ -112,30 +112,23 @@ public class ewaldSum {
 		int testSpin=(i)*Lx*Lz*Constants.num_in_cell+(j)*Lz*Constants.num_in_cell+(k)*Constants.num_in_cell+0;
 		int neighbor1=-1, neighbor2=-1, neighbor3=-1, neighbor4=-1;
 
-		neighbor1=i*Lx*Lz*4+j*Lz*4+k*4+1;
-		if (i==0)
-			neighbor2=(Lx-1)*Lx*Lz*4+j*Lz*4+k*4+1;
-		else
-			neighbor2=(i-1)*Lx*Lz*4+j*Lz*4+k*4+1;
-		if (k==0)
-			neighbor3=i*Lx*Lz*4+j*Lz*4+(Lz-1)*4+3;
-		else
-			neighbor3=i*Lx*Lz*4+j*Lz*4+(k-1)*4+3;
-
-		if (j==0 && k==0)
-			neighbor4=i*Lx*Lz*4+(Lx-1)*Lz*4+(Lz-1)*4+3;
-		else if(j==0){
-			neighbor4=i*Lx*Lz*4+(Lx-1)*Lz*4+(k-1)*4+3;
-		}
-		else if(k==0){
-			neighbor4=i*Lx*Lz*4+(j-1)*Lz*4+(Lz-1)*4+3;
-		}else{
-			neighbor4=i*Lx*Lz*4+(j-1)*Lz*4+(k-1)*4+3;
+		if (System.getProperty("system").equals("LiHoF4")) {
+			// Nearest neighbors for LiHoF4
+			neighbor1 = i * Lx * Lz * Constants.num_in_cell + j * Lz * Constants.num_in_cell + k * Constants.num_in_cell + 1;
+			neighbor2 = ((Lx + i - 1) % Lx) * Lx * Lz * Constants.num_in_cell + j * Lz * Constants.num_in_cell + k * Constants.num_in_cell + 1;
+			neighbor3 = i * Lx * Lz * Constants.num_in_cell + ((Lx + j - 1) % Lx) * Lz * Constants.num_in_cell + ((Lz + k - 1) % Lz) * Constants.num_in_cell + 3;
+			neighbor4 = i * Lx * Lz * Constants.num_in_cell + j * Lz * Constants.num_in_cell + ((Lz + k - 1) % Lz) * Constants.num_in_cell + 3;
+		}else if (System.getProperty("system").equals("Fe8")){
+			// Nearest neighbors for Fe8
+			neighbor1 = i * Lx * Lz * Constants.num_in_cell + j * Lz * Constants.num_in_cell + k * Constants.num_in_cell;
+			neighbor2 = ((Lx + i - 1) % Lx) * Lx * Lz * Constants.num_in_cell + j * Lz * Constants.num_in_cell + k * Constants.num_in_cell;
+			neighbor3 = i * Lx * Lz * Constants.num_in_cell + ((Lx + j - 1) % Lx) * Lz * Constants.num_in_cell + ((Lz + k - 1) % Lz) * Constants.num_in_cell;
+			neighbor4 = i * Lx * Lz * Constants.num_in_cell + j * Lz * Constants.num_in_cell + ((Lz + k - 1) % Lz) * Constants.num_in_cell;
 		}
 		double alpha;
 
-		final double[][][] intTable = new double[3][4*Lx*Lx*Lz][4*Lx*Lx*Lz];
-		final double[][] exchangeIntTable = new double[4*Lx*Lx*Lz][4*Lx*Lx*Lz];	// all zeros
+		final double[][][] intTable = new double[3][Constants.num_in_cell*Lx*Lx*Lz][Constants.num_in_cell*Lx*Lx*Lz];
+		final double[][] exchangeIntTable = new double[Constants.num_in_cell*Lx*Lx*Lz][Constants.num_in_cell*Lx*Lx*Lz];	// all zeros
 
 		Lattice lattice = new Lattice(Lx, Lz, 0.0, false, 5.51, intTable, exchangeIntTable, null, null, null, null);
 		singleSpin[] arr = lattice.getArray();
@@ -143,11 +136,11 @@ public class ewaldSum {
 		System.out.println("#reciprocal_cutoff="+k_cutoff);
 
 		DecimalFormat df = new DecimalFormat("0.0000000000");
-		System.out.println("r0 - r0 : " + Arrays.toString(arr[testSpin].distance(arr[testSpin], Lz, Lx)));
-		System.out.println("r0 - r1 : " + Arrays.toString(arr[testSpin].distance(arr[neighbor1], Lz, Lx)));
-		System.out.println("r0 - r2 : " + Arrays.toString(arr[testSpin].distance(arr[neighbor2], Lz, Lx)));
-		System.out.println("r0 - r3 : " + Arrays.toString(arr[testSpin].distance(arr[neighbor3], Lz, Lx)));
-		System.out.println("r0 - r4 : " + Arrays.toString(arr[testSpin].distance(arr[neighbor4], Lz, Lx)));
+		System.out.println("#r0 - r0 : " + Arrays.toString(arr[testSpin].distance(arr[testSpin], Lz, Lx)));
+		System.out.println("#r0 - r1 : " + Arrays.toString(arr[testSpin].distance(arr[neighbor1], Lz, Lx)));
+		System.out.println("#r0 - r2 : " + Arrays.toString(arr[testSpin].distance(arr[neighbor2], Lz, Lx)));
+		System.out.println("#r0 - r3 : " + Arrays.toString(arr[testSpin].distance(arr[neighbor3], Lz, Lx)));
+		System.out.println("#r0 - r4 : " + Arrays.toString(arr[testSpin].distance(arr[neighbor4], Lz, Lx)));
 
 		System.out.println("alpha\t0x\t0y\t0z\t1x\t1y\t1z\t2x\t2y\t2z\t3x\t3y\t3z\t4x\t4y\t4z");
 		for (alpha = 0.1 / Lz; alpha < 5.0 / Lz; alpha += 0.1 / Lz) {
@@ -174,9 +167,9 @@ public class ewaldSum {
 
 		for (int i=0;i<Lz.length;i++) {
 			try {
-				makeDir("C:\\Users\\Tomer\\OneDrive - post.bgu.ac.il\\thesis\\ewald_convergence\\", "L=" + Lz[i]);
+				makeDir("C:\\Users\\Tomer\\OneDrive - post.bgu.ac.il\\Documents-Tomer\\thesis\\ewald_convergence\\Fe8\\", "L=" + Lz[i]);
 				for (int j=0;j<k_cutoffs.length;j++) {
-					PrintStream fileOut = new PrintStream("C:\\Users\\Tomer\\OneDrive - post.bgu.ac.il\\thesis\\ewald_convergence\\L=" + Lz[i] + "\\" +k_cutoffs[j]+"_"+real_cutoff+".txt");
+					PrintStream fileOut = new PrintStream("C:\\Users\\Tomer\\OneDrive - post.bgu.ac.il\\Documents-Tomer\\thesis\\ewald_convergence\\Fe8\\L=" + Lz[i] + "\\" +k_cutoffs[j]+"_"+real_cutoff+".txt");
 					System.setOut(fileOut);
 					convergenceTests3(Lz[i],Lz[i],real_cutoff,k_cutoffs[j]);
 				}
@@ -190,9 +183,9 @@ public class ewaldSum {
 
 		for (int i=0;i<Lz.length;i++) {
 			try {
-				makeDir("C:\\Users\\Tomer\\OneDrive - post.bgu.ac.il\\thesis\\ewald_convergence\\", "L=" + Lz[i]);
+				makeDir("C:\\Users\\Tomer\\OneDrive - post.bgu.ac.il\\Documents-Tomer\\thesis\\ewald_convergence\\Fe8\\", "L=" + Lz[i]);
 				for (int j=0;j<real_cutoffs.length;j++) {
-					PrintStream fileOut = new PrintStream("C:\\Users\\Tomer\\OneDrive - post.bgu.ac.il\\thesis\\ewald_convergence\\L=" + Lz[i] + "\\" +k_cutoff+"_"+real_cutoffs[j]+".txt");
+					PrintStream fileOut = new PrintStream("C:\\Users\\Tomer\\OneDrive - post.bgu.ac.il\\Documents-Tomer\\thesis\\ewald_convergence\\Fe8\\L=" + Lz[i] + "\\" +k_cutoff+"_"+real_cutoffs[j]+".txt");
 					System.setOut(fileOut);
 					convergenceTests3(Lz[i],Lz[i],real_cutoffs[j],k_cutoff);
 				}
@@ -225,8 +218,8 @@ public class ewaldSum {
 		k_cutoff=0;
 		real_cutoff=0;
         // for convergence tests
-        //int direct_cutoff = 1;
-		//double ellipsoidRatio = 10;
+        int direct_cutoff = 100;
+		double ellipsoidRatio = 50;
 
         // get lattice parameters as command line arguments
         try {
@@ -237,8 +230,8 @@ public class ewaldSum {
         	// for convergence tests
         	//real_cutoff = Integer.parseInt(args[2]);
 			//k_cutoff = Integer.parseInt(args[3]);
-			//direct_cutoff = Integer.parseInt(args[4]);
-			//ellipsoidRatio = Double.parseDouble(args[5]);
+//			direct_cutoff = Integer.parseInt(args[4]);
+//			ellipsoidRatio = Double.parseDouble(args[5]);
         }
         catch (ArrayIndexOutOfBoundsException e){
             System.err.println("ArrayIndexOutOfBoundsException caught " + e.toString());
@@ -246,11 +239,11 @@ public class ewaldSum {
         catch (NumberFormatException e){
 			System.err.println("Argument not a valid number " + e.toString());
 		}
-		//multipleSizeTestsWithvariableKcutoff(new int[]{3,4,5,6,7,9,10},2,new int[]{2,3,4,5,6,7,8,9,10,11,12});
-		//multipleSizeTestsWithvariableRealcutoff(new int[]{3,4,5,6,7,9,10},new int[]{2,3,4,5,6,7,8,9,10,11,12},6);
+//		multipleSizeTestsWithvariableKcutoff(new int[]{3,4,5,6,7,8,9,10},5,new int[]{2,3,4,5,6,7,8,9,10,11,12});
+//		multipleSizeTestsWithvariableRealcutoff(new int[]{3,4,5,6,7,8,9,10},new int[]{2,3,4,5,6,7,8,9,10,11,12},2);
 		//convergenceTests3(Lz, Lx, real_cutoff, k_cutoff);
 
-        //System.exit(0);
+//        System.exit(0);
 
         try (BufferedWriter out = new BufferedWriter(new FileWriter("data" + File.separator + "interactions" + File.separator + "intTable_"+Lx+"_"+Lz+".txt"))){
             
@@ -280,16 +273,22 @@ public class ewaldSum {
             */
 
             // fill interactions table and print it to the file 'out'
-            fillIntTable(arr,Lz,Lx,alpha/(Constants.c*Lz),real_cutoff,k_cutoff,out);
+			if (System.getProperty("system").equals("LiHoF4")) {
+				// in LiHoF4 the c is parallel to the z axis
+				fillIntTable(arr, Lz, Lx, alpha / (Constants.c*Lz), real_cutoff, k_cutoff, out);
+			}else{
+				// in LiHoF4 the a is parallel to the z axis
+				fillIntTable(arr, Lz, Lx, alpha / (Constants.a*Lz), real_cutoff, k_cutoff, out);
+			}
 
         }
         catch (IOException e) { System.out.println("bad file"); }
 
         // for convergence tests
-		//int N = Lx*Lx*Lz*4;
-		//singleSpin[] arr = GenerateLattice.generate_ising_lattice(Lx, Lz, a, c, 1, 0, null);
-		//convergenceTests(arr,Lz,Lx,a,2/(c*Lz),N,real_cutoff,k_cutoff,direct_cutoff, ellipsoidRatio);
-		//convergenceTests2(arr,Lz,Lx,real_cutoff,k_cutoff);
+//		int N = Lx*Lx*Lz*Constants.num_in_cell;
+//		singleSpin[] arr = GenerateLattice.generate_ising_lattice(Lx, Lz, 1, 0, null);
+//		convergenceTests(arr,Lz,Lx,1.0/Lz,N,real_cutoff,k_cutoff,direct_cutoff, ellipsoidRatio);
+//		convergenceTests2(arr,Lz,Lx,real_cutoff,k_cutoff);
 
 
 
@@ -533,10 +532,13 @@ public class ewaldSum {
 	}
 
 
-	public static double[][] realCalcSum3DE(singleSpin i, singleSpin j, int Lz, int Lx, double c_max, double ellipsoidRatio){
+	public static double[][] realCalcSum3DE(singleSpin i, singleSpin j, int Lz, int Ly, int Lx, double c_max, double ellipsoidRatio){
 		double sumX = 0, sumY = 0, sumZ = 0;
-		double actual_height = Lz*Constants.c;
-		double actual_length = Lx*Constants.a;
+		Vector3D rij = i.getLocation(Lz,Ly).subtract(j.getLocation(Lz,Ly));
+
+		Vector3D latticeLz = Constants.primitiveLatticeVectors[2].scalarMultiply(Lz);
+		Vector3D latticeLy = Constants.primitiveLatticeVectors[1].scalarMultiply(Ly);
+		Vector3D latticeLx = Constants.primitiveLatticeVectors[0].scalarMultiply(Lx);
 		// n ~ z ; m ~ y ; l ~ x
 		double a_max = c_max / ellipsoidRatio;
 		double b_max = c_max / ellipsoidRatio;
@@ -546,24 +548,39 @@ public class ewaldSum {
 
 		double[][] res = new double[10][3];	// maximum ellipsoid axis is divided up to 10 parts
 		zeroArr(res);
-		for (int n=-(int)(c_max/actual_height)-1;n<=(int)(c_max/actual_height)+1;n++){
-			for (int l=-(int)(a_max/actual_length)-1;l<=(int)(a_max/actual_length)+1;l++){
-				for (int m=-(int)(b_max/actual_length)-1;m<=(int)(b_max/actual_length)+1;m++){
-					if (i!=j) {
-						double rz = (j.getZ(Lz,Lx) + n * actual_height) - i.getZ(Lz,Lx);
-						double rx = (j.getX(Lz,Lx) + l * actual_length) - i.getX(Lz,Lx);
-						double ry = (j.getY(Lz,Lx) + m * actual_length) - i.getY(Lz,Lx);
 
+		// find number of unit cells needed along z to fully cover the ellipsoid
+
+
+		for (int n=-2*((int)(c_max/Lz)-1);n<=2*((int)(c_max/Lz)+1);n++){
+			for (int l=-2*((int)(c_max/Lx)-1);l<=2*((int)(c_max/Lx)+1);l++){
+				for (int m=-2*((int)(c_max/Ly)-1);m<=2*((int)(c_max/Ly)+1);m++){
+//			for (int l=-2*((int)(a_max/Lx)-1);l<=2*((int)(a_max/Lx)+1);l++){
+//				for (int m=-2*((int)(b_max/Ly)-1);m<=2*((int)(b_max/Ly)+1);m++){
+					if (i!=j) {
+
+						Vector3D rijCopy = new Vector3D(1, rij);	// distance between i and the copy of j that is located
+						// nx unit cells along primitive direction 0
+						// ny unit cells along primitive direction 1 and
+						// nz unit cells along primitive direction 2
+
+						rijCopy=rijCopy.add(n,latticeLz);
+						rijCopy=rijCopy.add(m,latticeLy);
+						rijCopy=rijCopy.add(l,latticeLx);
+						double rz=rijCopy.getZ();
+						double ry=rijCopy.getY();
+						double rx=rijCopy.getX();
+						double r = rijCopy.getNorm();
 						// ellipsoid:
 
 						for (int radiusIndex = ellipsoidRadii.length-1; radiusIndex >= 0; radiusIndex--) {
+//							System.out.println(radiusIndex + " , " + ellipsoidRadii[radiusIndex][0] + " , " + ellipsoidRadii[radiusIndex][1] + " , " + ellipsoidRadii[radiusIndex][2]);
 							if ((rx * rx) / (ellipsoidRadii[radiusIndex][0] * ellipsoidRadii[radiusIndex][0]) + (ry * ry) / (ellipsoidRadii[radiusIndex][1] * ellipsoidRadii[radiusIndex][1]) + (rz * rz) / (ellipsoidRadii[radiusIndex][2] * ellipsoidRadii[radiusIndex][2]) <= 1) {
-								double r = Math.sqrt(rx * rx + ry * ry + rz * rz);
-
 								res[radiusIndex][2] += (r * r - 3 * rz * rz) / Math.pow(r, 5);
 								res[radiusIndex][0] += (-3 * rz * rx) / Math.pow(r, 5);
 								res[radiusIndex][1] += (-3 * rz * ry) / Math.pow(r, 5);
 							}
+
 						}
 					}
 				}
