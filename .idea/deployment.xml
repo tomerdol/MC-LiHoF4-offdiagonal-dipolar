@@ -29,13 +29,13 @@
             <mapping deploy="/LiHoF4_transverse_field_MC/dev/bin" local="$PROJECT_DIR$/bin" web="/" />
           </mappings>
           <excludedPaths>
-            <excludedPath local="true" path="$PROJECT_DIR$/data/p_configs" />
-            <excludedPath local="true" path="$PROJECT_DIR$/checkpoints" />
-            <excludedPath path="/LiHoF4_transverse_field_MC/dev/data/analysis" />
-            <excludedPath path="/LiHoF4_transverse_field_MC/dev/data" />
-            <excludedPath path="/LiHoF4_transverse_field_MC/dev/checkpoints" />
-            <excludedPath path="/LiHoF4_transverse_field_MC/dev/temperature_schedules" />
-            <excludedPath path="/LiHoF4_transverse_field_MC/dev/output" />
+            <excludedPath local="true" path="$PROJECT_DIR$/LiHoF4/data/p_configs" />
+            <excludedPath local="true" path="$PROJECT_DIR$/LiHoF4/checkpoints" />
+            <excludedPath path="/LiHoF4_transverse_field_MC/dev/LiHoF4/data/analysis" />
+            <excludedPath path="/LiHoF4_transverse_field_MC/dev/LiHoF4/data" />
+            <excludedPath path="/LiHoF4_transverse_field_MC/dev/LiHoF4/checkpoints" />
+            <excludedPath path="/LiHoF4_transverse_field_MC/dev/LiHoF4/temperature_schedules" />
+            <excludedPath path="/LiHoF4_transverse_field_MC/dev/LiHoF4/output" />
             <excludedPath local="true" path="$PROJECT_DIR$/.gitignore" />
           </excludedPaths>
         </serverdata>
