@@ -13,6 +13,7 @@ import warnings
 import analysis_tools
 import bin_data
 from itertools import cycle
+import config
 #print('imports successful')
 
 def f(x, L, par):
@@ -193,8 +194,8 @@ def plot_multiple_bin(f, simulations, param, err_pfit, err_y, h_ex, mech, folder
     #fig.tight_layout(rect=[0, 0.03, 1, 0.95])
     plt.tight_layout(pad=1.08)
     
-    fig.savefig('../figures/fit_%s_%s_%s_%s_%s.eps'%(h_ex,mech,'_'.join(map(str,simulations['L'].unique().tolist())), folderName, index),format='eps')
-    fig.savefig('../figures/fit_%s_%s_%s_%s_%s.png'%(h_ex,mech,'_'.join(map(str,simulations['L'].unique().tolist())), folderName, index),dpi=300)
+    fig.savefig('../' + config.system_name + '/figures/fit_%s_%s_%s_%s_%s.eps'%(h_ex,mech,'_'.join(map(str,simulations['L'].unique().tolist())), folderName, index),format='eps')
+    fig.savefig('../' + config.system_name + '/figures/fit_%s_%s_%s_%s_%s.png'%(h_ex,mech,'_'.join(map(str,simulations['L'].unique().tolist())), folderName, index),dpi=300)
 
 def str_with_err(value, error):
     digits = -int(math.floor(math.log10(error)))
@@ -213,7 +214,7 @@ def get_correlation_length(m2,m4,mk2,L):
     return math.sqrt((m2/mk2)-1)/(2*L*math.sin(math.pi/L))
 
 # DEPRECATED: A newer version is in the bin directory
-def fit_main(all_L, L_equilibrated_min_value, tau_dict, boot_num, h_ex, mech, folderName, xdata, min_x, max_x, initial_xc, folder='../data/results', start_in_middle=True):
+def fit_main(all_L, L_equilibrated_min_value, tau_dict, boot_num, h_ex, mech, folderName, xdata, min_x, max_x, initial_xc, folder='../' + config.system_name + '/data/results', start_in_middle=True):
     all_yboot={k:[] for k in all_L}
     ps=[]
     xdata = {k:[x for x in v if x > min_x and x<max_x] for k,v in xdata.items()}

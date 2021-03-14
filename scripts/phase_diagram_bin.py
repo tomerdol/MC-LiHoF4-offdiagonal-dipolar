@@ -1,17 +1,9 @@
 import numpy as np
 
-def check_exists_and_not_empty(T, L, Bex, folderName, mech):
-    L_exists_dict={k:False for k in L}
-    for l in L:
-        exists=True
-        for temperature in T[l]:
-            path='/tmp/'+folderName[l]+'/table_'+str(l)+'_'+str(l)+'_'+str(Bex)+'_'+str(temperature)+'_'+mech+'.txt'
-            exists = exists and (os.path.exists(path) and os.path.getsize(path) > 0)
-                
-        L_exists_dict[l] = exists
-    return L_exists_dict
+import config
 
-def parse_arguments():  
+
+def parse_arguments():
     from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
     
     parser = ArgumentParser(description="Analyzes Monte Carlo results to create a phase diagram for LiHoF4", formatter_class=ArgumentDefaultsHelpFormatter)
@@ -93,32 +85,6 @@ def plot_previous_data(ax):
     
     return ax
     
-def copy_files_to_tmp(T, cols_to_copy, L, Bex, folderName, mech, folder='../data/results'):
-    path='/tmp/'+folderName
-    try:
-        os.mkdir(path)
-    except OSError:
-        print ("Creation of the directory %s failed" % path)
-    
-    for l in L:
-        for temperature in T:
-            fname=folder+'/'+folderName+'/table_'+str(l)+'_'+str(l)+'_'+str(Bex)+'_'+str(temperature)+'_'+mech+'.txt'
-            dest='/tmp/'+folderName+'/table_'+str(l)+'_'+str(l)+'_'+str(Bex)+'_'+str(temperature)+'_'+mech+'.txt'
-            y = pd.read_csv(fname, delim_whitespace=True, error_bad_lines=False, index_col='index', comment='#')
-            print('copying file ' + fname + ' to /tmp/')
-            y[cols_to_copy].to_csv(dest, sep='\t')
-            
-            del y
-
-# returns an alternate all_L list with only L's that do not already exist in /tmp.
-def create_temp_all_L(all_L, L_exists_dict, overwrite_tmp_dict):
-    new_all_L=[]
-    #print(overwrite_tmp_dict)
-    for l in all_L:
-        if (not L_exists_dict[l]) or overwrite_tmp_dict[l]:
-            new_all_L.append(l)
-    return new_all_L
-
 def add_overwrite_col(overwrite_tmp, simulations):
     table = np.genfromtxt('simulation_plan',comments='$',dtype=str,encoding=None)
     overwrite_tmp_dict={}
@@ -127,7 +93,7 @@ def add_overwrite_col(overwrite_tmp, simulations):
         #group[0]=Bex; group[1]=L; group[2]=folderName; group[3]=mech
         matching_row = table[(table[:,6] == group[2]) & (table[:,1] == str(group[1])) & (table[:,2] == str(group[0])) & (table[:,3] == str(group[3]))]
         
-        path_to_saved_equilib_file='../data/results/'+str(group[2])+'/binned_data/equilib_data_'+str(group[1])+'_'+str(group[1])+'_'+str(group[0])+'_'+str(group[3])+'.txt'
+        path_to_saved_equilib_file='../' + config.system_name + '/data/results/'+str(group[2])+'/binned_data/equilib_data_'+str(group[1])+'_'+str(group[1])+'_'+str(group[0])+'_'+str(group[3])+'.txt'
         file_exists = os.path.exists(path_to_saved_equilib_file) and os.path.getsize(path_to_saved_equilib_file) > 0
         
         overwrite_tmp_dict[group] = not file_exists or (overwrite_tmp and not (len(matching_row)>0 and matching_row[0][0] == 'done'))
@@ -182,7 +148,7 @@ def main():
     # iterate over the 2 mech options. within the loop 'simulations_mech' is a DataFrame for just one of the options
     for mech, simulations_mech in simulations.groupby(['mech']):
         # file to write results to
-        f = open("phase_diagram_%s_%s_%s_res.txt"%(mech,'_'.join(map(str,all_L)), '_'.join(map(str,folderName_list))), "w")
+        f = open("phase_diagram_%s_%s_%s_%s_res.txt"%(config.system_name, mech,'_'.join(map(str,all_L)), '_'.join(map(str,folderName_list))), "w")
         f.write('Tc\tTc_err\tBx\tSimulation_name\n')
         
         fig, ax = plt.subplots()
@@ -265,7 +231,7 @@ def main():
         f.close()
     
         #save fig
-        fig.savefig('../figures/phase_diagram_%s_%s_%s.png'%(mech,'_'.join(map(str,all_L)),folderName_list[0]))
+        fig.savefig('../' + config.system_name + '/figures/phase_diagram_%s_%s_%s.png'%(mech,'_'.join(map(str,all_L)),folderName_list[0]))
     #os.system("rsync -avzhe ssh ../figures/ tomerdol@newphysnet1:~/graphs/")
     
 if __name__ == "__main__":

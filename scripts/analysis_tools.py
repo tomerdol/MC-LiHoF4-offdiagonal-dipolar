@@ -5,6 +5,7 @@ import os
 import itertools
 import numpy as np
 import pandas as pd
+import config
 from collections import namedtuple
 
 def is_list_type(x):
@@ -37,7 +38,7 @@ def get_simulations(all_L, all_folderName, all_Bex, all_mech, T=None):
 
     simulations=pd.DataFrame(columns=['L','folderName','Bex','mech','T'])
     for x in itertools.product(all_L, all_folderName, all_Bex, all_mech):
-        temp_schedule_file_name = '../temperature_schedules/temp_schedule_' + str(x[0]) + '_' + str(x[0]) + '_' + str(x[1]) + '_' + str(x[2]) + '_' + x[3] + '.txt'
+        temp_schedule_file_name = '../' + config.system_name + '/temperature_schedules/temp_schedule_' + str(x[0]) + '_' + str(x[0]) + '_' + str(x[1]) + '_' + str(x[2]) + '_' + x[3] + '.txt'
         if os.path.exists(temp_schedule_file_name):
             with open(temp_schedule_file_name,'r') as temperature_schedule_file:
                 reader = csv.reader(temperature_schedule_file)
@@ -66,7 +67,7 @@ def get_simulation(L, folderName, Bex, mech, T):
     
     simulation_tuple = namedtuple('Simulation', ['L', 'folderName','Bex','mech','T'])
     
-    temp_schedule_file_name = '../temperature_schedules/temp_schedule_' + str(L) + '_' + str(L) + '_' + str(folderName) + '_' + str(Bex) + '_' + str(mech) + '.txt'
+    temp_schedule_file_name = '../' + config.system_name + '/temperature_schedules/temp_schedule_' + str(L) + '_' + str(L) + '_' + str(folderName) + '_' + str(Bex) + '_' + str(mech) + '.txt'
     if os.path.exists(temp_schedule_file_name):
         with open(temp_schedule_file_name,'r') as temperature_schedule_file:
             reader = csv.reader(temperature_schedule_file)

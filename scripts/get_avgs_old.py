@@ -1,5 +1,4 @@
 import matplotlib
-import config
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
@@ -9,11 +8,12 @@ import os
 from scipy.optimize import curve_fit
 from datetime import datetime
 from datetime import timezone
+import config
 
 def pow_fit(x, a, b):
     return a * x**b
 
-timestamp = datetime(2021, 1, 16).replace(tzinfo=timezone.utc).timestamp() # datetime when timestamps printed to /output were changed. this script (in contrast to get_Avgs_old.py) only searches newer files
+timestamp = datetime(2021, 1, 14).replace(tzinfo=timezone.utc).timestamp() # datetime when timestamps printed to /output were changed. this script (in contrast to get_Avgs.py) only searches older files
 
 max_L = float(sys.argv[1])
 output_directory = os.fsencode('../' + config.system_name + '/output/')
@@ -25,18 +25,18 @@ obsPrintSweepNum={2:11000,3:180000,4:18000,5:3000, 6:1500,7:300,8:100,9:75,10:25
 for file in os.listdir(output_directory):
     fname = os.fsdecode(file)
     if ".o" in fname:
-        if os.path.getmtime('../' + config.system_name + '/output/'+fname) > timestamp:
+        if os.path.getmtime('../' + config.system_name + '/output/'+fname) < timestamp:
             try:
-                #with open('../output/' + fname) as f:
-                #    seed = f.readline().strip()
-                #stream = os.popen("find ../data/results -name '*" + seed + ".txt' -not -path '*binned_data*' -exec head -n2 {} \\; -quit")
-                #start_time = stream.read().strip()
-                #start_time = start_time.split('#')[-1]
+                with open('../' + config.system_name + '/output/' + fname) as f:
+                    seed = f.readline().strip()
+                stream = os.popen("find ../" + config.system_name + "/data/results -name '*" + seed + ".txt' -not -path '*binned_data*' -exec head -n2 {} \\; -quit")
+                start_time = stream.read().strip()
+                start_time = start_time.split('#')[-1]
                 y=pd.read_csv('../' + config.system_name + '/output/' + fname,header=None,skiprows=0,parse_dates=True,infer_datetime_format=True, comment='S')
                 ts = pd.Series(pd.to_datetime(y[0],errors='coerce'))
                 ts = ts.dropna()
-                #ts = ts.iloc[:-1]
-                #ts = pd.concat([pd.Series(pd.to_datetime(start_time)),ts])
+                ts = ts.iloc[:-1]
+                ts = pd.concat([pd.Series(pd.to_datetime(start_time)),ts])
 
                 if len(ts)>1:
                     avg = (ts-ts.shift(+1)).mean()

@@ -8,6 +8,7 @@ import glob
 import analysis_tools
 import itertools
 import subprocess
+import config
 
 def bin_single_column_data(a, start_bin):
     # samples that do no fill the last bin are practically discarded
@@ -88,7 +89,7 @@ def mkdir(path):
 
 
 def read_binned(sim, use_latest=True):
-    path='../data/results/'+sim.folderName+'/binned_data/table_'+str(sim.L)+'_'+str(sim.L)+'_'+str(sim.Bex)+'_'+str(sim.T)+'_'+str(sim.mech)+'_'+'*'+'.txt'
+    path='../' + config.system_name + '/data/results/'+sim.folderName+'/binned_data/table_'+str(sim.L)+'_'+str(sim.L)+'_'+str(sim.Bex)+'_'+str(sim.T)+'_'+str(sim.mech)+'_'+'*'+'.txt'
     #print(glob.glob(path))
     arrays=[]
     seeds=[]
@@ -118,7 +119,7 @@ def read_binned(sim, use_latest=True):
 def read_binned_data(sim, use_latest=False, use_bin=-1):
     """ Get the binned data as a pandas DataFrame 
     """
-    path='../data/results/'+sim.folderName+'/binned_data/table_'+str(sim.L)+'_'+str(sim.L)+'_'+str(sim.Bex)+'_'+str(sim.T)+'_'+str(sim.mech)+'_'+'*'+'.txt'
+    path='../' + config.system_name + '/data/results/'+sim.folderName+'/binned_data/table_'+str(sim.L)+'_'+str(sim.L)+'_'+str(sim.Bex)+'_'+str(sim.T)+'_'+str(sim.mech)+'_'+'*'+'.txt'
 
     file_list = glob.glob(path) # list of all files that match the sim parameters
     arrays=[]
@@ -223,8 +224,8 @@ def last_index(fname):
 
 def main_bin(simulations):
     for sim in simulations.itertuples(index=False):
-        mkdir('../data/results/'+sim.folderName+'/binned_data')
-        path='../data/results/'+sim.folderName+'/table_'+str(sim.L)+'_'+str(sim.L)+'_'+str(sim.Bex)+'_'+str(sim.T)+'_'+str(sim.mech)+'_'+'*'+'.txt'
+        mkdir('../' + config.system_name + '/data/results/'+sim.folderName+'/binned_data')
+        path='../' + config.system_name + '/data/results/'+sim.folderName+'/table_'+str(sim.L)+'_'+str(sim.L)+'_'+str(sim.Bex)+'_'+str(sim.T)+'_'+str(sim.mech)+'_'+'*'+'.txt'
         #print(glob.glob(path))
         for fname in glob.glob(path):
             tmp_fname_bin = fname.split('/')

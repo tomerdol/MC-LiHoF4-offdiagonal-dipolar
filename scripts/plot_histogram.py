@@ -7,6 +7,7 @@ import glob
 import analysis_tools
 import pandas as pd
 from scipy.ndimage import gaussian_filter1d
+import config
 
 def parse_arguments():
     from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
@@ -35,7 +36,7 @@ def main_hist2(simulations, to_plot, flip=False):
         multiple_sim_data=[]
         multiple_sim_groups=[]
         for i, sim in enumerate(simulations.itertuples()):
-            path='../data/lattice_output/'+sim.folderName+'/table_'+str(sim.L)+'_'+str(sim.L)+'_'+str(sim.Bex)+'_'+str(sim.T)+'_'+str(sim.mech)+'_'+'*'+'.txt'
+            path='../' + config.system_name + '/data/lattice_output/'+sim.folderName+'/table_'+str(sim.L)+'_'+str(sim.L)+'_'+str(sim.Bex)+'_'+str(sim.T)+'_'+str(sim.mech)+'_'+'*'+'.txt'
             file_list = glob.glob(path)
             data=[]
             groups=[]
@@ -118,7 +119,7 @@ def main_hist2(simulations, to_plot, flip=False):
     plt.title('Distribution of ' + to_plot_now)
     ax.set_ylabel('# of spins')
     ax.set_xlabel(to_plot_now + ('' if shift == 0 else ' - ' + str(shift)))
-    fig.savefig('../figures/hist_%s_%s_%s_%s_%s.png'%('_'.join(map(str,simulations['Bex'].unique().tolist())),'_'.join(map(str,simulations['mech'].unique().tolist())),'_'.join(map(str,simulations['L'].unique().tolist())),'_'.join(map(str,simulations['folderName'].unique().tolist())),to_plot_now), dpi=300)
+    fig.savefig('../' + config.system_name + '/figures/hist_%s_%s_%s_%s_%s.png'%('_'.join(map(str,simulations['Bex'].unique().tolist())),'_'.join(map(str,simulations['mech'].unique().tolist())),'_'.join(map(str,simulations['L'].unique().tolist())),'_'.join(map(str,simulations['folderName'].unique().tolist())),to_plot_now), dpi=300)
     plt.close(fig)
 
 
@@ -126,7 +127,7 @@ def main_hist(simulations, to_plot, flip=False):
 
     all_simulations=[]
     for i, sim in enumerate(simulations.itertuples()):
-        path='../data/lattice_output/'+sim.folderName+'/table_'+str(sim.L)+'_'+str(sim.L)+'_'+str(sim.Bex)+'_'+str(sim.T)+'_'+str(sim.mech)+'_'+'*'+'.txt'
+        path='../' + config.system_name + '/data/lattice_output/'+sim.folderName+'/table_'+str(sim.L)+'_'+str(sim.L)+'_'+str(sim.Bex)+'_'+str(sim.T)+'_'+str(sim.mech)+'_'+'*'+'.txt'
 
         file_list = glob.glob(path)
         data = pd.concat((analysis_tools.get_table_data_by_fname(f) for f in file_list))
@@ -155,7 +156,7 @@ def main_hist(simulations, to_plot, flip=False):
         plt.title('Distribution of ' + to_plot_now)
         ax.set_ylabel('# of spins')
         ax.set_xlabel(to_plot_now + ('' if shift == 0 else ' - ' + str(shift)))
-        fig.savefig('../figures/hist_%s_%s_%s_%s_%s.png'%('_'.join(map(str,simulations['Bex'].unique().tolist())),'_'.join(map(str,simulations['mech'].unique().tolist())),'_'.join(map(str,simulations['L'].unique().tolist())),'_'.join(map(str,simulations['folderName'].unique().tolist())),to_plot_now), dpi=300)
+        fig.savefig('../' + config.system_name + '/figures/hist_%s_%s_%s_%s_%s.png'%('_'.join(map(str,simulations['Bex'].unique().tolist())),'_'.join(map(str,simulations['mech'].unique().tolist())),'_'.join(map(str,simulations['L'].unique().tolist())),'_'.join(map(str,simulations['folderName'].unique().tolist())),to_plot_now), dpi=300)
         plt.close(fig)
 
 

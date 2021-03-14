@@ -1,5 +1,5 @@
 import glob
-
+import config
 import matplotlib
 matplotlib.use('Agg')
 import numpy as np
@@ -11,25 +11,6 @@ import csv
 import os
 import analysis_tools, bin_data
 from itertools import cycle
-
-def bootstrap_resample(X, n=None):
-    """ Bootstrap resample an array_like
-    Parameters
-    ----------
-    X : array_like
-      data to resample
-    n : int, optional
-      length of resampled array, equal to len(X) if n==None
-    Results
-    -------
-    returns X_resamples
-    """
-    if n == None:
-        n = len(X)
-        
-    resample_i = np.floor(np.random.rand(n)*len(X)).astype(int)
-    X_resample = X[resample_i]
-    return X_resample
 
 def plot_multiple(all_L, xdata, all_ydata, err_y, h_ex):
     markers=['o','s','^','D','v']
@@ -48,7 +29,7 @@ def plot_multiple(all_L, xdata, all_ydata, err_y, h_ex):
     axes = plt.gca()
     #axes.set_ylim([0.5,1])
 
-    fig.savefig('../figures/plot_%s.png'%h_ex)
+    fig.savefig('../' + config.system_name + '/figures/plot_%s.png'%h_ex)
 
 def calc_error_correction(arr, iter):
     binned_arr=np.copy(arr)
@@ -118,8 +99,8 @@ def main_plot(simulations, boot_num, plot_options, to_plot='', shift_T=False):
     plt.tight_layout()
     axes = plt.gca()
 
-    fig.savefig('../figures/plot_%s_%s_%s_%s_%s.png'%(to_plot,'_'.join(map(str,simulations['Bex'].unique().tolist())),'_'.join(map(str,simulations['mech'].unique().tolist())),'_'.join(map(str,simulations['L'].unique().tolist())),'_'.join(map(str,simulations['folderName'].unique().tolist()))), dpi=300)
-    fig.savefig('../figures/plot_%s_%s_%s_%s_%s.eps'%(to_plot,'_'.join(map(str,simulations['Bex'].unique().tolist())),'_'.join(map(str,simulations['mech'].unique().tolist())),'_'.join(map(str,simulations['L'].unique().tolist())),'_'.join(map(str,simulations['folderName'].unique().tolist()))))
+    fig.savefig('../' + config.system_name + '/figures/plot_%s_%s_%s_%s_%s.png'%(to_plot,'_'.join(map(str,simulations['Bex'].unique().tolist())),'_'.join(map(str,simulations['mech'].unique().tolist())),'_'.join(map(str,simulations['L'].unique().tolist())),'_'.join(map(str,simulations['folderName'].unique().tolist()))), dpi=300)
+    fig.savefig('../' + config.system_name + '/figures/plot_%s_%s_%s_%s_%s.eps'%(to_plot,'_'.join(map(str,simulations['Bex'].unique().tolist())),'_'.join(map(str,simulations['mech'].unique().tolist())),'_'.join(map(str,simulations['L'].unique().tolist())),'_'.join(map(str,simulations['folderName'].unique().tolist()))))
     plt.close()
     #return ([xdata[l] for l in sorted(xdata.keys())],all_y_curves)
     return all_y_curves
@@ -145,7 +126,7 @@ def plot_lattice_correlators(simulations, plot_options, axes, to_plot='spinSize'
     for i, sim in enumerate(simulations.itertuples()):
         Lx=int(sim.L)
         Lz=int(sim.L)
-        path='../data/lattice_output/'+sim.folderName+'/table_'+str(sim.L)+'_'+str(sim.L)+'_'+str(sim.Bex)+'_'+str(sim.T)+'_'+str(sim.mech)+'_'+'*'+'.txt'
+        path='../' + config.system_name + '/data/lattice_output/'+sim.folderName+'/table_'+str(sim.L)+'_'+str(sim.L)+'_'+str(sim.Bex)+'_'+str(sim.T)+'_'+str(sim.mech)+'_'+'*'+'.txt'
         file_list = glob.glob(path)
         data=[]
         for i, file in enumerate(file_list):
@@ -193,8 +174,8 @@ def plot_lattice_correlators(simulations, plot_options, axes, to_plot='spinSize'
     plt.legend(loc='best')
     plt.tight_layout()
 
-    fig.savefig('../figures/plot_corr_%s_%s_%s_%s_%s.png'%(to_plot,'_'.join(map(str,simulations['Bex'].unique().tolist())),'_'.join(map(str,simulations['mech'].unique().tolist())),'_'.join(map(str,simulations['L'].unique().tolist())),'_'.join(map(str,simulations['folderName'].unique().tolist()))), dpi=300)
-    fig.savefig('../figures/plot_corr_%s_%s_%s_%s_%s.eps'%(to_plot,'_'.join(map(str,simulations['Bex'].unique().tolist())),'_'.join(map(str,simulations['mech'].unique().tolist())),'_'.join(map(str,simulations['L'].unique().tolist())),'_'.join(map(str,simulations['folderName'].unique().tolist()))))
+    fig.savefig('../' + config.system_name + '/figures/plot_corr_%s_%s_%s_%s_%s.png'%(to_plot,'_'.join(map(str,simulations['Bex'].unique().tolist())),'_'.join(map(str,simulations['mech'].unique().tolist())),'_'.join(map(str,simulations['L'].unique().tolist())),'_'.join(map(str,simulations['folderName'].unique().tolist()))), dpi=300)
+    fig.savefig('../' + config.system_name + '/figures/plot_corr_%s_%s_%s_%s_%s.eps'%(to_plot,'_'.join(map(str,simulations['Bex'].unique().tolist())),'_'.join(map(str,simulations['mech'].unique().tolist())),'_'.join(map(str,simulations['L'].unique().tolist())),'_'.join(map(str,simulations['folderName'].unique().tolist()))))
     plt.close()
     #return ([xdata[l] for l in sorted(xdata.keys())],all_y_curves)
     return all_y_curves
