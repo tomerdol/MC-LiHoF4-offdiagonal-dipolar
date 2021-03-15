@@ -50,6 +50,13 @@ public class ParseCommandLine {
                 .desc("External magnetic field in the x direction, Bx.")
                 .type(Number.class)
                 .build();
+        final Option extBy = Option.builder("extBy")
+                .required(true)
+                .longOpt("external_By")
+                .hasArg()
+                .desc("External magnetic field in the y direction, By.")
+                .type(Number.class)
+                .build();
         final Option maxSweeps = Option.builder("max_sweeps")
                 .required(true)
                 .hasArg()
@@ -197,6 +204,7 @@ public class ParseCommandLine {
         options.addOption(dilution);
         options.addOption(h);
         options.addOption(extBx);
+        options.addOption(extBy);
         options.addOption(maxSweeps);
         options.addOption(fileNumber);
         options.addOption(suppressInternalTransFields);

@@ -12,7 +12,7 @@ import java.util.Properties;
 public class Lattice implements Serializable {
     private static final long serialVersionUID = -9119463380760410942L;
     private final int N, Lx, Lz;
-    private final double extBx;
+    private final double extBx, extBy;
     private final boolean suppressInternalTransFields;
     private final double spinSize;
     // after deserialization these must be set:
@@ -27,11 +27,12 @@ public class Lattice implements Serializable {
     private singleSpin[] lattice;
 
     @CreatesInconsistency("If intTable, exchangeIntTable, energyTable, momentTable or measure are null")
-    public Lattice(int Lx, int Lz, double extBx, boolean suppressInternalTransFields, double spinSize, double[][][] intTable, double[][] exchangeIntTable, int[][] nnArray, FieldTable energyTable, FieldTable momentTable, final ObservableExtractor measure){
+    public Lattice(int Lx, int Lz, double extBx, double extBy, boolean suppressInternalTransFields, double spinSize, double[][][] intTable, double[][] exchangeIntTable, int[][] nnArray, FieldTable energyTable, FieldTable momentTable, final ObservableExtractor measure){
         this.N=Lx*Lx*Lz*Constants.num_in_cell;
         this.Lx=Lx;
         this.Lz=Lz;
         this.extBx=extBx;
+        this.extBy=extBy;
         this.suppressInternalTransFields=suppressInternalTransFields;
         this.spinSize = spinSize;
         this.intTable=intTable;
@@ -51,6 +52,7 @@ public class Lattice implements Serializable {
         this.Lx=other.Lx;
         this.Lz=other.Lz;
         this.extBx=other.extBx;
+        this.extBy=other.extBy;
         this.suppressInternalTransFields=other.suppressInternalTransFields;
         this.spinSize=other.spinSize;
         this.intTable=other.intTable;
@@ -80,6 +82,7 @@ public class Lattice implements Serializable {
         this.Lx=other.Lx;
         this.Lz=other.Lz;
         this.extBx=other.extBx;
+        this.extBy=other.extBy;
         this.suppressInternalTransFields=newSuppressInternalFields;
         this.spinSize=other.spinSize;
         this.intTable=other.intTable;
@@ -146,6 +149,10 @@ public class Lattice implements Serializable {
 
     public double getExtBx() {
         return extBx;
+    }
+
+    public double getExtBy() {
+        return extBy;
     }
 
     public boolean isSuppressInternalTransFields() {

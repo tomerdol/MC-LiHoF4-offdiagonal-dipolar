@@ -471,6 +471,7 @@ public class Main {
         int Lx=0;	// lattice x-y size
         int Lz=0;	// lattice z size
         double extBx=-1;   // external Bx
+        double extBy=-1;   // external By
         long maxSweeps=0;	// maximum steps for the metropolis algorithm
         int taskID=123;	// sge task ID (used for random number seed)
         boolean suppressInternalTransFields=false;
@@ -529,6 +530,7 @@ public class Main {
             obsPrintSweepNum = GetParamValues.getLongParam(params,"obsPrintSweepNum"+Lz);
 
             extBx = ((Number) commandLine.getParsedOptionValue("extBx")).doubleValue();
+            extBy = ((Number) commandLine.getParsedOptionValue("extBy")).doubleValue();
             maxSweeps = ((Number) commandLine.getParsedOptionValue("max_sweeps")).longValue();
             if (commandLine.hasOption("id")) taskID = ((Number) commandLine.getParsedOptionValue("id")).intValue();
             if (commandLine.hasOption("suppress")) suppressInternalTransFields = commandLine.hasOption("suppress");
@@ -591,16 +593,9 @@ public class Main {
 
 
         // first try and get spin size (initial guess) from manual calculation that diagonalizes the Ho C-F hamiltonian
-        // using the external Bx.
-        // If that fails just use value from fit. It's not that important as it's just an initial guess
-//        try{
-        // pass parameters Bx=extBx, By=0, Bz=0.05, spin=1, and calc for "up"
-        spinSize = CrystalField.getMagneticMoment(extBx, 0.0, 0.05);
-//        }catch(Exception e){
-//            System.err.println("could not run manual calculation to get initial magnetic moment guess");
-//            Constants.spinSize = 5.44802407 + 1.11982863*extBx + (-2.00747245)*Math.pow(extBx,2) + (-4.20363871)*Math.pow(extBx,3)+
-//                    (5.20857114)*Math.pow(extBx,4) + (-2.22871652)*Math.pow(extBx,5) + (0.42596452)*Math.pow(extBx,6) + (-0.0307749)*Math.pow(extBx,7);
-//        }
+        // using the external Bx, By.
+        // pass parameters Bx=extBx, By=extBy, Bz=0.05, spin=1, and calc for "up"
+        spinSize = CrystalField.getMagneticMoment(extBx, extBy, 0.05);
 
         final double[][][] intTable = new double[3][4*Lx*Lx*Lz][4*Lx*Lx*Lz]; // create interaction table that holds all the dipolar interactions. will be full even though it's symmetric. 1st array is x,y,z term
         final double[][] exchangeIntTable = new double[4*Lx*Lx*Lz][4*Lx*Lx*Lz];
@@ -634,7 +629,7 @@ public class Main {
         {   // code block: tempLattice is discarded at the end
 
             // temporary lattice objecct used to create k_tables
-            Lattice tempLattice = new Lattice(Lx, Lz, extBx, suppressInternalTransFields, spinSize,null, null, null, null, null, null);
+            Lattice tempLattice = new Lattice(Lx, Lz, extBx, extBy, suppressInternalTransFields, spinSize,null, null, null, null, null, null);
 
             // initialize sin, cos tables for mk^2 calculation (correlation length)
             k_cos_table = new double[3][tempLattice.getN()];
@@ -732,7 +727,7 @@ public class Main {
                     ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).printRunParameters(VERSION, T, "# successfully read saved state"+System.lineSeparator()+'#'+outputWriter.makeTableHeader().substring(1), simulation.getSeed(), tempScheduleFileName, parallelTemperingOff);
                 }else{
                     // initialize new simulation
-                    Lattice lattice = new Lattice(Lx, Lz, extBx, suppressInternalTransFields, spinSize, intTable, exchangeIntTable, nnArray, energyTable, momentTable, measure);
+                    Lattice lattice = new Lattice(Lx, Lz, extBx, extBy, suppressInternalTransFields, spinSize, intTable, exchangeIntTable, nnArray, energyTable, momentTable, measure);
                     rnd[i] = new MersenneTwister(seeds[i]);
                     subSimulations[i] = new SingleTMonteCarloSimulation(T[i], i, T.length, lattice, 36, maxSweeps, seeds[i], rnd[i], continueFromSave,
                             realTimeEqTest, outputWriter, saveState, maxIter, alpha, outProblematicConfigs, spinSize, tol, J_ex);
@@ -771,7 +766,7 @@ public class Main {
                             .build();
                     ((MultipleTMonteCarloSimulation) simulation).getIthSubSimulation(i).setOutWriter(latticeOutputWriter);
                     ((MultipleTMonteCarloSimulation) simulation).getIthSubSimulation(i).getLattice().setIntTable(intTable); // set intTable to new one with off-diagonal interactions
-                    ((MultipleTMonteCarloSimulation) simulation).getIthSubSimulation(i).printRunParameters(VERSION, T, "# NOTICE: The local transverse (x,y) fields are \"hypothetical\", meaning that if suppressInternalTransFields is true (see above), they are effectively always (localBx=extBx,localBy=0)." + System.lineSeparator() + ((MultipleTMonteCarloSimulation) simulation).getIthSubSimulation(i).getOutWriter().makeTableHeader(), simulation.getSeed(), tempScheduleFileName, parallelTemperingOff);
+                    ((MultipleTMonteCarloSimulation) simulation).getIthSubSimulation(i).printRunParameters(VERSION, T, "# NOTICE: The local transverse (x,y) fields are \"hypothetical\", meaning that if suppressInternalTransFields is true (see above), they are effectively always (localBx=extBx,localBy=localBy)." + System.lineSeparator() + ((MultipleTMonteCarloSimulation) simulation).getIthSubSimulation(i).getOutWriter().makeTableHeader(), simulation.getSeed(), tempScheduleFileName, parallelTemperingOff);
                     ((MultipleTMonteCarloSimulation) simulation).getIthSubSimulation(i).printSimulationState();
 
                 } catch (IOException e){
