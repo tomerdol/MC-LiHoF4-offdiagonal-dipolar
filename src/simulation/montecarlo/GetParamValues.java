@@ -1,5 +1,6 @@
 package simulation.montecarlo;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,7 +21,7 @@ public class GetParamValues {
 
 		Properties params = new Properties();
 		
-		try (InputStream input = new FileInputStream("parameters_"+System.getProperty("system")+".properties")){
+		try (InputStream input = new FileInputStream(System.getProperty("system") + File.separator + "parameters_"+System.getProperty("system")+".properties")){
 		
 			// load a properties file
 			params.load(input);
