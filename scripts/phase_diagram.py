@@ -6,6 +6,7 @@ import pandas as pd
 import csv, sys, os
 import plot, plot_equilibration_pdf, check_equilibration, fit6, test_autocorrelation
 import itertools
+import config
 from shutil import copyfile
 
 
@@ -23,13 +24,13 @@ def check_exists_and_not_empty(T, L, Bex, folderName, mech):
 def parse_arguments():  
     from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
     
-    parser = ArgumentParser(description="Analyzes Monte Carlo results to create a phase diagram for LiHoF4", formatter_class=ArgumentDefaultsHelpFormatter)
+    parser = ArgumentParser(description="Analyzes Monte Carlo results to create a phase diagram for LiHoF4", formatter_class=ArgumentDefaultsHelpFormatter, parents=[config.parse_arguments()])
     parser.add_argument( "-L", nargs='+', type=int, required=True, help = "Linear system sizes. At least 2 required.")
-    parser.add_argument( "-b", "--boot_num", type=int, default = 100, help = "Number of bootstrap samples.")
-    parser.add_argument( "--h_ex_list", nargs='+', type=float, help = "List of external magnetic field values, Bex." , required=True)
-    parser.add_argument( "-m", "--mech", choices=['true','false'], help = ("Whether internal fields are suppressed or not. \'false\' means "
-    "that they aren't so the mechanism is on, and \'true\' means that they are and the mechanism is off." ), required=True)
-    parser.add_argument( "-f", "--folder_list", nargs='+', type=str, help = "List of folders in \'/data/results\' in which results should be found. " , required=True)
+    # parser.add_argument( "-b", "--boot_num", type=int, default = 100, help = "Number of bootstrap samples.")
+    # parser.add_argument( "--h_ex_list", nargs='+', type=float, help = "List of external magnetic field values, Bex." , required=True)
+    # parser.add_argument( "-m", "--mech", choices=['true','false'], help = ("Whether internal fields are suppressed or not. \'false\' means "
+    # "that they aren't so the mechanism is on, and \'true\' means that they are and the mechanism is off." ), required=True)
+    # parser.add_argument( "-f", "--folder_list", nargs='+', type=str, help = "List of folders in \'/data/results\' in which results should be found. " , required=True)
     parser.add_argument( "-o", "--overwrite_tmp", action='store_true', default=False, help = ("Overwrite parsed files in /tmp. If not given, existing files will "
     "be used (which probably means older results)."))
     
@@ -43,6 +44,7 @@ def parse_arguments():
         
     return args
 
+
 def find_initial_xc_idx(arr_x,arr_y):
     # find average x_c from crossing of all possible pairs of L's 
     n=len(arr_y)
@@ -53,6 +55,7 @@ def find_initial_xc_idx(arr_x,arr_y):
     initial_xc = sum/num_of_pairs
     # return the index of the nearest value in the first given array (smallest L)
     return (np.abs(arr_x[0] - initial_xc)).argmin()
+
 
 def find_initial_xc_from_pair(arr1,arr2):
     # arr 1&2 are the curves for which a approximate crossing is found

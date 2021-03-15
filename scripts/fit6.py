@@ -418,16 +418,17 @@ def fit_bin(simulations, boot_num, min_x, max_x, initial_xc, fit_options):
     # returns x_c, err(x_c), v, err(v), R^2
     return pfit_bootstrap[0], perr_bootstrap[0], pfit_bootstrap[5], perr_bootstrap[5], r_squared, simulations
 
+
 def parse_arguments():  
     from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
     
-    parser = ArgumentParser(description="Analyzes Monte Carlo results and plots correlation length curves for LiHoF4", formatter_class=ArgumentDefaultsHelpFormatter)
+    parser = ArgumentParser(description="Analyzes Monte Carlo results and plots correlation length curves.", formatter_class=ArgumentDefaultsHelpFormatter, parents=[config.parse_arguments()])
     parser.add_argument( "-L", nargs='+', type=int, required=True, help = "Linear system sizes. At least 2 required.")
-    parser.add_argument( "-b", "--boot_num", type=int, default = 100, help = "Number of bootstrap samples.")
-    parser.add_argument( "--h_ex", type=float, help = "External magnetic field value, Bex." , required=True)
-    parser.add_argument( "-m", "--mech", choices=['true','false'], help = ("Whether internal fields are suppressed or not. \'false\' means "
-    "that they aren't so the mechanism is on, and \'true\' means that they are and the mechanism is off." ), required=True)
-    parser.add_argument( "-f", "--folder_list", nargs='+', type=str, help = "List of folders in \'data/results/\' in which results should be found. " , required=True)
+    # parser.add_argument( "-b", "--boot_num", type=int, default = 100, help = "Number of bootstrap samples.")
+    # parser.add_argument( "--h_ex", type=float, help = "External magnetic field value, Bex." , required=True)
+    # parser.add_argument( "-m", "--mech", choices=['true','false'], help = ("Whether internal fields are suppressed or not. \'false\' means "
+    # "that they aren't so the mechanism is on, and \'true\' means that they are and the mechanism is off." ), required=True)
+    # parser.add_argument( "-f", "--folder_list", nargs='+', type=str, help = "List of folders in \'data/results/\' in which results should be found. " , required=True)
     parser.add_argument( "-r", "--temperature_range", nargs=2, type=float, required=False, help = ("The temperature range to use when trying to fit."))
     #parser.add_argument( "-o", "--overwrite_tmp", action='store_true', default=False, help = ("Overwrite parsed files in /tmp. If not given, existing files will "
     #"be used (which probably means older results)."))
@@ -440,10 +441,8 @@ def parse_arguments():
     
     if args.temperature_range is not None and args.temperature_range[0]>args.temperature_range[1]:
         parser.error("First argument of --temperature_range must be smaller than the second argument.")
-        
 
     return args
-
 
 
 def main():
