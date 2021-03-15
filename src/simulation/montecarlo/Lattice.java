@@ -521,7 +521,7 @@ public class Lattice implements Serializable {
         final double spinSize = CrystalField.getMagneticMoment(0.0, 0.0, 0.05);
 
         singleSpin[] arr = null;
-        try (BufferedReader in = new BufferedReader(new FileReader("data" + File.separator + "configurations" + File.separator + "config_"+Lx+"_"+Lz+"_"+dilution+"_"+h+"_"+fileNumber+".txt"))){;
+        try (BufferedReader in = new BufferedReader(new FileReader(System.getProperty("system") + File.separator + "data" + File.separator + "configurations" + File.separator + "config_"+Lx+"_"+Lz+"_"+dilution+"_"+h+"_"+fileNumber+".txt"))){;
             String str;
             String[] params;
             int i=0;

@@ -54,6 +54,7 @@ H_cf = -D*LA.matrix_power(jz,2) + E*(LA.matrix_power(jx,2)-LA.matrix_power(jy,2)
 
 # Magnetic field Zeeman term
 meanBx = float(sys.argv[1])
+meanBy = float(sys.argv[2])
 meanBx=0.0
 maxBx=3.0       # the real max is one less than this
 maxBz=1.2       # the real max is one less than this
@@ -68,6 +69,7 @@ Bx += meanBx
 By = np.geomspace(1,maxBx,num=number) - 1 + np.geomspace(1,maxBx,num=number)[1] - np.geomspace(1,maxBx,num=number)[0]
 # By = np.concatenate((np.flip(-1*By),[0.0],By),axis=0)
 By = np.concatenate((np.flip(-1*By),By),axis=0)
+By += meanBy
 # Bz = np.geomspace(1,maxBz,num=number) - 1 + np.geomspace(1,maxBz,num=number)[1] - np.geomspace(1,maxBz,num=number)[0]
 Bz = np.geomspace(1,maxBz,num=number) - 1 + min_bz
 # Bz = np.concatenate((np.flip(-1*Bz),[0.0],Bz),axis=0)

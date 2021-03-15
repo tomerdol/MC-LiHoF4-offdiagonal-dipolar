@@ -73,7 +73,7 @@ public class Main {
 
         int fileLx=0, fileLz=0;
         final int N=Lx*Lx*Lz*Constants.num_in_cell;
-        try (BufferedReader in = new BufferedReader(new FileReader("data" + File.separator + "interactions" + File.separator + "intTable_"+Lx+"_"+Lz+".txt"))){
+        try (BufferedReader in = new BufferedReader(new FileReader(System.getProperty("system") + File.separator + "data" + File.separator + "interactions" + File.separator + "intTable_"+Lx+"_"+Lz+".txt"))){
             String str;
             // verify Lx and Lz make sense
             if ((str = in.readLine()) != null)
@@ -685,21 +685,21 @@ public class Main {
 
         }
 
-        makeDir("data" + File.separator + "results" + File.separator, folderName);
+        makeDir(System.getProperty("system") + File.separator + "data" + File.separator + "results" + File.separator, folderName);
 
-        makeDir("data" + File.separator + "lattice_output" + File.separator, folderName);
+        makeDir(System.getProperty("system") + File.separator + "data" + File.separator + "lattice_output" + File.separator, folderName);
 
         SingleTMonteCarloSimulation[] subSimulations = new SingleTMonteCarloSimulation[T.length];
         BufferedWriter outProblematicConfigs=null;
         try {
-            makeDir("data" + File.separator,"p_configs");
+            makeDir(System.getProperty("system") + File.separator + "data" + File.separator,"p_configs");
             // this is one BufferedWriter for all temperatures (threads). The write method is synchronized on outProblematicConfigs.
             // If there are many problematic configurations if might cause slow down (but many such configurations is problematic regardless)
-            outProblematicConfigs = new BufferedWriter(new FileWriter("data" + File.separator + "p_configs" + File.separator + "problematic_"+(Lx*Lx*Lz*4)+"_"+extBx,true));
+            outProblematicConfigs = new BufferedWriter(new FileWriter(System.getProperty("system") + File.separator + "data" + File.separator + "p_configs" + File.separator + "problematic_"+(Lx*Lx*Lz*4)+"_"+extBx,true));
 
             for (int i=0;i<T.length;i++){
                 // Create file to write output into
-                FileWriter out = new FileWriter("data" + File.separator + "results" + File.separator + folderName + File.separator + "table_" + Lx + "_" + Lz + "_" + extBx + "_" + T[i] + "_" + suppressInternalTransFields + "_" + seed + ".txt",
+                FileWriter out = new FileWriter(System.getProperty("system") + File.separator + "data" + File.separator + "results" + File.separator + folderName + File.separator + "table_" + Lx + "_" + Lz + "_" + extBx + "_" + T[i] + "_" + suppressInternalTransFields + "_" + seed + ".txt",
                         successReadFromFile);
                 OutputWriter outputWriter = new OutputWriter.Builder(verboseOutput ? OutputType.VERBOSE : OutputType.BIN, folderName, obsPrintSweepNum, out)
                         .setPrintOutput(printOutput)
@@ -766,7 +766,7 @@ public class Main {
                 // Create file to write full lattice configurations into
                 // lattices are written in full only at the end of the simulation.
                 // If one wishes to only write out the lattice of a finished simulation, it should be run with maxSweeps that equals the number of sweeps already done
-                try (FileWriter latticeOut = new FileWriter("data" + File.separator + "lattice_output" + File.separator + folderName + File.separator + "table_" + Lx + "_" + Lz + "_" + extBx + "_" + T[i] + "_" + suppressInternalTransFields + "_" + seed + ".txt", false)) {
+                try (FileWriter latticeOut = new FileWriter(System.getProperty("system") + File.separator + "data" + File.separator + "lattice_output" + File.separator + folderName + File.separator + "table_" + Lx + "_" + Lz + "_" + extBx + "_" + T[i] + "_" + suppressInternalTransFields + "_" + seed + ".txt", false)) {
                     OutputWriter latticeOutputWriter = new OutputWriter.Builder(OutputType.SPIN, folderName, 4 * Lx * Lx * Lz, latticeOut)
                             .build();
                     ((MultipleTMonteCarloSimulation) simulation).getIthSubSimulation(i).setOutWriter(latticeOutputWriter);
