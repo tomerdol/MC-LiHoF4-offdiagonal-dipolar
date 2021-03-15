@@ -51,7 +51,7 @@ public class ParseCommandLine {
                 .type(Number.class)
                 .build();
         final Option extBy = Option.builder("extBy")
-                .required(true)
+                .required(false)
                 .longOpt("external_By")
                 .hasArg()
                 .desc("External magnetic field in the y direction, By.")

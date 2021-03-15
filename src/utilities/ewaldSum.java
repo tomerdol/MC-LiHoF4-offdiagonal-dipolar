@@ -92,7 +92,7 @@ public class ewaldSum {
 			System.out.print(alpha*Lz);
 			//for(real_cutoff=1;real_cutoff<=12;real_cutoff++) {
 			for(int k_cutoff=1;k_cutoff<=max_k_cutoff;k_cutoff++) {
-				Lattice lattice = new Lattice(Lx, Lz, 0.0, false, 5.51,intTable, exchangeIntTable, null, null, null, null);
+				Lattice lattice = new Lattice(Lx, Lz, 0.0, 0.0, false, 5.51,intTable, exchangeIntTable, null, null, null, null);
 				fillIntTable(lattice.getArray(), Lz, Lx, alpha, real_cutoff, k_cutoff, intTable);
 				lattice.checkerBoard();
 				lattice.updateAllLocalFields();
@@ -130,7 +130,7 @@ public class ewaldSum {
 		final double[][][] intTable = new double[3][Constants.num_in_cell*Lx*Lx*Lz][Constants.num_in_cell*Lx*Lx*Lz];
 		final double[][] exchangeIntTable = new double[Constants.num_in_cell*Lx*Lx*Lz][Constants.num_in_cell*Lx*Lx*Lz];	// all zeros
 
-		Lattice lattice = new Lattice(Lx, Lz, 0.0, false, 5.51, intTable, exchangeIntTable, null, null, null, null);
+		Lattice lattice = new Lattice(Lx, Lz, 0.0, 0.0, false, 5.51, intTable, exchangeIntTable, null, null, null, null);
 		singleSpin[] arr = lattice.getArray();
 		System.out.println("#real_cutoff="+real_cutoff);
 		System.out.println("#reciprocal_cutoff="+k_cutoff);

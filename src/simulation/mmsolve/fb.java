@@ -49,6 +49,7 @@ class fb extends fij_xi {
         FieldTable momentTable = ((func)f).momentTable;
         singleSpin[] arr = ((func)f).arr;
         double extBx = ((func)f).extBx;
+        double extBy = ((func)f).extBy;
         double[][][] E = ((func)f).intTable;
         boolean suppressInternalTransFields = ((func)f).suppressInternalTransFields;
 
@@ -60,17 +61,17 @@ class fb extends fij_xi {
                 if (i==j) ret[i][j]=1;
 
                 if (!homotopy || i!=flipSpin) {
-                    ret[i][j] = ret[i][j] - (E[0][i][j] * momentTable.getDerivative(2, getField(x, i, E, extBx, suppressInternalTransFields), arr[i].getSpin(), arr[i].getPrevBIndices())
-                            + E[1][i][j] * momentTable.getDerivative(1, getField(x, i, E, extBx, suppressInternalTransFields), arr[i].getSpin(), arr[i].getPrevBIndices())
-                            + E[2][i][j] * momentTable.getDerivative(0, getField(x, i, E, extBx, suppressInternalTransFields), arr[i].getSpin(), arr[i].getPrevBIndices()));
+                    ret[i][j] = ret[i][j] - (E[0][i][j] * momentTable.getDerivative(2, getField(x, i, E, extBx, extBy, suppressInternalTransFields), arr[i].getSpin(), arr[i].getPrevBIndices())
+                            + E[1][i][j] * momentTable.getDerivative(1, getField(x, i, E, extBx, extBy, suppressInternalTransFields), arr[i].getSpin(), arr[i].getPrevBIndices())
+                            + E[2][i][j] * momentTable.getDerivative(0, getField(x, i, E, extBx, extBy, suppressInternalTransFields), arr[i].getSpin(), arr[i].getPrevBIndices()));
                 } else{
                     System.err.println("problem! func for homotopy seems to be used");
-                    ret[i][j] = ret[i][j] - (1-frac)*(E[0][i][j] * momentTable.getDerivative(2, getField(x, i, E, extBx, suppressInternalTransFields), arr[i].getSpin(), arr[i].getPrevBIndices())
-                            + E[1][i][j] * momentTable.getDerivative(1, getField(x, i, E, extBx, suppressInternalTransFields), arr[i].getSpin(), arr[i].getPrevBIndices())
-                            + E[2][i][j] * momentTable.getDerivative(0, getField(x, i, E, extBx, suppressInternalTransFields), arr[i].getSpin(), arr[i].getPrevBIndices()))
-                            - (frac)*(E[0][i][j] * momentTable.getDerivative(2, getField(x, i, E, extBx, suppressInternalTransFields), -1*arr[i].getSpin(), arr[i].getPrevBIndices())
-                            + E[1][i][j] * momentTable.getDerivative(1, getField(x, i, E, extBx, suppressInternalTransFields), -1*arr[i].getSpin(), arr[i].getPrevBIndices())
-                            + E[2][i][j] * momentTable.getDerivative(0, getField(x, i, E, extBx, suppressInternalTransFields), -1*arr[i].getSpin(), arr[i].getPrevBIndices()));
+                    ret[i][j] = ret[i][j] - (1-frac)*(E[0][i][j] * momentTable.getDerivative(2, getField(x, i, E, extBx, extBy, suppressInternalTransFields), arr[i].getSpin(), arr[i].getPrevBIndices())
+                            + E[1][i][j] * momentTable.getDerivative(1, getField(x, i, E, extBx, extBy, suppressInternalTransFields), arr[i].getSpin(), arr[i].getPrevBIndices())
+                            + E[2][i][j] * momentTable.getDerivative(0, getField(x, i, E, extBx, extBy, suppressInternalTransFields), arr[i].getSpin(), arr[i].getPrevBIndices()))
+                            - (frac)*(E[0][i][j] * momentTable.getDerivative(2, getField(x, i, E, extBx, extBy, suppressInternalTransFields), -1*arr[i].getSpin(), arr[i].getPrevBIndices())
+                            + E[1][i][j] * momentTable.getDerivative(1, getField(x, i, E, extBx, extBy, suppressInternalTransFields), -1*arr[i].getSpin(), arr[i].getPrevBIndices())
+                            + E[2][i][j] * momentTable.getDerivative(0, getField(x, i, E, extBx, extBy, suppressInternalTransFields), -1*arr[i].getSpin(), arr[i].getPrevBIndices()));
                 }
                 if (((func)f).numManualCalc >=20){
                     System.err.println("called python too many times!");
@@ -82,8 +83,8 @@ class fb extends fij_xi {
         return ret;
     }
 
-    private double[] getField(final double[] x, int i, double[][][] int_config_Matrix, double extBx, boolean suppressInternalTransFields){
-        double[] B = new double[]{extBx, 0, 0};
+    private double[] getField(final double[] x, int i, double[][][] int_config_Matrix, double extBx, double extBy, boolean suppressInternalTransFields){
+        double[] B = new double[]{extBx, extBy, 0};
 
         for (int dim=0; dim<B.length; dim++){
             if (!suppressInternalTransFields || dim==2) {

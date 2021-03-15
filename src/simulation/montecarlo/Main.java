@@ -471,7 +471,7 @@ public class Main {
         int Lx=0;	// lattice x-y size
         int Lz=0;	// lattice z size
         double extBx=-1;   // external Bx
-        double extBy=-1;   // external By
+        double extBy=0;   // external By
         long maxSweeps=0;	// maximum steps for the metropolis algorithm
         int taskID=123;	// sge task ID (used for random number seed)
         boolean suppressInternalTransFields=false;
@@ -530,7 +530,7 @@ public class Main {
             obsPrintSweepNum = GetParamValues.getLongParam(params,"obsPrintSweepNum"+Lz);
 
             extBx = ((Number) commandLine.getParsedOptionValue("extBx")).doubleValue();
-            extBy = ((Number) commandLine.getParsedOptionValue("extBy")).doubleValue();
+            if (commandLine.hasOption("extBy")) extBy = ((Number) commandLine.getParsedOptionValue("extBy")).doubleValue();
             maxSweeps = ((Number) commandLine.getParsedOptionValue("max_sweeps")).longValue();
             if (commandLine.hasOption("id")) taskID = ((Number) commandLine.getParsedOptionValue("id")).intValue();
             if (commandLine.hasOption("suppress")) suppressInternalTransFields = commandLine.hasOption("suppress");

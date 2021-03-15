@@ -268,7 +268,7 @@ public class Lattice implements Serializable {
                 method -= 10;
             }
 
-            fi_xi funcToSolve = new func(intTable, momentTable, lattice, extBx, suppressInternalTransFields);
+            fi_xi funcToSolve = new func(intTable, momentTable, lattice, extBx, extBy, suppressInternalTransFields);
 
             // newton's method
             if (method == 4) {
@@ -380,7 +380,7 @@ public class Lattice implements Serializable {
         for (i=0;i<lattice.length;i++) {
             int j;
             if (lattice[i].getSpin()!=0){
-                double Bz=0, Bx = extBx, By = 0;
+                double Bz=0, Bx = extBx, By = extBy;
                 for(j=0;j<lattice.length;j++){
                     if (lattice[j].getSpin()!=0){
                         Bz += lattice[j].getSpinSize()*intTable[2][i][j];
@@ -391,7 +391,7 @@ public class Lattice implements Serializable {
                     }
                 }
                 lattice[i].setLocalBz(Bz);
-                // if suppressInternalTransFields==true then Bx==extBx and By==0.
+                // if suppressInternalTransFields==true then Bx==extBx and By==extBy.
                 lattice[i].setLocalBx(Bx);
                 lattice[i].setLocalBy(By);
             }
@@ -471,7 +471,7 @@ public class Lattice implements Serializable {
         for (i=0;i<lattice.length && ret;i++) {
             int j;
 
-            double Bx=extBx, By=0, Bz=0;
+            double Bx=extBx, By=extBy, Bz=0;
             // add up all contributions to local field from other spins at spin i
             for(j=0;j<lattice.length;j++){
                 if (lattice[j].getSpin()!=0){

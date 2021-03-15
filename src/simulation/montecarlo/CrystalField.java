@@ -16,22 +16,48 @@ import static org.ojalgo.function.constant.ComplexMath.*;
  */
 public class CrystalField {
     // constants
-    private static final double hbar=1, g_L=1.25, u_B=0.6717;
-    private static final double J=8;
-    private static final int deg_J=(int)(J*2) + 1;
+    private static final double hbar, g_L, u_B=0.6717;
+    private static final double J;
+    private static final int deg_J;
     private static final PhysicalStore.Factory<ComplexNumber, GenericDenseStore<ComplexNumber>> storeFactory = GenericDenseStore.COMPLEX;
-    private static final GenericDenseStore<ComplexNumber> H_cf, jx=storeFactory.makeZero(deg_J,deg_J), jy=storeFactory.makeZero(deg_J,deg_J), jz, jplus, jminus, I_J;
+    private static final GenericDenseStore<ComplexNumber> H_cf, jx, jy, jz, jplus, jminus, I_J;
 
     static{
-        I_J= storeFactory.makeEye(deg_J,deg_J);
-        jplus=initJplus();
-        jminus=initJminus();
-        jx.fillMatching(jplus,ADD,jminus);
-        jx.operateOnAll(MULTIPLY,ComplexNumber.of(0.5,0)).supplyTo(jx);
-        jy.fillMatching(jplus,SUBTRACT,jminus);
-        jy.operateOnAll(MULTIPLY,ComplexNumber.of(0,-0.5)).supplyTo(jy);
-        jz= initJz();
-        H_cf=initH_cf();
+        if (System.getProperty("system").equals("LiHoF4")) {
+            hbar = 1;
+            g_L = 1.25;
+            J = 8;
+            deg_J = (int) (J * 2) + 1;
+            jx = storeFactory.makeZero(deg_J, deg_J);
+            jy = storeFactory.makeZero(deg_J, deg_J);
+            I_J = storeFactory.makeEye(deg_J, deg_J);
+            jplus = initJplus();
+            jminus = initJminus();
+            jx.fillMatching(jplus, ADD, jminus);
+            jx.operateOnAll(MULTIPLY, ComplexNumber.of(0.5, 0)).supplyTo(jx);
+            jy.fillMatching(jplus, SUBTRACT, jminus);
+            jy.operateOnAll(MULTIPLY, ComplexNumber.of(0, -0.5)).supplyTo(jy);
+            jz = initJz();
+            H_cf = initH_cfLiHoF4();
+        } else if (System.getProperty("system").equals("Fe8")){
+            hbar = 1;
+            g_L = 2.0;
+            J = 10;
+            deg_J = (int) (J * 2) + 1;
+            jx = storeFactory.makeZero(deg_J, deg_J);
+            jy = storeFactory.makeZero(deg_J, deg_J);
+            I_J = storeFactory.makeEye(deg_J, deg_J);
+            jplus = initJplus();
+            jminus = initJminus();
+            jx.fillMatching(jplus, ADD, jminus);
+            jx.operateOnAll(MULTIPLY, ComplexNumber.of(0.5, 0)).supplyTo(jx);
+            jy.fillMatching(jplus, SUBTRACT, jminus);
+            jy.operateOnAll(MULTIPLY, ComplexNumber.of(0, -0.5)).supplyTo(jy);
+            jz = initJz();
+            H_cf = initH_cfLiHoF4();
+        } else {
+            throw new RuntimeException("Cannot initialize crystal field parameters. Illegal system name given.");
+        }
     }
 
     // initialize the eigenvalue decomposition object given (Bx,By,Bz)
@@ -178,7 +204,7 @@ public class CrystalField {
     }
 
 
-    private static GenericDenseStore<ComplexNumber> initH_cf(){
+    private static GenericDenseStore<ComplexNumber> initH_cfLiHoF4(){
         // crystal field parameters:
         double B02 = -0.696;
         double B04 = 4.06e-3;
@@ -256,6 +282,31 @@ public class CrystalField {
 
         return H_cf;
     }
+
+
+
+    private static GenericDenseStore<ComplexNumber> initH_cfFe8(){
+        // crystal field parameters:
+        double D=0.294;
+        double E=0.046;
+
+        final GenericDenseStore<ComplexNumber> Sz2, Sx2, Sy2;
+
+        Sz2 = storeFactory.makeZero(deg_J,deg_J);
+        Sx2 = storeFactory.makeZero(deg_J,deg_J);
+        Sy2 = storeFactory.makeZero(deg_J,deg_J);
+
+        Sz2.fillByMultiplying(jz,jz);   // jz^2
+        Sx2.fillByMultiplying(jx,jx);   // jx^2
+        Sy2.fillByMultiplying(jy,jy);   // jy^2
+
+        GenericDenseStore<ComplexNumber> H_cf = storeFactory.makeZero(deg_J,deg_J);
+        H_cf.fillMatching(Sz2.multiply(-D), ADD, Sx2.multiply(E));
+        H_cf.operateOnMatching(ADD, Sy2.multiply(-E)).supplyTo(H_cf);
+
+        return H_cf;
+    }
+
 
     private static GenericDenseStore<ComplexNumber> initJplus(){
         ComplexNumber[][] jplusArray = new ComplexNumber[deg_J][deg_J];

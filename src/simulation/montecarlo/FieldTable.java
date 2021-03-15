@@ -614,12 +614,12 @@ final public class FieldTable {
     }
 
     // testing getDerivative
-    public static void testDerivative(FieldTable momentTable, double extBx){
+    public static void testDerivative(FieldTable momentTable, double extBx, double extBy){
         Random rnd = new Random();
         boolean allSuccess=true;
         boolean[] fails = new boolean[5000];
         for (int i=0;i<5000; i++) {
-            double bx = extBx + 4 * rnd.nextDouble() - 2, by = 4 * rnd.nextDouble() - 2, bz = 4 * rnd.nextDouble() - 2;
+            double bx = extBx + 4 * rnd.nextDouble() - 2, by = extBy + 4 * rnd.nextDouble() - 2, bz = 4 * rnd.nextDouble() - 2;
             double[] b = new double[]{bz,by,bx};
             int s = rnd.nextBoolean() ? 1 : -1;
 

@@ -14,8 +14,8 @@ class funcForHomotopy extends func {
     final int flippedSpin;
     final double perc;
 
-    public funcForHomotopy(final double[][][] intTable0, final FieldTable momentTable0, final singleSpin[] arr0, double extBx0, final int flippedSpin0, final double perc0, final boolean suppressInternalTransFields0){
-        super(intTable0, momentTable0, arr0, extBx0, suppressInternalTransFields0);
+    public funcForHomotopy(final double[][][] intTable0, final FieldTable momentTable0, final singleSpin[] arr0, double extBx0, double extBy0, final int flippedSpin0, final double perc0, final boolean suppressInternalTransFields0){
+        super(intTable0, momentTable0, arr0, extBx0, extBy0, suppressInternalTransFields0);
         flippedSpin=flippedSpin0;
         perc=perc0;
     }
@@ -36,8 +36,8 @@ class funcForHomotopy extends func {
     public double[] func(double[] x) throws ConvergenceException {
         double[] retVec=new double[x.length];
         for (int i = 0; i<retVec.length && numManualCalc <20; i++) {
-            if (i!=flippedSpin)  retVec[i] = x[i] - g(x, i, intTable, momentTable, arr, extBx, suppressInternalTransFields);
-            else retVec[i] = x[i] - g(x, i, intTable, momentTable, arr, extBx, flippedSpin);
+            if (i!=flippedSpin)  retVec[i] = x[i] - g(x, i, intTable, momentTable, arr, extBx, extBy, suppressInternalTransFields);
+            else retVec[i] = x[i] - g(x, i, intTable, momentTable, arr, extBx, extBy, flippedSpin);
         }
 
         if (numManualCalc >=20) {
@@ -59,16 +59,17 @@ class funcForHomotopy extends func {
      * @param momentTable - Magnetic moment table
      * @param arr - The full system array. Used for the spin direction
      * @param extBx - External Bx magnetic field
+     * @param extBy - External By magnetic field
      * @return the objective moment, i.e. what the magnetic moment should be, considering the current configuration
      */
-    private double g(final double[] x, int i, double[][][] int_config_Matrix, FieldTable momentTable, singleSpin[] arr, double extBx, int flipSpin){
+    private double g(final double[] x, int i, double[][][] int_config_Matrix, FieldTable momentTable, singleSpin[] arr, double extBx, double extBy, int flipSpin){
 
         if (i!=flippedSpin){
             System.err.println("Wrong function called to calculate the magnetic moment. For the flipped spin g should be called with the index of the spin to flip.");
             System.exit(1);
         }
 
-        double[] B = new double[]{extBx, 0, 0};
+        double[] B = new double[]{extBx, extBy, 0};
 
         for (int dim=0; dim<B.length; dim++){
             if (!suppressInternalTransFields || dim==2) {
