@@ -11,7 +11,7 @@ def main():
     args = parse_arguments()
     
     all_L = args.L
-    h_ex_list = args.h_ex_list
+    h_ex_list = args.h_ex
     mech_list = args.mech
     folderName_list = args.folder_list
     

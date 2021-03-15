@@ -25,7 +25,7 @@ def check_exists_and_not_empty(T, L, Bex, folderName, mech):
 def parse_arguments():  
     from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
     
-    parser = ArgumentParser(description="Analyzes Monte Carlo results to create a phase diagram for LiHoF4", formatter_class=ArgumentDefaultsHelpFormatter, parents=[config.parse_arguments()])
+    parser = ArgumentParser(description="Analyzes Monte Carlo results to create a phase diagram for LiHoF4", formatter_class=ArgumentDefaultsHelpFormatter, parents=[config.parse_arguments()], conflict_handler='resolve')
     parser.add_argument( "-L", nargs='+', type=int, required=True, help = "Linear system sizes. At least 2 required.")
     # parser.add_argument( "-b", "--boot_num", type=int, default = 100, help = "Number of bootstrap samples.")
     # parser.add_argument( "--h_ex_list", nargs='+', type=float, help = "List of external magnetic field values, Bex." , required=True)
@@ -130,7 +130,7 @@ def main():
     
     all_L = args.L
     boot_num = args.boot_num
-    h_ex_list = args.h_ex_list
+    h_ex_list = args.h_ex
     mech = args.mech
     folderName_list = args.folder_list
     overwrite_tmp = args.overwrite_tmp
