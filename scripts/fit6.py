@@ -422,7 +422,7 @@ def fit_bin(simulations, boot_num, min_x, max_x, initial_xc, fit_options):
 def parse_arguments():  
     from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
     
-    parser = ArgumentParser(description="Analyzes Monte Carlo results and plots correlation length curves.", formatter_class=ArgumentDefaultsHelpFormatter, parents=[config.parse_arguments()])
+    parser = ArgumentParser(description="Analyzes Monte Carlo results and plots correlation length curves.", formatter_class=ArgumentDefaultsHelpFormatter, parents=[config.parse_arguments()], conflict_handler='resolve')
     parser.add_argument( "-L", nargs='+', type=int, required=True, help = "Linear system sizes. At least 2 required.")
     # parser.add_argument( "-b", "--boot_num", type=int, default = 100, help = "Number of bootstrap samples.")
     # parser.add_argument( "--h_ex", type=float, help = "External magnetic field value, Bex." , required=True)
@@ -442,6 +442,7 @@ def parse_arguments():
     if args.temperature_range is not None and args.temperature_range[0]>args.temperature_range[1]:
         parser.error("First argument of --temperature_range must be smaller than the second argument.")
 
+    config.system_name = args.system_name
     return args
 
 
@@ -452,7 +453,7 @@ def main():
     h_ex = args.h_ex
     mech = args.mech
     folderName = args.folder_list
-    
+
     simulations = analysis_tools.get_simulations(L, folderName, h_ex, mech)
     
     #min & max x for fitting (should be around the apparent Tc)

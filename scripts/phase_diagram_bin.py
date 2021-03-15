@@ -22,7 +22,8 @@ def parse_arguments():
         parser.error("-L must have at least 2 different system sizes for finite size scaling analysis.")
     if len(args.folder_list)>1 and len(args.folder_list)!=len(args.L): 
         parser.error("--folder_list and -L argument number mismatch.")
-        
+
+    config.system_name = args.system_name
     return args
 
 

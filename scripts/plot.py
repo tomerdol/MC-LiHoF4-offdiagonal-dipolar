@@ -178,6 +178,7 @@ def parse_arguments():
     if len(args.folder_list)>1 and len(args.folder_list)!=len(args.L): 
         parser.error("--folder_list and -L argument number mismatch.")
 
+    config.system_name = args.system_name
     return args
 
 

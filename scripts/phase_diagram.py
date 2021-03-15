@@ -21,6 +21,7 @@ def check_exists_and_not_empty(T, L, Bex, folderName, mech):
         L_exists_dict[l] = exists
     return L_exists_dict
 
+
 def parse_arguments():  
     from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
     
@@ -40,8 +41,7 @@ def parse_arguments():
     if len(args.folder_list)>1 and len(args.folder_list)!=len(args.L): 
         parser.error("--folder_list and -L argument number mismatch.")
 
-
-        
+    config.system_name = args.system_name
     return args
 
 
@@ -134,7 +134,7 @@ def main():
     mech = args.mech
     folderName_list = args.folder_list
     overwrite_tmp = args.overwrite_tmp
-    
+
     # create L-folder dict
     if len(folderName_list)==1:
         folderName_dict={k:folderName_list[0] for k in all_L}

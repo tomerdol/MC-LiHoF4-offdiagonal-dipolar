@@ -194,7 +194,7 @@ def parse_arguments():
     parser.add_argument( "--to_plot", type=str, nargs='?', default='corr_length', help = "Which observable should be plotted. Default is Correlation length / L.")
     
     args = parser.parse_args()
-    
+    config.system_name = args.system_name
     return args
 
 

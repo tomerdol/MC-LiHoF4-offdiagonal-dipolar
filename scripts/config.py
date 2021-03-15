@@ -21,9 +21,9 @@ def parse_arguments():
     #                                                                                       " divided by the linear system size. Default is \'corr_length_x\'." , required=False, default='corr_length')
     # parser.add_argument( "-a", "--corr_length_axis", nargs='?', choices=['x','y','z'], help = "The axis along which the correlation length should be measured for the finite-size correlation length.", required=False, default='x', const='x')
 
-    args = parser.parse_args()
-    global system_name
-    system_name = args.system_name
+    # args = parser.parse_args()
+    # global system_name
+    # system_name = args.system_name
     # if len(args.L)<2:
     #     parser.error("-L must have at least 2 different system sizes for finite size scaling analysis.")
     # if len(args.folder_list)>1 and len(args.folder_list)!=len(args.L):
