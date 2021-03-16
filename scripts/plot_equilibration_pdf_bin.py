@@ -154,7 +154,7 @@ def main_plot(simulations, to_plot, L, Bex, folderName, mech):
 
         #plt.xscale('log')
         #plt.show()
-        #fig.savefig('../figures/plot_equilibration_%s.pdf'%Bex)
+        #fig.savefig('../'+config.system_name+'/figures/plot_equilibration_%s.pdf'%Bex)
     legend_without_duplicate_labels(ax)
     ax.set_xlabel('T')
     ax.set_ylabel('Equilibrated bin')

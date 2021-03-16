@@ -244,8 +244,8 @@ def main():
     f.close()
     
     #save fig
-    fig.savefig('../figures/phase_diagram_%s_%s.png'%(mech,'_'.join(map(str,all_L))))
-    #os.system("rsync -avzhe ssh ../figures/ tomerdol@newphysnet1:~/graphs/")
+    fig.savefig('../'+config.system_name+'/figures/phase_diagram_%s_%s.png'%(mech,'_'.join(map(str,all_L))))
+    #os.system("rsync -avzhe ssh ../"+config.system_name+"/figures/ tomerdol@newphysnet1:~/graphs/")
     
 if __name__ == "__main__":
     main()

@@ -45,7 +45,7 @@ def plot_multiple(all_L, xdata, all_ydata, err_y, h_ex):
     axes = plt.gca()
     #axes.set_ylim([0.5,1])
 
-    fig.savefig('../figures/plot_%s.png'%h_ex)
+    fig.savefig('../'+config.system_name+'/figures/plot_%s.png'%h_ex)
 
 def get_binder(m2,m4):
     m2=np.mean(m2)
@@ -157,7 +157,7 @@ def main_plot(all_L, L_equilibrated_min_value, tau_dict, boot_num, h_ex, mech, f
     plt.legend(loc='best')
     plt.tight_layout()
     axes = plt.gca()
-    fig.savefig('../figures/plot_%s_%s_%s_cl.png'%(h_ex,mech,'_'.join(map(str,all_L))))
+    fig.savefig('../'+config.system_name+'/figures/plot_%s_%s_%s_cl.png'%(h_ex,mech,'_'.join(map(str,all_L))))
     plt.close()
     #return ([xdata[l] for l in sorted(xdata.keys())],all_y_curves)
     return all_y_curves
@@ -218,7 +218,7 @@ def main():
         xdata[L]=[float(i) for i in xdata[L]]
     
     main_plot(all_L, L_equilibrated_min_value, tau_dict, boot_num, h_ex, mech, folderName_dict, xdata, folder=folder)
-    #os.system("rsync -avzhe ssh ../figures/ tomerdol@newphysnet1:~/graphs/")
+    #os.system("rsync -avzhe ssh ../"+config.system_name+"/figures/ tomerdol@newphysnet1:~/graphs/")
 
 if __name__ == "__main__":
     main()

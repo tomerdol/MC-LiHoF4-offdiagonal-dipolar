@@ -222,7 +222,7 @@ def main():
     data = main_plot(simulations, boot_num, plot_options, to_plot=to_plot)
     return data
     #plot_lattice_correlators(simulations, plot_options, ['x','y','z'], to_plot='spin', shift_T=False)
-    #os.system("rsync -avzhe ssh ../figures/ tomerdol@newphysnet1:~/graphs/")
+    #os.system("rsync -avzhe ssh ../"+config.system_name+"/figures/ tomerdol@newphysnet1:~/graphs/")
 
 if __name__ == "__main__":
     data=main()

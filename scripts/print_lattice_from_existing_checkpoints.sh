@@ -19,6 +19,6 @@ fi
 echo "Fixing ${filename}."
 maxSweeps=$(ls ./"$SYS_NAME"/data/results/"$name"/table_"$Lx"_"$Lz"_"$H"_*_"$mech"_"$seed".txt | head -n1 | xargs grep -v '^#' | tail -n1 | awk '{print $1}')
 # run simulation with same maxSweeps as before so that nothing happens except printing the lattice
-java -Dsystem="$SYS_NAME" -classpath "./bin/production/LiHoF4_transverse_field_MC/:./lib/*" simulation.montecarlo.Main -max_iter 80 -L "$Lx","$Lz" -d 1.0 -extBx "$H" -continue_from_save yes -max_sweeps "$maxSweeps" -name "$name" -temp_schedule ./temperature_schedules/temp_schedule_"$Lx"_"$Lz"_"$name"_"$H"_"$mech".txt -alpha 0.95 -verbose -mode s -seed "$seed" -Jex 1.16e-3 "$suppress_tag"
+java -Dsystem="$SYS_NAME" -classpath "./bin/production/LiHoF4_transverse_field_MC/:./lib/*" simulation.montecarlo.Main -max_iter 80 -L "$Lx","$Lz" -d 1.0 -extBx "$H" -continue_from_save yes -max_sweeps "$maxSweeps" -name "$name" -temp_schedule ./"$SYS_NAME"/temperature_schedules/temp_schedule_"$Lx"_"$Lz"_"$name"_"$H"_"$mech".txt -alpha 0.95 -verbose -mode s -seed "$seed" -Jex 1.16e-3 "$suppress_tag"
 
 done

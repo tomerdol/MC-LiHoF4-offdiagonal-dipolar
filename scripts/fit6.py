@@ -145,8 +145,8 @@ def plot_multiple(f, all_L, param, err_pfit, xdata, all_ydata, err_y, h_ex, mech
     ax1.set_yscale("log")
     ax2.set_yscale("log")
     plt.tight_layout(pad=1.08)
-    #fig.savefig('../figures/fit_%s_%s_%s_%s.png'%(h_ex,mech,'_'.join(map(str,all_L)),index))
-    fig.savefig('../figures/fit_%s_%s_%s_%s.eps'%(h_ex,mech,'_'.join(map(str,all_L)),index),format='eps')
+    #fig.savefig('../'+config.system_name+'/figures/fit_%s_%s_%s_%s.png'%(h_ex,mech,'_'.join(map(str,all_L)),index))
+    fig.savefig('../'+config.system_name+'/figures/fit_%s_%s_%s_%s.eps'%(h_ex,mech,'_'.join(map(str,all_L)),index),format='eps')
 
 
 def plot_multiple_bin(f, simulations, param, err_pfit, err_y, h_ex, mech, folderName, plot_options, index=''):
@@ -475,7 +475,7 @@ def main():
     plot_options = {'Name':r'$\xi^{(%s)}_{L} / L$'%corr_length_axis, 'axis_yscale':'log', 'func':get_correlation_length, 'corr_length_axis':corr_length_axis, 'unit_cell_length':1.0}
     print('\n'.join(map(str,fit_bin(simulations, boot_num, min_x, max_x, initial_xc, plot_options))))
     
-    #os.system("rsync -avzhe ssh ../figures/ tomerdol@newphysnet1:~/graphs/")
+    #os.system("rsync -avzhe ssh ../"+config.system_name+"/figures/ tomerdol@newphysnet1:~/graphs/")
    
 if __name__ == "__main__":
     main()

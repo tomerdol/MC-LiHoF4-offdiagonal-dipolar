@@ -233,7 +233,7 @@ def main():
     
         #save fig
         fig.savefig('../' + config.system_name + '/figures/phase_diagram_%s_%s_%s.png'%(mech,'_'.join(map(str,all_L)),folderName_list[0]))
-    #os.system("rsync -avzhe ssh ../figures/ tomerdol@newphysnet1:~/graphs/")
+    #os.system("rsync -avzhe ssh ../"+config.system_name+"/figures/ tomerdol@newphysnet1:~/graphs/")
     
 if __name__ == "__main__":
     import matplotlib
