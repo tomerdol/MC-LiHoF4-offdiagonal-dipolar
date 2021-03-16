@@ -3,11 +3,12 @@
 source ./scripts/sub.sh
 
 # this should override the definitions from sub.sh
+if [ $SYS_NAME == "LiHoF4" ]; then
 name="res_test_ex_0.014"
 arrayMech=("false")
-arrayL=(5 6 7)
+arrayL=( 5 6 7 )
 arrayLexclude=()
-arrayH=(0.0 0.3 0.6 1.0 1.5 2.0)
+arrayH=( 0.0 0.3 0.6 1.0 1.5 2.0 )
 minT_false=1.4
 maxT_false=2.0
 #minT_true=1.55
@@ -15,6 +16,19 @@ maxT_false=2.0
 minT_true=1.0
 maxT_true=1.7
 delta=0.08
+elif [ $SYS_NAME == "Fe8" ]; then
+name="Fe8_test"
+arrayMech=("true")
+arrayL=( 3 4 5 )
+arrayLexclude=()
+arrayH=( 0.0 )
+minT_false=1.4
+maxT_false=2.0
+minT_true=0.1
+maxT_true=1.2
+delta=0.08
+fi
+
 
 gen_temp_schedules() {
   # generate temporary temperature schedules
