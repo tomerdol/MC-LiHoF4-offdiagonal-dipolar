@@ -27,7 +27,7 @@ for L in "${arrayL[@]}"
 do
 
 COUNT=0
-for file in ./checkpoints/"$name"/save_state_"$L"_"$L"_"$H"_"$mech"_*.txt
+for file in ./"$SYS_NAME"/checkpoints/"$name"/save_state_"$L"_"$L"_"$H"_"$mech"_*.txt
 do
     seed=$(echo ${file##*_} | cut -f 1 -d '.')
     # check that the seed does not belong to an already running job

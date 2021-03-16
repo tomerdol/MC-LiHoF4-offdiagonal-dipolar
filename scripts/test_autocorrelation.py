@@ -8,6 +8,7 @@ import collections
 import sys
 import warnings
 import os
+import config
 
 def calc_error_correction(arr, iter):
     binned_arr=np.copy(arr)
@@ -135,7 +136,7 @@ def get_nth_level_binned_arr(arr, n):
 # reads files from folder and performs binning analysis on the columns given in "cols_to_copy".
 # the uncorrelated, processed, equilibrated timeseries of these columns are saved to /tmp/
 # look out for warnings as they nofity a transition to less strict convergence criterion for the binning analysis
-def save_uncorrelated_timeseries(T, cols_to_copy, L, L_equilibrated_min_value, Bex, folderName, mech, folder='../data/results'):
+def save_uncorrelated_timeseries(T, cols_to_copy, L, L_equilibrated_min_value, Bex, folderName, mech, folder='../'+config.system_name+'/data/results'):
     for l in L:
         path='/tmp/'+folderName[l]
         try:
@@ -206,7 +207,7 @@ def calc_tau(arr):
     else:        
         return 0.5*((asymptotic_err/simple_err)**2-1)
     
-def calc_max_tau(T, to_check, L, L_equilibrated_min_value, Bex, folderName, mech, folder='../data/results'):
+def calc_max_tau(T, to_check, L, L_equilibrated_min_value, Bex, folderName, mech, folder='../'+config.system_name+'/data/results'):
     max_tau_dict = {k:1 for k in L}
     for l in L:
         for temperature_index, temperature in enumerate(T):
@@ -262,7 +263,7 @@ def main():
     mech = sys.argv[3]
     T=sys.argv[5]
     
-    fname='../data/results/'+folderName+'/table_'+str(L)+'_'+str(L)+'_'+str(h_ex)+'_'+str(T)+'_'+mech+'.txt'
+    fname='../'+config.system_name+'/data/results/'+folderName+'/table_'+str(L)+'_'+str(L)+'_'+str(h_ex)+'_'+str(T)+'_'+mech+'.txt'
     y = pd.read_csv(fname, delim_whitespace=True, error_bad_lines=False, index_col='index', comment='#')
     print('done reading file!')
     

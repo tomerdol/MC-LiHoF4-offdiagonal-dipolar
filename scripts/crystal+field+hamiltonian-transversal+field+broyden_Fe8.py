@@ -55,7 +55,6 @@ H_cf = -D*LA.matrix_power(jz,2) + E*(LA.matrix_power(jx,2)-LA.matrix_power(jy,2)
 # Magnetic field Zeeman term
 meanBx = float(sys.argv[1])
 meanBy = float(sys.argv[2])
-meanBx=0.0
 maxBx=3.0       # the real max is one less than this
 maxBz=1.2       # the real max is one less than this
 number=40       # the real number is twice this
@@ -150,12 +149,14 @@ magnetic_moment_up_arr = magnetic_moment_up_arr_full
 magnetic_moment_down_arr = magnetic_moment_down_arr_full
 
 if (np.allclose((-1)*(np.flip(magnetic_moment_down_arr, 0)), magnetic_moment_up_arr, atol=1e-15)):
-	write_to_file('magnetic_moment_up_arr_%1.2f_0.007'%meanBx,magnetic_moment_up_arr, Bx, By, Bz)
+	write_to_file('magnetic_moment_up_arr_%1.2f_0.014'%meanBx,magnetic_moment_up_arr, Bx, By, Bz)
+	print('Wrote magnetic moment file: magnetic_moment_up_arr_%1.2f_0.014'%meanBx)
  	#pass
 else:
     print('magnetic moment table not transposable!')
 if (np.allclose(np.flip(energy_down_arr, 0), energy_up_arr, atol=1e-15)):
-	write_to_file('energy_up_arr_%1.2f_0.007'%meanBx,energy_up_arr, Bx, By, Bz)
+	write_to_file('energy_up_arr_%1.2f_0.014'%meanBx,energy_up_arr, Bx, By, Bz)
+	print('Wrote energy file: energy_up_arr_%1.2f_0.014'%meanBx)
  	#pass
 else:
     print('energy table not transposable!')

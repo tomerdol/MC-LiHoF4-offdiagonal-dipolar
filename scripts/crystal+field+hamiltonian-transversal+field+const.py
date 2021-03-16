@@ -10,7 +10,7 @@ import config
 
 def write_to_file(name, data, Bx, By, Bz):
 	script_dir = os.path.dirname(os.path.abspath(__file__)) #<-- absolute dir the script is in
-	rel_path = '/../' + config.system_name + '/data/interactions/' + name + '.txt'
+	rel_path = '/../LiHoF4/data/interactions/' + name + '.txt'
 	print(script_dir)
 	abs_file_path = script_dir + rel_path
 	with open(abs_file_path, 'w') as outfile:

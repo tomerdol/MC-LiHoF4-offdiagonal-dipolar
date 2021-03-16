@@ -10,7 +10,7 @@ then
 exit
 fi
 # Check if the directory exists
-if [ ! -d ./data/results/$name ]
+if [ ! -d ./$SYS_NAME/data/results/$name ]
 then
 echo Directory $name not found.
 exit
@@ -31,14 +31,14 @@ function redraw_progress_bar { # int barsize, int base, int i, int top
     echo -n "] $(( $current )) / $top " $'\r'
 }
 
-res=$(find ./data/results/$name/table_* -maxdepth 0 | wc -l)
+res=$(find ./$SYS_NAME/data/results/$name/table_* -maxdepth 0 | wc -l)
 echo "found $res results"
 i=1
 
 all_files_ok=true
 seeds_unfinished=()
 
-for file in ./data/results/$name/table_*
+for file in ./"$SYS_NAME"/data/results/$name/table_*
 do
   redraw_progress_bar 50 0 $i $res
   ((i++))

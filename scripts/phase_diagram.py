@@ -92,7 +92,7 @@ def plot_previous_data(ax):
     
     return ax
     
-def copy_files_to_tmp(T, cols_to_copy, L, Bex, folderName, mech, folder='../data/results'):
+def copy_files_to_tmp(T, cols_to_copy, L, Bex, folderName, mech, folder='../'+config.system_name+'/data/results'):
     path='/tmp/'+folderName
     try:
         os.mkdir(path)
@@ -169,11 +169,11 @@ def main():
         print('Starting equilibration tests...')
         temp_all_L=create_temp_all_L(all_L, check_exists_and_not_empty(xdata, all_L, h_ex, folderName_dict, mech), overwrite_tmp_dict)
         print('L=%s already exist in /tmp'%[item for item in all_L if item not in temp_all_L])
-        L_equilibrated_min_value=check_equilibration.check_equilib(xdata, to_check, temp_all_L, h_ex, folderName_dict, mech, folder='../data/results')
+        L_equilibrated_min_value=check_equilibration.check_equilib(xdata, to_check, temp_all_L, h_ex, folderName_dict, mech, folder='../'+config.system_name+'/data/results')
         print('Finished equilibration tests.')
         print('Starting autocorrelation tests...')
         test_autocorrelation.save_uncorrelated_timeseries(xdata, to_check, temp_all_L, L_equilibrated_min_value, h_ex,
-        folderName_dict, mech, folder='../data/results')
+        folderName_dict, mech, folder='../'+config.system_name+'/data/results')
         print('Finished autocorrelation tests.')
         L_equilibrated_min_value = {k:0 for k in all_L}
         tau_dict = {k:1 for k in all_L}

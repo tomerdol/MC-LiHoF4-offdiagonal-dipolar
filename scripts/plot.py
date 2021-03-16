@@ -76,7 +76,7 @@ def get_binned_array(arr):
         return 0.5*(arr[:-1:2]+arr[1::2])
     
 
-def main_plot(all_L, L_equilibrated_min_value, tau_dict, boot_num, h_ex, mech, folderName, xdata, folder='../data/results', start_in_middle=True):
+def main_plot(all_L, L_equilibrated_min_value, tau_dict, boot_num, h_ex, mech, folderName, xdata, folder='../'+config.system_name+'/data/results', start_in_middle=True):
     all_yboot=[]
     Nsigma=1.
     markers=['o','s','^','D','v']
@@ -193,7 +193,7 @@ def main():
         folder='/tmp'
     else:
         L_equilibrated_min_value = {}
-        folder='../data/results'
+        folder='../'+config.system_name+'/data/results'
     boot_num = args.boot_num           
     h_ex = args.h_ex         
     tau_dict={k:2 for k in all_L}
