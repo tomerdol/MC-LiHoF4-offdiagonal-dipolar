@@ -59,7 +59,7 @@ while [ $COUNT -lt $runs ]; do
     
     if [ "$used_slots" != "" ]; then
     if [ $used_slots -le 24 ]; then
-    queues="lublin.q,smoshe.q"
+    queues="lublin.q,smoshe.q,fairshare.q"
     fi
     fi
 
