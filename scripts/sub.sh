@@ -55,7 +55,7 @@ COUNT=0
 while [ $COUNT -lt $runs ]; do
     used_slots=`free_slot smoshe.q | grep sge1081 | cut -d' ' -f 2 | cut -d'/' -f 1`
     #exclude sge1081 to leave at least 30 cores available for other users
-    queues="lublin.q,smoshe.q@sge1081,smoshe.q@sge1082,smoshe.q@sge190,smoshe.q@sge247,smoshe.q@sge249"
+    queues="lublin.q,smoshe.q@sge1081,smoshe.q@sge1082,smoshe.q@sge190,smoshe.q@sge247,smoshe.q@sge249,fairshare.q"
     
     if [ "$used_slots" != "" ]; then
     if [ $used_slots -le 24 ]; then
@@ -63,7 +63,7 @@ while [ $COUNT -lt $runs ]; do
     fi
     fi
 
-    qsub -pe shared 24 -l mem_free=40G -V -S /bin/bash -cwd -N "$temp_initial"r"$L"_"$H"_"$COUNT"_"$mech_initial" -o ./output/ -e ./output/ -q "$queues" scripts/met_with_t.sh "$L" "$L" "$max_sweeps" "$H" "$mech" "$local_name" "${seeds[$i]}" "$extra_par"
+    qsub -pe shared 24 -l mem_free=40G -V -S /bin/bash -cwd -N "$temp_initial"r"$L"_"$H"_"$COUNT"_"$mech_initial" -o ./"$SYS_NAME"/output/ -e ./"$SYS_NAME"/output/ -q "$queues" scripts/met_with_t.sh "$L" "$L" "$max_sweeps" "$H" "$mech" "$local_name" "${seeds[$i]}" "$extra_par"
     #echo "${seeds[$i]}"
     ((i++))
     ((COUNT++))
