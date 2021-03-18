@@ -53,6 +53,8 @@ def get_simulations(all_L, all_folderName, all_Bex, all_mech, T=None):
                 curr_simulations['T']=closest_temperatures
             curr_simulations[['L','folderName','Bex','mech']] = x
             simulations = simulations.append(curr_simulations)
+        else:
+            raise Exception("No temp_schedule found matching the given simulation parameters: %s"%temp_schedule_file_name)
     simulations.reset_index(inplace=True)
     print(simulations)
     return simulations

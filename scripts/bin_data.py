@@ -229,7 +229,7 @@ def main_bin(simulations):
         #print(glob.glob(path))
         for fname in glob.glob(path):
             tmp_fname_bin = fname.split('/')
-            tmp_fname_bin.insert(4,'binned_data')
+            tmp_fname_bin.insert(5,'binned_data')
             fname_bin='/'.join(tmp_fname_bin)
 
             # first check if there are enough data for a new bin
@@ -247,11 +247,11 @@ def main_bin(simulations):
                     pass
             
 def main():
-    L = sys.argv[4:]
-    Bex = sys.argv[1]
-    folderName = sys.argv[2]
-    mech = sys.argv[3]
-    
+    L = sys.argv[5:]
+    Bex = sys.argv[2]
+    folderName = sys.argv[3]
+    mech = sys.argv[4]
+    config.system_name = sys.argv[1]
     simulations = analysis_tools.get_simulations(L, folderName, Bex, mech)
     main_bin(simulations) 
     

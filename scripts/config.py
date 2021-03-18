@@ -7,7 +7,7 @@ def parse_arguments():
     """ Common argument parser """
     # parser = ArgumentParser(description="Analyzes Monte Carlo results to create a phase diagram for LiHoF4", formatter_class=ArgumentDefaultsHelpFormatter)
     parser = argparse.ArgumentParser(add_help=False, conflict_handler='resolve')
-    parser.add_argument( "-sys", "--system_name", nargs=1, type=str, choices=['LiHoF4','Fe8'], default='LiHoF4', help = "Name of the system. Options are \'LiHoF4\' or \'Fe8\'.")
+    parser.add_argument( "-sys", "--system_name", type=str, choices=['LiHoF4','Fe8'], default='LiHoF4', help = "Name of the system. Options are \'LiHoF4\' or \'Fe8\'.")
     parser.add_argument( "-L", nargs='+', type=int, required=True, help = "Linear system sizes.")
     parser.add_argument( "-L", nargs='+', type=int, required=True, help = "Linear system sizes.")
     parser.add_argument( "-b", "--boot_num", type=int, default = 100, help = "Number of bootstrap samples.")

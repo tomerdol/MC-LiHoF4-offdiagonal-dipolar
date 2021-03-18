@@ -1,9 +1,9 @@
 #!/bin/bash
 unset module
-name="temp_res_test_ex_0.014"
+name="temp_Fe8_test"
 arrayMech=( "true" )
-arrayL=( 4 5 6 7 )
-arrayH=( 2.0 )
+arrayL=( 3 4 5 )
+arrayH=( 0.0 )
 
 # Check input
 if [[ ! $# > 0 || ! $1 =~ ^[0-9]+$ ]]

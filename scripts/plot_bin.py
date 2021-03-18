@@ -85,12 +85,12 @@ def main_plot(simulations, boot_num, plot_options, to_plot='', shift_T=False):
     fig, ax = plt.subplots(figsize=(8,6))
     
     for (label, df), marker in zip(all_y_curves.groupby(['Bex','L','folderName','mech']), cycle(markers)):
-        df.plot(x='Bex',y='y_to_plot', yerr='y_to_plot_err', ax=ax, label=format_label(label), capsize=3, marker=marker)
+        df.plot(x='T',y='y_to_plot', yerr='y_to_plot_err', ax=ax, label=format_label(label), capsize=3, marker=marker)
     
     if shift_T:
         ax.set_xlabel('T (shifted by $T_c$)')
     else:
-        ax.set_xlabel('Bex')
+        ax.set_xlabel('T')
 
     ax.set_yscale(plot_options['axis_yscale'])
     plt.ylabel(plot_options['Name'])
@@ -185,7 +185,7 @@ def parse_arguments():
     from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
     
     parser = ArgumentParser(description="Analyzes Monte Carlo results and plots correlation length curves.", formatter_class=ArgumentDefaultsHelpFormatter, parents=[config.parse_arguments()], conflict_handler='resolve')
-    parser.add_argument( "-L", nargs='+', type=int, required=True, help = "Linear system sizes. At least 2 required.")
+    # parser.add_argument( "-L", nargs='+', type=int, required=True, help = "Linear system sizes. At least 2 required.")
     # parser.add_argument( "-b", "--boot_num", type=int, default = 100, help = "Number of bootstrap samples.")
     # parser.add_argument( "--h_ex", type=float, nargs='+', help = "External magnetic field value, Bex." , required=True)
     # parser.add_argument( "-m", "--mech", nargs='+', choices=['true','false'], help = ("Whether internal fields are suppressed or not. \'false\' means "
@@ -207,19 +207,19 @@ def main():
     mech = args.mech
     folderName = args.folder_list 
     to_plot = args.to_plot
-    
+
     simulations = analysis_tools.get_simulations(L, folderName, h_ex, mech)
-    #simulations['eq_bin']=10
     from fit6 import get_binder, get_correlation_length
-    #plot_options = {'Name':'g', 'axis_yscale':'linear', 'func':get_binder, 'corr_length_axis':'x','unit_cell_length':1.0}
+    plot_options = {'Name':'g', 'axis_yscale':'linear', 'func':get_binder, 'corr_length_axis':'x','unit_cell_length':1.0}
     corr_length_axis='x'
+    data = main_plot(simulations, boot_num, plot_options)
     #plot_options = {'Name':r'$\xi^{(%s)}_{L} / L$'%corr_length_axis, 'axis_yscale':'log', 'func':get_correlation_length, 'corr_length_axis':corr_length_axis, 'unit_cell_length':2.077294686}
     #plot_options = {'Name':r'$\xi^{(%s)}_{L} / L$'%corr_length_axis, 'axis_yscale':'log', 'func':get_correlation_length, 'corr_length_axis':corr_length_axis, 'unit_cell_length':1.0}
     #plot_options = {'Name':'Local $B_x$ Correlator', 'axis_yscale':'linear'}
-    plot_options = {'Name':'stdSpinSize', 'axis_yscale':'linear', 'func':lambda x: np.mean(x), 'corr_length_axis':corr_length_axis, 'unit_cell_length':1.0}
+    # plot_options = {'Name':'stdSpinSize', 'axis_yscale':'linear', 'func':lambda x: np.mean(x), 'corr_length_axis':corr_length_axis, 'unit_cell_length':1.0}
 
     #plot_options = {'Name':'spin size', 'axis_yscale':'linear'}
-    data = main_plot(simulations, boot_num, plot_options, to_plot=to_plot)
+    # data = main_plot(simulations, boot_num, plot_options, to_plot=to_plot)
     return data
     #plot_lattice_correlators(simulations, plot_options, ['x','y','z'], to_plot='spin', shift_T=False)
     #os.system("rsync -avzhe ssh ../"+config.system_name+"/figures/ tomerdol@newphysnet1:~/graphs/")
