@@ -54,7 +54,7 @@ public class CrystalField {
             jy.fillMatching(jplus, SUBTRACT, jminus);
             jy.operateOnAll(MULTIPLY, ComplexNumber.of(0, -0.5)).supplyTo(jy);
             jz = initJz();
-            H_cf = initH_cfLiHoF4();
+            H_cf = initH_cfFe8();
         } else {
             throw new RuntimeException("Cannot initialize crystal field parameters. Illegal system name given.");
         }

@@ -247,8 +247,8 @@ public class Main {
         // pass parameters Bx=extBx, By=extBy, Bz=0.05, spin=1, and calc for "up"
         spinSize = CrystalField.getMagneticMoment(extBx, extBy, 0.05);
 
-        final double[][][] intTable = new double[3][4*Lx*Lx*Lz][4*Lx*Lx*Lz]; // create interaction table that holds all the dipolar interactions. will be full even though it's symmetric. 1st array is x,y,z term
-        final double[][] exchangeIntTable = new double[4*Lx*Lx*Lz][4*Lx*Lx*Lz];
+        final double[][][] intTable = new double[3][Constants.num_in_cell*Lx*Lx*Lz][Constants.num_in_cell*Lx*Lx*Lz]; // create interaction table that holds all the dipolar interactions. will be full even though it's symmetric. 1st array is x,y,z term
+        final double[][] exchangeIntTable = new double[Constants.num_in_cell*Lx*Lx*Lz][Constants.num_in_cell*Lx*Lx*Lz];
 
         ReadInteractionsTable interactionsTableReceiver;
         if (System.getProperty("system").equals("LiHoF4")){
@@ -275,7 +275,7 @@ public class Main {
 
         // add exchange to intTable
 
-        final int N=Lx*Lx*Lz*4;
+        final int N=Lx*Lx*Lz*Constants.num_in_cell;
         for (int i=0;i<N;i++){
             for (int j=0;j<N;j++){
                 intTable[2][i][j] += -0.5*exchangeIntTable[i][j]*Constants.k_B/(Constants.mu_B*Constants.g_L);
@@ -348,7 +348,7 @@ public class Main {
             makeDir(System.getProperty("system") + File.separator + "data" + File.separator,"p_configs");
             // this is one BufferedWriter for all temperatures (threads). The write method is synchronized on outProblematicConfigs.
             // If there are many problematic configurations if might cause slow down (but many such configurations is problematic regardless)
-            outProblematicConfigs = new BufferedWriter(new FileWriter(System.getProperty("system") + File.separator + "data" + File.separator + "p_configs" + File.separator + "problematic_"+(Lx*Lx*Lz*4)+"_"+extBx,true));
+            outProblematicConfigs = new BufferedWriter(new FileWriter(System.getProperty("system") + File.separator + "data" + File.separator + "p_configs" + File.separator + "problematic_"+(Lx*Lx*Lz*Constants.num_in_cell)+"_"+extBx,true));
 
             for (int i=0;i<T.length;i++){
                 // Create file to write output into
