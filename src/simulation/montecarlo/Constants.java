@@ -2,6 +2,7 @@ package simulation.montecarlo;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
+import java.util.Arrays;
 import java.util.Properties;
 
 /**
@@ -51,7 +52,7 @@ public class Constants {
     public static String locationsToString(){
         String ret="locations:";
         for (int i=0;i<basis.length;i++){
-            ret = ret + basis[i].toString() + "|";
+            ret = ret + Arrays.toString(basis[i]) + "|";
         }
         return ret;
     }
