@@ -21,12 +21,13 @@ def parse_arguments():
     parser.add_argument( "--to_plot", type=str, nargs='+', default='localBx', help = "Which observable should be plotted. Default is \'localBx\'")
     parser.add_argument( "-T", nargs='+', type=float, required=True, help = "Temperature. If not exact match, closest available temperature(s) will be used.")
     parser.add_argument("--flip", action="store_true", help="Also plot the flipped distribution. Useful for visualizing any asymmetry.")
+    parser.add_argument("--seed", type=str, default='*', help="Specify the seed of the simulation whose histogram is to be plotted.")
     args = parser.parse_args()
     config.system_name = args.system_name
     return args
 
 
-def main_hist2(simulations, to_plot, flip=False):
+def main_hist2(simulations, to_plot, flip=False, seed='*'):
     from fit6 import str_with_err
     from plot_bin import format_label
     fig, ax = plt.subplots(figsize=(10,10))
@@ -36,7 +37,8 @@ def main_hist2(simulations, to_plot, flip=False):
         multiple_sim_data=[]
         multiple_sim_groups=[]
         for i, sim in enumerate(simulations.itertuples()):
-            path='../' + config.system_name + '/data/lattice_output/'+sim.folderName+'/table_'+str(sim.L)+'_'+str(sim.L)+'_'+str(sim.Bex)+'_'+str(sim.T)+'_'+str(sim.mech)+'_'+'*'+'.txt'
+            path='../' + config.system_name + '/data/lattice_output/'+sim.folderName+'/table_'+str(sim.L)+'_'+str(sim.L)+'_'+str(sim.Bex)+'_'+str(sim.T)+'_'+str(sim.mech)+'_'+str(seed)+'.txt'
+
             file_list = glob.glob(path)
             data=[]
             groups=[]
@@ -171,9 +173,10 @@ def main():
     T = args.T
     to_plot=listify(to_plot)
     flip=args.flip
+    seed=args.seed
 
     simulations = analysis_tools.get_simulations(L, folderName, h_ex, mech, T=T)
-    main_hist2(simulations, to_plot, flip=flip)
+    main_hist2(simulations, to_plot, flip=flip, seed=seed)
 
 
 if __name__ == "__main__":

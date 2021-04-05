@@ -198,8 +198,11 @@ def plot_multiple_bin(f, simulations, param, err_pfit, err_y, h_ex, mech, folder
     fig.savefig('../' + config.system_name + '/figures/fit_%s_%s_%s_%s_%s.png'%(h_ex,mech,'_'.join(map(str,simulations['L'].unique().tolist())), folderName, index),dpi=300)
 
 def str_with_err(value, error):
-    digits = -int(math.floor(math.log10(error)))
-    return "{0:.{2}f}({1:.0f})".format(value, error*10**digits, digits)
+    if np.isnan(error):
+        return value
+    else:
+        digits = -int(math.floor(math.log10(error)))
+        return "{0:.{2}f}({1:.0f})".format(value, error*10**digits, digits)
 
 
 def get_binder(m2,m4,mk2,L):
