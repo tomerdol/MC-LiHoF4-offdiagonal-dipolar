@@ -70,7 +70,7 @@ public class GetParamValues {
 		// parameters are either doubles or integers
 		long p=0;
 		try{
-			if (param.substring(0,param.length()-1).equals("obsPrintSweepNum")){	// make sure param is expected to be integer
+			if (param.startsWith("obsPrintSweepNum")){	// make sure param is expected to be integer
 				if (params.getProperty(param)!=null)
 					p = Long.parseLong(params.getProperty(param));
 				else
