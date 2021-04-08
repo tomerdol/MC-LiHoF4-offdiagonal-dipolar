@@ -276,9 +276,11 @@ public class ewaldSum {
 			if (System.getProperty("system").equals("LiHoF4")) {
 				// in LiHoF4 the c is parallel to the z axis
 				fillIntTable(arr, Lz, Lx, alpha / (Constants.c*Lz), real_cutoff, k_cutoff, out);
-			}else{
-				// in LiHoF4 the a is parallel to the z axis
+			}else if (System.getProperty("system").equals("Fe8")){
+				// in Fe8 the a is parallel to the z axis
 				fillIntTable(arr, Lz, Lx, alpha / (Constants.a*Lz), real_cutoff, k_cutoff, out);
+			} else {
+				throw new RuntimeException("Cannot create Ewald table. Illegal system name given.");
 			}
 
         }
