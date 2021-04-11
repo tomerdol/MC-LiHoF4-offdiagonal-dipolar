@@ -326,7 +326,8 @@ public class ewaldSum {
 			for (int j=i;j<arr.length;j++){
 				double[] interaction = new double[3];
 				interaction = ewaldSum.calcSum3D(arr[i], arr[j], Lz, Lx, alpha, real_cutoff, k_cutoff);
-				
+//				interaction = ewaldSum.dipolarInteraction(arr[i], arr[j], Lz, Lx, Lx);
+
 				//System.out.println(Double.toString(-D*interaction));
 				System.out.println("("+i+","+j+")" + " : " + interaction[0] + "," + interaction[1] + "," + interaction[2]);
 				out.write(df.format(interaction[0])+","+df.format(interaction[1])+","+df.format(interaction[2]));	// print 10 significant digits
@@ -503,6 +504,40 @@ public class ewaldSum {
 	
 	}
 	
+
+	public static double[] dipolarInteraction(singleSpin i, singleSpin j, int Lz, int Ly, int Lx) {
+
+		// get displacement with PBC
+		Vector3D displacement = i.getLocation(Lz, Ly).subtract(j.getLocation(Lz, Ly));
+		if (displacement.dotProduct(Constants.primitiveLatticeVectors[0].normalize()) > 0.5*Lx*Constants.primitiveLatticeVectors[0].getNorm()){
+			displacement = displacement.subtract(Constants.primitiveLatticeVectors[0]);
+		}
+		if (displacement.dotProduct(Constants.primitiveLatticeVectors[0].normalize()) <= -0.5*Lx*Constants.primitiveLatticeVectors[0].getNorm()){
+			displacement = displacement.add(Constants.primitiveLatticeVectors[0]);
+		}
+		if (displacement.dotProduct(Constants.primitiveLatticeVectors[1].normalize()) > 0.5*Ly*Constants.primitiveLatticeVectors[1].getNorm()){
+			displacement = displacement.subtract(Constants.primitiveLatticeVectors[1]);
+		}
+		if (displacement.dotProduct(Constants.primitiveLatticeVectors[1].normalize()) <= -0.5*Ly*Constants.primitiveLatticeVectors[1].getNorm()){
+			displacement = displacement.add(Constants.primitiveLatticeVectors[1]);
+		}
+		if (displacement.dotProduct(Constants.primitiveLatticeVectors[2].normalize()) > 0.5*Lz*Constants.primitiveLatticeVectors[2].getNorm()){
+			displacement = displacement.subtract(Constants.primitiveLatticeVectors[2]);
+		}
+		if (displacement.dotProduct(Constants.primitiveLatticeVectors[2].normalize()) <= -0.5*Lz*Constants.primitiveLatticeVectors[2].getNorm()){
+			displacement = displacement.add(Constants.primitiveLatticeVectors[2]);
+		}
+
+		// calculate dipolar interaction with PBC
+		if (i==j)	return new double[]{0,0,0};
+		double r=displacement.getNorm();
+		double rz=displacement.getZ();
+		double rx=displacement.getX();
+		double ry=displacement.getY();
+		return new double[]{(r*r-3*rx*rz)/Math.pow(r, 5),
+							(r*r-3*ry*rz)/Math.pow(r, 5),
+							(r*r-3*rz*rz)/Math.pow(r, 5)};
+	}
 
 	public static double realCalcSum3D(singleSpin i, singleSpin j, int Lz, int Lx, int N_cutoff){
 		double sum = 0;

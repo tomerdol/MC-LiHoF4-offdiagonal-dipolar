@@ -57,5 +57,12 @@ public class Constants {
         return ret;
     }
 
+    public static String latticeVectorsToString(){
+        String ret="Lattice Vectors:";
+        for (int i=0;i<primitiveLatticeVectors.length;i++){
+            ret = ret + primitiveLatticeVectors[i].toString() + "|";
+        }
+        return ret;
+    }
 
 }

@@ -452,7 +452,7 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
                     continueFromSave, maxIter, outWriter.getBufferSize(),
                     tempScheduleFileName, parallelTemperingOff, checkpoint, outWriter.getFolderName(),
                     alpha, outWriter.getOutType()) + System.lineSeparator() +
-                "#" + Constants.locationsToString() + System.lineSeparator() +
+                "#" + Constants.locationsToString() + "," + Constants.latticeVectorsToString() + System.lineSeparator() +
                 "#seed=" + mutualSeed + " (" + seed + ")" + System.lineSeparator() +
                 extraMessage;
     }
