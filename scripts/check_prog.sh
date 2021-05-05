@@ -14,8 +14,8 @@ fi
 args=$(qstat -j ${jobid} | grep job_args | awk '{print $2}')
 IFS=',' read -r -a args_array <<< "$args"
 # array: $0=Lx $1=Lz $2=max_sweeps $3=extBx $4=mech $5=name $6=seed
-files="../${SYS_NAME}/data/results/${args_array[5]}/table_${args_array[0]}_${args_array[1]}_${args_array[3]}_*_${args_array[4]}_${args_array[6]}.txt"
-
+files="./${SYS_NAME}/data/results/${args_array[5]}/table_${args_array[0]}_${args_array[1]}_${args_array[3]}_*_${args_array[4]}_${args_array[6]}.txt"
+echo $files
 for f in ${files}; do
 
     ## Check if the glob gets expanded to existing files.

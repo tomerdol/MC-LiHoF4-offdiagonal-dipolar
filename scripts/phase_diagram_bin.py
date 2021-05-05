@@ -16,6 +16,7 @@ def parse_arguments():
     parser.add_argument( "-s", "--scaling_func", choices=['binder','corr_length'], help = "Scaling function to use for finite-size scaling analysis. Possible choices are \'binder\' for the Binder ratio or \'corr_length\' for the finite-size correlation length"
                                                                                           " divided by the linear system size. Default is \'corr_length_x\'." , required=False, default='corr_length')
     parser.add_argument( "-a", "--corr_length_axis", nargs='?', choices=['x','y','z'], help = "The axis along which the correlation length should be measured for the finite-size correlation length.", required=False, default='x', const='x')
+    parser.add_argument( "--delta", help = "The temperature range around the initial critical temperature that will be used for fitting.", required=False, default=0.04)
 
     args = parser.parse_args()
     if len(args.L)<2:
@@ -184,9 +185,10 @@ def main():
                     continue
                 
                 good_fit=False
-                delta=min(0.04,min(simulations_mech_folderName_Bex['T'].max()-initial_xc,initial_xc-simulations_mech_folderName_Bex['T'].min()))
+                delta=min(float(args.delta),min(simulations_mech_folderName_Bex['T'].max()-initial_xc,initial_xc-simulations_mech_folderName_Bex['T'].min()))
+                delta_step = delta*0.25
                 #delta=0.04
-                while not good_fit and delta<0.2:
+                while not good_fit and delta<20*delta_step:
                     min_x = initial_xc-delta
                     max_x = initial_xc+delta
                     print('Starting fitting...')
@@ -199,7 +201,7 @@ def main():
                         print('x_c=%s, x_c_err=%s, v=%s, v_err=%s, r_squared=%s, max_x=%s, min_x=%s'%(x_c, x_c_err, v, v_err, r_squared, max_x, min_x))
                         print('Could not find good fit. Trying again.')
                         # retry
-                        delta = delta+0.01
+                        delta = delta+delta_step
                         try:
                             print(all_y_curves)
                             initial_xc = find_initial_xc(all_y_curves)    # this is the index in the smaller array

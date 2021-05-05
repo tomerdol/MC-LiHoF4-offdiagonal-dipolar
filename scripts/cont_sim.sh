@@ -1,8 +1,8 @@
 #!/bin/bash
 unset module
-name="temp_Fe8_test"
-arrayMech=( "true" )
-arrayL=( 3 4 5 )
+name="temp_Fe8_test8"
+arrayMech=( "false" )
+arrayL=( 5 6 7 8 )
 arrayH=( 0.0 )
 
 # Check input
@@ -46,11 +46,14 @@ do
       fi
       fi
 
-      qsub -pe shared 24 -l mem_free=40G -V -S /bin/bash -cwd -N tr"$L"_"$H"_"$COUNT"_"$mech_initial" -o ./"$SYS_NAME"/output/ -e ./"$SYS_NAME"/output/ -q "$queues" ./scripts/met_with_t.sh "$L" "$L" "$max_sweeps" "$H" "$mech" "$name" "$seed" "$extra"
+      # parallel submission
+#      qsub -pe shared 24 -l mem_free=40G -V -S /bin/bash -cwd -N tr"$L"_"$H"_"$COUNT"_"$mech_initial" -o ./"$SYS_NAME"/output/ -e ./"$SYS_NAME"/output/ -q "$queues" ./scripts/met_with_t.sh "$L" "$L" "$max_sweeps" "$H" "$mech" "$name" "$seed" "$extra"
       #echo "${seeds[$i]}"
+      # single submission
+      qsub -l mem_free=4G -V -S /bin/bash -cwd -N tr"$L"_"$H"_"$COUNT"_"$mech_initial" -o ./"$SYS_NAME"/output/ -e ./"$SYS_NAME"/output/ -q smoshe.q,lublin.q,intel_all.q ./scripts/met_with_t_single.sh "$L" "$L" "$max_sweeps" "$H" "$mech" "$name" "$seed" "$extra"
 
       ((COUNT++))
-      sleep 120
+      sleep 60
     fi
 done
 done

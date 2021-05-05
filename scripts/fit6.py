@@ -214,6 +214,8 @@ def get_binder(m2,m4,mk2,L):
 def get_correlation_length(m2,m4,mk2,L):
     m2=np.mean(m2)
     mk2=np.mean(mk2)
+    if (m2/mk2)-1 <= 0:
+        return 0
     return math.sqrt((m2/mk2)-1)/(2*L*math.sin(math.pi/L))
 
 # DEPRECATED: A newer version is in the bin directory
@@ -350,7 +352,7 @@ def fit_bin(simulations, boot_num, min_x, max_x, initial_xc, fit_options):
         initial_fit_param = fit_multiple_bin(data, initial_xc, bounds=False, max_nfev=40000)
         initial_fit_successful = initial_fit_param.success
         initial_fit_attempt += 1
-        print('initial fit attempt #%s: R^2=%s'%(initial_fit_attempt, 1-initial_fit_param.cost/(np.sum((data[:,2]-np.mean(data[:,2]))**2))))
+        print('initial fit attempt #%s: R^2=%s, %s'%(initial_fit_attempt, 1-initial_fit_param.cost/(np.sum((data[:,2]-np.mean(data[:,2]))**2)),initial_fit_successful))
         if not initial_fit_successful:
             if initial_fit_attempt < boot_num:
                 # try bootstrap samples, one of which might be easier to fit initially
@@ -474,7 +476,7 @@ def main():
     else:
         initial_xc=0.5*(max_x+min_x)
     
-    corr_length_axis='x'
+    corr_length_axis='z'
     plot_options = {'Name':r'$\xi^{(%s)}_{L} / L$'%corr_length_axis, 'axis_yscale':'log', 'func':get_correlation_length, 'corr_length_axis':corr_length_axis, 'unit_cell_length':1.0}
     print('\n'.join(map(str,fit_bin(simulations, boot_num, min_x, max_x, initial_xc, plot_options))))
     

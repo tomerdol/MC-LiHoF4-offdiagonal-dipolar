@@ -132,7 +132,7 @@ def main_plot(simulations, to_plot, L, Bex, folderName, mech):
                     #    axes[to_plot_index].set_xticks(np.arange(0,max_num_of_bins+1),minor=True)
                     
                     pdf_axes[to_plot_index].set_ylabel(to_plot_now)
-                    pdf_axes[to_plot_index].set_xticks(range(math.floor(pdf_axes[to_plot_index].get_xlim()[0])+1,math.ceil(pdf_axes[to_plot_index].get_xlim()[1])))
+                    pdf_axes[to_plot_index].set_xticks(range(math.floor(pdf_axes[to_plot_index].get_xlim()[0])+1,math.ceil(pdf_axes[to_plot_index].get_xlim()[1]+1)))
             
             handles, labels = pdf_axes[0].get_legend_handles_labels()
             plt.figlegend(handles, labels, loc='upper right',prop={'size': 10})
@@ -158,16 +158,17 @@ def main_plot(simulations, to_plot, L, Bex, folderName, mech):
     legend_without_duplicate_labels(ax)
     ax.set_xlabel('T')
     ax.set_ylabel('Equilibrated bin')
-    ax.axhline(num_of_bins)
+    ax.axhline(num_of_bins-1)
     fig.savefig('../' + config.system_name + '/figures/plot_equilibration_%s.png'%Bex)
 
 
 def main():
     to_plot = ['Energy','|Magnetization|','Magnetization^2','mk2x']
-    L = sys.argv[4:]
-    Bex = sys.argv[1]
-    folderName = sys.argv[2]
-    mech = sys.argv[3]
+    L = sys.argv[5:]
+    Bex = sys.argv[2]
+    config.system_name = sys.argv[1]
+    folderName = sys.argv[3]
+    mech = sys.argv[4]
 
     simulations = analysis_tools.get_simulations(L, folderName, Bex, mech)
     main_plot(simulations, to_plot, L, Bex, folderName, mech)

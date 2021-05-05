@@ -53,7 +53,7 @@ def main_plot(simulations, boot_num, plot_options, to_plot='', shift_T=False):
     all_y_curves = []
     
     for i, sim in enumerate(simulations.itertuples()):
-        y = bin_data.read_binned_data(sim, use_latest=True)
+        y = bin_data.read_binned_data(sim, use_latest=False)
 
         single_ydata=[]
         for boot_index in range(boot_num):
@@ -62,8 +62,8 @@ def main_plot(simulations, boot_num, plot_options, to_plot='', shift_T=False):
                 single_ydata.append(plot_options['func'](y['Magnetization^2'].sample(frac=1,replace=True),y['Magnetization^4'].sample(frac=1,replace=True),y['mk2'+plot_options['corr_length_axis']].sample(frac=1,replace=True),sim.L*plot_options['unit_cell_length']))  # current y value
             else:
                 # this means 'to_plot' should be plotted
-                #single_ydata.append(plot_options['func'](y[to_plot].sample(frac=1,replace=True)))
-                single_ydata.append(plot_options['func']((y['stdSpinSize']**2 + y['meanSpinSize']**2).sample(frac=1,replace=True)))
+                single_ydata.append(plot_options['func'](y[to_plot].sample(frac=1,replace=True)))
+                #single_ydata.append(plot_options['func']((y['stdSpinSize']**2 + y['meanSpinSize']**2).sample(frac=1,replace=True)))
             #print(boot_index)
         
         all_yboot=np.array(single_ydata)
@@ -210,16 +210,16 @@ def main():
 
     simulations = analysis_tools.get_simulations(L, folderName, h_ex, mech)
     from fit6 import get_binder, get_correlation_length
-    plot_options = {'Name':'g', 'axis_yscale':'linear', 'func':get_binder, 'corr_length_axis':'x','unit_cell_length':1.0}
-    corr_length_axis='x'
-    data = main_plot(simulations, boot_num, plot_options)
+    #plot_options = {'Name':'g', 'axis_yscale':'linear', 'func':get_binder, 'corr_length_axis':'x','unit_cell_length':1.0}
+    corr_length_axis='z'
+    #data = main_plot(simulations, boot_num, plot_options)
     #plot_options = {'Name':r'$\xi^{(%s)}_{L} / L$'%corr_length_axis, 'axis_yscale':'log', 'func':get_correlation_length, 'corr_length_axis':corr_length_axis, 'unit_cell_length':2.077294686}
-    #plot_options = {'Name':r'$\xi^{(%s)}_{L} / L$'%corr_length_axis, 'axis_yscale':'log', 'func':get_correlation_length, 'corr_length_axis':corr_length_axis, 'unit_cell_length':1.0}
+    plot_options = {'Name':r'$\xi^{(%s)}_{L} / L$'%corr_length_axis, 'axis_yscale':'log', 'func':get_correlation_length, 'corr_length_axis':corr_length_axis, 'unit_cell_length':1.0}
     #plot_options = {'Name':'Local $B_x$ Correlator', 'axis_yscale':'linear'}
-    # plot_options = {'Name':'stdSpinSize', 'axis_yscale':'linear', 'func':lambda x: np.mean(x), 'corr_length_axis':corr_length_axis, 'unit_cell_length':1.0}
-
-    #plot_options = {'Name':'spin size', 'axis_yscale':'linear'}
-    # data = main_plot(simulations, boot_num, plot_options, to_plot=to_plot)
+    #plot_options = {'Name':'|M|', 'axis_yscale':'linear', 'func':lambda x: np.mean(x), 'corr_length_axis':corr_length_axis, 'unit_cell_length':1.0}
+    data = main_plot(simulations, boot_num, plot_options)
+    #plot_options = {'Name':'|M|', 'axis_yscale':'linear'}
+    #data = main_plot(simulations, boot_num, plot_options, to_plot=to_plot)
     return data
     #plot_lattice_correlators(simulations, plot_options, ['x','y','z'], to_plot='spin', shift_T=False)
     #os.system("rsync -avzhe ssh ../"+config.system_name+"/figures/ tomerdol@newphysnet1:~/graphs/")

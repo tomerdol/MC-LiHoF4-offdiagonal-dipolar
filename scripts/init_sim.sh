@@ -17,15 +17,15 @@ minT_true=1.0
 maxT_true=1.7
 delta=0.08
 elif [ $SYS_NAME == "Fe8" ]; then
-name="Fe8_test"
+name="Fe8_test4"
 arrayMech=("true")
-arrayL=( 3 4 5 )
+arrayL=( 5 6 7 8 )
 arrayLexclude=()
 arrayH=( 0.0 )
 minT_false=1.4
 maxT_false=2.0
-minT_true=0.1
-maxT_true=1.2
+minT_true=0.3
+maxT_true=0.9
 delta=0.08
 fi
 
@@ -52,7 +52,7 @@ if true; then
 
   # run initial temporary run
   sub "temp_" 513 20
-fi
+
 # wait until temporary runs finish
 running_jobs=$(qstat -u tomerdol | awk '$3 ~ /^tr/' | awk 'END {print NR}')
 while [ $running_jobs -gt 0 ]; do
@@ -61,6 +61,7 @@ while [ $running_jobs -gt 0 ]; do
   running_jobs=$(qstat -u tomerdol | awk '$3 ~ /^tr/' | awk 'END {print NR}')
 done
 
+fi
 #*************************************************************************
 # check that there are results
 #*************************************************************************

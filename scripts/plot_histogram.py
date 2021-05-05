@@ -43,11 +43,11 @@ def main_hist2(simulations, to_plot, flip=False, seed='*'):
             data=[]
             groups=[]
             num_independent_runs=len(file_list)
-            for i, file in enumerate(file_list):
+            for j, file in enumerate(file_list):
                 shift = 0 if to_plot_now != 'localBx' else float(sim.Bex)
                 temp_data=analysis_tools.get_table_data_by_fname(file)[to_plot_now].to_numpy() - shift
                 data.append(temp_data)
-                groups.append(np.full(temp_data.size,i))
+                groups.append(np.full(temp_data.size,j))
             data=np.concatenate(data).ravel()
             groups=np.concatenate(groups).ravel()
             multiple_sim_data.append(data)
@@ -62,7 +62,7 @@ def main_hist2(simulations, to_plot, flip=False, seed='*'):
             data=multiple_sim_data[sim_index]
             groups=multiple_sim_groups[sim_index]
             shared_bins_to_plot = shared_bins[:-1] + i*np.diff(shared_bins)/num_of_simulations_to_plot
-
+            num_independent_runs=len(np.unique(groups))
             histograms = np.zeros((num_independent_runs, len(shared_bins)-1))
             #smooth_histogram_x = np.linspace(shared_bins[0],shared_bins[-1],num=200)
             #smooth_histogram = np.zeros((num_independent_runs, len(smooth_histogram_x)))
@@ -70,11 +70,11 @@ def main_hist2(simulations, to_plot, flip=False, seed='*'):
             abs_values=np.zeros(num_independent_runs)
             standard_deviations=np.zeros(num_independent_runs)
             #window_size=5
-            for i in range(num_independent_runs):
-                simple_values[i] = np.mean(data[groups==i])
-                abs_values[i] = np.mean(np.abs(data[groups==i]))
-                standard_deviations[i] = np.sqrt(np.mean(data[groups==i]**2))
-                histograms[i], _ = np.histogram(data[groups == i], bins=shared_bins)
+            for j in range(num_independent_runs):
+                simple_values[j] = np.mean(data[groups==j])
+                abs_values[j] = np.mean(np.abs(data[groups==j]))
+                standard_deviations[j] = np.sqrt(np.mean(data[groups==j]**2))
+                histograms[j], _ = np.histogram(data[groups == j], bins=shared_bins)
 
                 #for idx, x in enumerate(smooth_histogram_x):
                 #    bin_width = shared_bins[1]-shared_bins[0]
@@ -121,6 +121,7 @@ def main_hist2(simulations, to_plot, flip=False, seed='*'):
     plt.title('Distribution of ' + to_plot_now)
     ax.set_ylabel('# of spins')
     ax.set_xlabel(to_plot_now + ('' if shift == 0 else ' - ' + str(shift)))
+    plt.tight_layout()
     fig.savefig('../' + config.system_name + '/figures/hist_%s_%s_%s_%s_%s.png'%('_'.join(map(str,simulations['Bex'].unique().tolist())),'_'.join(map(str,simulations['mech'].unique().tolist())),'_'.join(map(str,simulations['L'].unique().tolist())),'_'.join(map(str,simulations['folderName'].unique().tolist())),to_plot_now), dpi=300)
     plt.close(fig)
 

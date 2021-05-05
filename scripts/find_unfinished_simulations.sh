@@ -42,7 +42,7 @@ function find_last_line {
   last_line=$(sed '/^#/d' "$file" | tail -n1 | awk '{print $1}')
   break
   done
-  echo "$last_line"
+  echo "$last_line" "$file"
 }
 
 res=$(find ./$SYS_NAME/data/results/$name/table_* -maxdepth 0 | wc -l)
@@ -137,13 +137,13 @@ else
   # go over unfinished seeds and check hash table
   for seed in "${seeds_unfinished[@]}"
   do
-    last_line=$(find_last_line "$seed")
+    last_line=($(find_last_line "$seed"))
     # check whether the seed belongs to an already running job
     if [ ${seed_jobid[${seed}]+_} ]; then
-      jobid=seed_jobid[${seed}]
-      echo "* Seed ${seed} already running with job id ${jobid}. (last line=${last_line} / ${expected_last_line})"
+      jobid=${seed_jobid[${seed}]}
+      echo "* Seed ${seed} already running with job id ${jobid}. (last line=${last_line[0]} / ${expected_last_line}): ${last_line[1]}"
     else
-      echo "* Seed ${seed} not currently running. (last line=${last_line} / ${expected_last_line})"
+      echo "* Seed ${seed} not currently running. (last line=${last_line[0]} / ${expected_last_line}): ${last_line[1]}"
     fi
   done
 fi

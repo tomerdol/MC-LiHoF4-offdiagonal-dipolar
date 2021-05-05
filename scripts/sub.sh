@@ -19,6 +19,16 @@ arrayH=( 0.0 0.3 0.6 1.0 1.5 2.0 )
 #arrayMech=( "false" "true" )
 #arrayL=( 6 5 4 )
 #arrayH=( 0.3 )
+name="Fe8_test8"
+arrayMech=( "false" "true" )
+arrayL=( 5 6 7 8 9 )
+arrayLexclude=()
+arrayH=( 0.0 )
+minT_false=0.3
+maxT_false=0.9
+minT_true=0.3
+maxT_true=0.9
+delta=0.08
 
 sub() {
 temp="$1"
@@ -63,11 +73,14 @@ while [ $COUNT -lt $runs ]; do
     fi
     fi
 
-    qsub -pe shared 24 -l mem_free=40G -V -S /bin/bash -cwd -N "$temp_initial"r"$L"_"$H"_"$COUNT"_"$mech_initial" -o ./"$SYS_NAME"/output/ -e ./"$SYS_NAME"/output/ -q "$queues" scripts/met_with_t.sh "$L" "$L" "$max_sweeps" "$H" "$mech" "$local_name" "${seeds[$i]}" "$extra_par"
+    # parallel submission
+#    qsub -pe shared 24 -l mem_free=40G -V -S /bin/bash -cwd -N "$temp_initial"r"$L"_"$H"_"$COUNT"_"$mech_initial" -o ./"$SYS_NAME"/output/ -e ./"$SYS_NAME"/output/ -q "$queues" scripts/met_with_t.sh "$L" "$L" "$max_sweeps" "$H" "$mech" "$local_name" "${seeds[$i]}" "$extra_par"
+    # sequential submission
+    qsub -l mem_free=2G -V -S /bin/bash -cwd -N "$temp_initial"r"$L"_"$H"_"$COUNT"_"$mech_initial" -o ./"$SYS_NAME"/output/ -e ./"$SYS_NAME"/output/ -q smoshe.q,lublin.q,intel_all.q scripts/met_with_t_single.sh "$L" "$L" "$max_sweeps" "$H" "$mech" "$local_name" "${seeds[$i]}" "$extra_par"
     #echo "${seeds[$i]}"
     ((i++))
     ((COUNT++))
-    sleep 120
+    sleep 60
 done
 fi
 done

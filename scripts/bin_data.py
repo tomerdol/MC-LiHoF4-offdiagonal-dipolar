@@ -242,7 +242,7 @@ def main_bin(simulations):
                     print('rewriting bins for simulation: %s. seed: %s' % (str(sim),fname.split("_")[-1].split(".")[0]))
                     bin_by_fname(fname, fname_bin, sim.L)
                 else:
-                    print('not writing bins for simulation: %s. seed: %s' % (str(sim),fname.split("_")[-1].split(".")[0]))
+                    print('not writing bins for simulation: %s. last bin: %s. seed: %s' % (str(sim), last_bin, fname.split("_")[-1].split(".")[0]))
                     # not enough data for another bin
                     pass
             
