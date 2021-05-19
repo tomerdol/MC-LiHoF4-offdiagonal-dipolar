@@ -131,7 +131,6 @@ def read_binned_data(sim, use_latest=False, use_bin=-1):
         arrays.append(y)
         
     all_tables = pd.concat(arrays)
-    
     if use_bin==-1:
         # find last bin
         if use_latest:
@@ -150,6 +149,11 @@ def read_binned_data(sim, use_latest=False, use_bin=-1):
                     raise Exception("Something wrong with finding the last bin. different observables seem to have different last bins: \n" + str(last_bin[0]))
                 last_bin=last_bin[0]
         use_bin=last_bin
+    if 'eq_bin' in sim._fields:
+        # equilibration testing has occurred and there is an equilibrated bin.
+        if int(sim.eq_bin) > use_bin:
+           print('WARNING: using data before equilibration: Bin used: %s. Simulation details: %s'%(use_bin, sim))
+
     return all_tables.loc[use_bin]
     
 

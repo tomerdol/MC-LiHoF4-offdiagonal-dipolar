@@ -1,8 +1,8 @@
 #!/bin/bash
 unset module
 name="temp_Fe8_test8"
-arrayMech=( "false" )
-arrayL=( 5 6 7 8 )
+arrayMech=( "false" "true" )
+arrayL=( 5 6 7 8 9 )
 arrayH=( 0.0 )
 
 # Check input
