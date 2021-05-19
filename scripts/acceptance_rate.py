@@ -6,6 +6,17 @@ import pandas as pd
 import csv
 from matplotlib.ticker import FormatStrFormatter
 
+
+def parse_arguments():
+    from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
+
+    parser = ArgumentParser(description="Analyzes Monte Carlo results and plots parallel tempering acceptance rates.", formatter_class=ArgumentDefaultsHelpFormatter, parents=[config.parse_arguments()], conflict_handler='resolve')
+
+    args = parser.parse_args()
+    config.system_name = args.system_name
+    return args
+
+
 all_L = [3,4]
 h = 0.0
 x=1.0
