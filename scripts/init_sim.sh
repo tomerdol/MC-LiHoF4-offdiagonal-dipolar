@@ -3,17 +3,17 @@
 source ./scripts/sub.sh
 
 # this should override the definitions from sub.sh
-name="res_test_ex_0.014"
-arrayMech=( "false" )
+name="res_test_ex_0.014_re"
+arrayMech=( "true" )
 arrayL=( 5 6 7 )
 arrayLexclude=( )
-arrayH=( 0.0 0.3 0.6 1.0 1.5 2.0 )
-minT_false=1.4
-maxT_false=2.0
+arrayH=( 1.5 1.0 0.6 0.3 0.0 )
+minT_false=0.8
+maxT_false=1.5
 #minT_true=1.55
 #maxT_true=2.0
-minT_true=1.0
-maxT_true=1.7
+minT_true=1.3
+maxT_true=1.9
 delta=0.08
 
 gen_temp_schedules() {
@@ -32,7 +32,7 @@ fi
 done
 }
 
-if true; then
+if false; then
 # generate temporary temperature schedules for "true"
 gen_temp_schedules $minT_true $maxT_true "true" "temp_"
 # generate temporary temperature schedules for "false"
@@ -40,7 +40,7 @@ gen_temp_schedules $minT_false $maxT_false "false" "temp_"
 
 # run initial temporary run
 sub "temp_" 513 20
-fi
+#fi
 # wait until temporary runs finish
 running_jobs=$(qstat -u tomerdol | awk '$3 ~ /^tr/' | awk 'END {print NR}')
 while [ $running_jobs -gt 0 ]
@@ -50,6 +50,7 @@ sleep 1h
 running_jobs=$(qstat -u tomerdol | awk '$3 ~ /^tr/' | awk 'END {print NR}')
 done
 
+fi
 #*************************************************************************
 # check that there are results
 #*************************************************************************

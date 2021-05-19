@@ -118,6 +118,7 @@ def main_hist2(simulations, to_plot, flip=False):
     plt.title('Distribution of ' + to_plot_now)
     ax.set_ylabel('# of spins')
     ax.set_xlabel(to_plot_now + ('' if shift == 0 else ' - ' + str(shift)))
+    plt.tight_layout()
     fig.savefig('../figures/hist_%s_%s_%s_%s_%s.png'%('_'.join(map(str,simulations['Bex'].unique().tolist())),'_'.join(map(str,simulations['mech'].unique().tolist())),'_'.join(map(str,simulations['L'].unique().tolist())),'_'.join(map(str,simulations['folderName'].unique().tolist())),to_plot_now), dpi=300)
     plt.close(fig)
 
