@@ -13,6 +13,7 @@ import warnings
 import analysis_tools
 import bin_data
 from itertools import cycle
+import config
 #print('imports successful')
 
 def f(x, L, par):
@@ -144,8 +145,8 @@ def plot_multiple(f, all_L, param, err_pfit, xdata, all_ydata, err_y, h_ex, mech
     ax1.set_yscale("log")
     ax2.set_yscale("log")
     plt.tight_layout(pad=1.08)
-    #fig.savefig('../figures/fit_%s_%s_%s_%s.png'%(h_ex,mech,'_'.join(map(str,all_L)),index))
-    fig.savefig('../figures/fit_%s_%s_%s_%s.eps'%(h_ex,mech,'_'.join(map(str,all_L)),index),format='eps')
+    #fig.savefig('../'+config.system_name+'/figures/fit_%s_%s_%s_%s.png'%(h_ex,mech,'_'.join(map(str,all_L)),index))
+    fig.savefig('../'+config.system_name+'/figures/fit_%s_%s_%s_%s.eps'%(h_ex,mech,'_'.join(map(str,all_L)),index),format='eps')
 
 
 def plot_multiple_bin(f, simulations, param, err_pfit, err_y, h_ex, mech, folderName, plot_options, index=''):
@@ -193,12 +194,15 @@ def plot_multiple_bin(f, simulations, param, err_pfit, err_y, h_ex, mech, folder
     #fig.tight_layout(rect=[0, 0.03, 1, 0.95])
     plt.tight_layout(pad=1.08)
     
-    fig.savefig('../figures/fit_%s_%s_%s_%s_%s.eps'%(h_ex,mech,'_'.join(map(str,simulations['L'].unique().tolist())), folderName, index),format='eps')
-    fig.savefig('../figures/fit_%s_%s_%s_%s_%s.png'%(h_ex,mech,'_'.join(map(str,simulations['L'].unique().tolist())), folderName, index),dpi=300)
+    fig.savefig('../' + config.system_name + '/figures/fit_%s_%s_%s_%s_%s.eps'%(h_ex,mech,'_'.join(map(str,simulations['L'].unique().tolist())), folderName, index),format='eps')
+    fig.savefig('../' + config.system_name + '/figures/fit_%s_%s_%s_%s_%s.png'%(h_ex,mech,'_'.join(map(str,simulations['L'].unique().tolist())), folderName, index),dpi=300)
 
 def str_with_err(value, error):
-    digits = -int(math.floor(math.log10(error)))
-    return "{0:.{2}f}({1:.0f})".format(value, error*10**digits, digits)
+    if np.isnan(error):
+        return value
+    else:
+        digits = -int(math.floor(math.log10(error)))
+        return "{0:.{2}f}({1:.0f})".format(value, error*10**digits, digits)
 
 
 def get_binder(m2,m4,mk2,L):
@@ -210,10 +214,12 @@ def get_binder(m2,m4,mk2,L):
 def get_correlation_length(m2,m4,mk2,L):
     m2=np.mean(m2)
     mk2=np.mean(mk2)
+    if (m2/mk2)-1 <= 0:
+        return 0
     return math.sqrt((m2/mk2)-1)/(2*L*math.sin(math.pi/L))
 
 # DEPRECATED: A newer version is in the bin directory
-def fit_main(all_L, L_equilibrated_min_value, tau_dict, boot_num, h_ex, mech, folderName, xdata, min_x, max_x, initial_xc, folder='../data/results', start_in_middle=True):
+def fit_main(all_L, L_equilibrated_min_value, tau_dict, boot_num, h_ex, mech, folderName, xdata, min_x, max_x, initial_xc, folder='../' + config.system_name + '/data/results', start_in_middle=True):
     all_yboot={k:[] for k in all_L}
     ps=[]
     xdata = {k:[x for x in v if x > min_x and x<max_x] for k,v in xdata.items()}
@@ -346,7 +352,7 @@ def fit_bin(simulations, boot_num, min_x, max_x, initial_xc, fit_options):
         initial_fit_param = fit_multiple_bin(data, initial_xc, bounds=False, max_nfev=40000)
         initial_fit_successful = initial_fit_param.success
         initial_fit_attempt += 1
-        print('initial fit attempt #%s: R^2=%s'%(initial_fit_attempt, 1-initial_fit_param.cost/(np.sum((data[:,2]-np.mean(data[:,2]))**2))))
+        print('initial fit attempt #%s: R^2=%s, %s'%(initial_fit_attempt, 1-initial_fit_param.cost/(np.sum((data[:,2]-np.mean(data[:,2]))**2)),initial_fit_successful))
         if not initial_fit_successful:
             if initial_fit_attempt < boot_num:
                 # try bootstrap samples, one of which might be easier to fit initially
@@ -417,16 +423,17 @@ def fit_bin(simulations, boot_num, min_x, max_x, initial_xc, fit_options):
     # returns x_c, err(x_c), v, err(v), R^2
     return pfit_bootstrap[0], perr_bootstrap[0], pfit_bootstrap[5], perr_bootstrap[5], r_squared, simulations
 
+
 def parse_arguments():  
     from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
     
-    parser = ArgumentParser(description="Analyzes Monte Carlo results and plots correlation length curves for LiHoF4", formatter_class=ArgumentDefaultsHelpFormatter)
+    parser = ArgumentParser(description="Analyzes Monte Carlo results and plots correlation length curves.", formatter_class=ArgumentDefaultsHelpFormatter, parents=[config.parse_arguments()], conflict_handler='resolve')
     parser.add_argument( "-L", nargs='+', type=int, required=True, help = "Linear system sizes. At least 2 required.")
-    parser.add_argument( "-b", "--boot_num", type=int, default = 100, help = "Number of bootstrap samples.")
-    parser.add_argument( "--h_ex", type=float, help = "External magnetic field value, Bex." , required=True)
-    parser.add_argument( "-m", "--mech", choices=['true','false'], help = ("Whether internal fields are suppressed or not. \'false\' means "
-    "that they aren't so the mechanism is on, and \'true\' means that they are and the mechanism is off." ), required=True)
-    parser.add_argument( "-f", "--folder_list", nargs='+', type=str, help = "List of folders in \'data/results/\' in which results should be found. " , required=True)
+    # parser.add_argument( "-b", "--boot_num", type=int, default = 100, help = "Number of bootstrap samples.")
+    # parser.add_argument( "--h_ex", type=float, help = "External magnetic field value, Bex." , required=True)
+    # parser.add_argument( "-m", "--mech", choices=['true','false'], help = ("Whether internal fields are suppressed or not. \'false\' means "
+    # "that they aren't so the mechanism is on, and \'true\' means that they are and the mechanism is off." ), required=True)
+    # parser.add_argument( "-f", "--folder_list", nargs='+', type=str, help = "List of folders in \'data/results/\' in which results should be found. " , required=True)
     parser.add_argument( "-r", "--temperature_range", nargs=2, type=float, required=False, help = ("The temperature range to use when trying to fit."))
     #parser.add_argument( "-o", "--overwrite_tmp", action='store_true', default=False, help = ("Overwrite parsed files in /tmp. If not given, existing files will "
     #"be used (which probably means older results)."))
@@ -439,10 +446,9 @@ def parse_arguments():
     
     if args.temperature_range is not None and args.temperature_range[0]>args.temperature_range[1]:
         parser.error("First argument of --temperature_range must be smaller than the second argument.")
-        
 
+    config.system_name = args.system_name
     return args
-
 
 
 def main():
@@ -452,7 +458,7 @@ def main():
     h_ex = args.h_ex
     mech = args.mech
     folderName = args.folder_list
-    
+
     simulations = analysis_tools.get_simulations(L, folderName, h_ex, mech)
     
     #min & max x for fitting (should be around the apparent Tc)
@@ -470,11 +476,11 @@ def main():
     else:
         initial_xc=0.5*(max_x+min_x)
     
-    corr_length_axis='x'
+    corr_length_axis='z'
     plot_options = {'Name':r'$\xi^{(%s)}_{L} / L$'%corr_length_axis, 'axis_yscale':'log', 'func':get_correlation_length, 'corr_length_axis':corr_length_axis, 'unit_cell_length':1.0}
     print('\n'.join(map(str,fit_bin(simulations, boot_num, min_x, max_x, initial_xc, plot_options))))
     
-    #os.system("rsync -avzhe ssh ../figures/ tomerdol@newphysnet1:~/graphs/")
+    #os.system("rsync -avzhe ssh ../"+config.system_name+"/figures/ tomerdol@newphysnet1:~/graphs/")
    
 if __name__ == "__main__":
     main()

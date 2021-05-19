@@ -1,4 +1,6 @@
 import numpy as np
+
+import config
 from phase_diagram_bin import find_initial_xc_from_arr, parse_arguments
 import matplotlib
 matplotlib.use('Agg')
@@ -9,7 +11,7 @@ def main():
     args = parse_arguments()
     
     all_L = args.L
-    h_ex_list = args.h_ex_list
+    h_ex_list = args.h_ex
     mech_list = args.mech
     folderName_list = args.folder_list
     
@@ -22,7 +24,7 @@ def main():
     fig, ax = plt.subplots()
     
     for L in all_L:
-        fname = "./data/analysis/sample_energy_"+str(L)+"_"+str(h_ex_list[0])+"_"+str(folderName_list[0])+"_"+str(mech_list[0])+".txt"
+        fname = './' + config.system_name + '/data/analysis/sample_energy_'+str(L)+"_"+str(h_ex_list[0])+"_"+str(folderName_list[0])+"_"+str(mech_list[0])+".txt"
         array=np.genfromtxt(fname, skip_header=1)
         ax.plot(array[:,0],array[:,2],'o-',label='L='+str(L))
         arr_x.append(array[:,0])
@@ -34,7 +36,7 @@ def main():
     plt.ylabel(r'$\xi_{L} / L$')
     plt.xlabel('T')
     plt.legend(loc='best')
-    fig.savefig('./figures/plot_%s_%s_%s.png'%(h_ex_list[0],folderName_list[0],mech_list[0]))
+    fig.savefig('./' + config.system_name + '/figures/plot_%s_%s_%s.png'%(h_ex_list[0],folderName_list[0],mech_list[0]))
     
     print(initial_tc)
 

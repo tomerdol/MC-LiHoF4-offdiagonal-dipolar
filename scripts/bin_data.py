@@ -8,6 +8,7 @@ import glob
 import analysis_tools
 import itertools
 import subprocess
+import config
 
 def bin_single_column_data(a, start_bin):
     # samples that do no fill the last bin are practically discarded
@@ -36,7 +37,7 @@ def bin_single_column_data(a, start_bin):
     return array
     
 def bin_data(a, l, start_bin):
-    binned_data = pd.DataFrame(columns=a.drop(['Energy','Magnetization','swap'],axis=1).columns)
+    binned_data = pd.DataFrame(columns=a.drop(['Energy','Magnetization'],axis=1).columns)
     
     # special columns:
     # Energy
@@ -55,14 +56,14 @@ def bin_data(a, l, start_bin):
     binned_data_with_error = bin_single_column_data(a['Magnetization']**4, start_bin)
     binned_data['Magnetization^4']=binned_data_with_error[:,0]
     binned_data['Magnetization^4_err']=binned_data_with_error[:,1]
-    
-    for col_name in a.drop(['Energy','Magnetization','swap'],axis=1).columns:
+
+    for col_name in a.drop(['Energy','Magnetization'],axis=1).columns:
         binned_data_with_error = bin_single_column_data(a[col_name], start_bin)
         binned_data[col_name]=binned_data_with_error[:,0]
         binned_data[col_name+'_err']=binned_data_with_error[:,1]
-    
+
     binned_data['bin'] = binned_data.index
-    
+
     # reorder columns
     move_col_to_front(binned_data, 'Magnetization^4')
     move_col_to_front(binned_data, 'Magnetization^2')
@@ -88,7 +89,7 @@ def mkdir(path):
 
 
 def read_binned(sim, use_latest=True):
-    path='../data/results/'+sim.folderName+'/binned_data/table_'+str(sim.L)+'_'+str(sim.L)+'_'+str(sim.Bex)+'_'+str(sim.T)+'_'+str(sim.mech)+'_'+'*'+'.txt'
+    path='../' + config.system_name + '/data/results/'+sim.folderName+'/binned_data/table_'+str(sim.L)+'_'+str(sim.L)+'_'+str(sim.Bex)+'_'+str(sim.T)+'_'+str(sim.mech)+'_'+'*'+'.txt'
     #print(glob.glob(path))
     arrays=[]
     seeds=[]
@@ -118,7 +119,7 @@ def read_binned(sim, use_latest=True):
 def read_binned_data(sim, use_latest=False, use_bin=-1):
     """ Get the binned data as a pandas DataFrame 
     """
-    path='../data/results/'+sim.folderName+'/binned_data/table_'+str(sim.L)+'_'+str(sim.L)+'_'+str(sim.Bex)+'_'+str(sim.T)+'_'+str(sim.mech)+'_'+'*'+'.txt'
+    path='../' + config.system_name + '/data/results/'+sim.folderName+'/binned_data/table_'+str(sim.L)+'_'+str(sim.L)+'_'+str(sim.Bex)+'_'+str(sim.T)+'_'+str(sim.mech)+'_'+'*'+'.txt'
 
     file_list = glob.glob(path) # list of all files that match the sim parameters
     arrays=[]
@@ -130,7 +131,6 @@ def read_binned_data(sim, use_latest=False, use_bin=-1):
         arrays.append(y)
         
     all_tables = pd.concat(arrays)
-    
     if use_bin==-1:
         # find last bin
         if use_latest:
@@ -149,6 +149,11 @@ def read_binned_data(sim, use_latest=False, use_bin=-1):
                     raise Exception("Something wrong with finding the last bin. different observables seem to have different last bins: \n" + str(last_bin[0]))
                 last_bin=last_bin[0]
         use_bin=last_bin
+    if 'eq_bin' in sim._fields:
+        # equilibration testing has occurred and there is an equilibrated bin.
+        if int(sim.eq_bin) > use_bin:
+           print('WARNING: using data before equilibration: Bin used: %s. Simulation details: %s'%(use_bin, sim))
+
     return all_tables.loc[use_bin]
     
 
@@ -223,12 +228,12 @@ def last_index(fname):
 
 def main_bin(simulations):
     for sim in simulations.itertuples(index=False):
-        mkdir('../data/results/'+sim.folderName+'/binned_data')
-        path='../data/results/'+sim.folderName+'/table_'+str(sim.L)+'_'+str(sim.L)+'_'+str(sim.Bex)+'_'+str(sim.T)+'_'+str(sim.mech)+'_'+'*'+'.txt'
+        mkdir('../' + config.system_name + '/data/results/'+sim.folderName+'/binned_data')
+        path='../' + config.system_name + '/data/results/'+sim.folderName+'/table_'+str(sim.L)+'_'+str(sim.L)+'_'+str(sim.Bex)+'_'+str(sim.T)+'_'+str(sim.mech)+'_'+'*'+'.txt'
         #print(glob.glob(path))
         for fname in glob.glob(path):
             tmp_fname_bin = fname.split('/')
-            tmp_fname_bin.insert(4,'binned_data')
+            tmp_fname_bin.insert(5,'binned_data')
             fname_bin='/'.join(tmp_fname_bin)
 
             # first check if there are enough data for a new bin
@@ -241,16 +246,16 @@ def main_bin(simulations):
                     print('rewriting bins for simulation: %s. seed: %s' % (str(sim),fname.split("_")[-1].split(".")[0]))
                     bin_by_fname(fname, fname_bin, sim.L)
                 else:
-                    print('not writing bins for simulation: %s. seed: %s' % (str(sim),fname.split("_")[-1].split(".")[0]))
+                    print('not writing bins for simulation: %s. last bin: %s. seed: %s' % (str(sim), last_bin, fname.split("_")[-1].split(".")[0]))
                     # not enough data for another bin
                     pass
             
 def main():
-    L = sys.argv[4:]
-    Bex = sys.argv[1]
-    folderName = sys.argv[2]
-    mech = sys.argv[3]
-    
+    L = sys.argv[5:]
+    Bex = sys.argv[2]
+    folderName = sys.argv[3]
+    mech = sys.argv[4]
+    config.system_name = sys.argv[1]
     simulations = analysis_tools.get_simulations(L, folderName, Bex, mech)
     main_bin(simulations) 
     

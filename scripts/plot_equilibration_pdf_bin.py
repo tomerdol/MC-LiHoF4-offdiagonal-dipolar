@@ -9,6 +9,7 @@ import math
 import csv
 import analysis_tools
 import bin_data
+import config
 
 def check_equilibration(array, min_bin, consec_bins_for_equilib):
     #print(array)
@@ -46,7 +47,7 @@ def to_plot_col_index(to_plot):
 
 def save_equilibration_data(sim_name, equilibrated_bin):
     #sim_name[0]=Bex; sim_name[1]=L; sim_name[2]=folderName; sim_name[3]=mech
-    path='../data/results/'+str(sim_name[2])+'/binned_data/equilib_data_'+str(sim_name[1])+'_'+str(sim_name[1])+'_'+str(sim_name[0])+'_'+str(sim_name[3])+'.txt'
+    path='../' + config.system_name + '/data/results/'+str(sim_name[2])+'/binned_data/equilib_data_'+str(sim_name[1])+'_'+str(sim_name[1])+'_'+str(sim_name[0])+'_'+str(sim_name[3])+'.txt'
     with open(path,'w') as outfile:
         outfile.write("%s\n" % equilibrated_bin)
         #for seed in seeds:
@@ -54,7 +55,7 @@ def save_equilibration_data(sim_name, equilibrated_bin):
     
 def read_equilibration_data(sim_name):
     #sim_name[0]=Bex; sim_name[1]=L; sim_name[2]=folderName; sim_name[3]=mech
-    path='../data/results/'+str(sim_name[2])+'/binned_data/equilib_data_'+str(sim_name[1])+'_'+str(sim_name[1])+'_'+str(sim_name[0])+'_'+str(sim_name[3])+'.txt'
+    path='../' + config.system_name + '/data/results/'+str(sim_name[2])+'/binned_data/equilib_data_'+str(sim_name[1])+'_'+str(sim_name[1])+'_'+str(sim_name[0])+'_'+str(sim_name[3])+'.txt'
     
     with open(path,'r') as file:
         eq_bin=file.readline()
@@ -103,7 +104,7 @@ def main_plot(simulations, to_plot, L, Bex, folderName, mech):
     colors = ("red", "green", "blue", "yellow", "orange")
     groups = simulations['L'].unique().tolist()
     fig, ax = plt.subplots()
-    with PdfPages('../figures/plot_equilibration_%s_%s.pdf'%(Bex,mech)) as pdf:
+    with PdfPages('../' + config.system_name + '/figures/plot_equilibration_%s_%s.pdf'%(Bex,mech)) as pdf:
         
         for temperature_index, temperature in enumerate(simulations['T'].unique()):
             pdf_fig, pdf_axes = plt.subplots(len(to_plot),1, figsize=(7,len(to_plot)*3))
@@ -131,7 +132,7 @@ def main_plot(simulations, to_plot, L, Bex, folderName, mech):
                     #    axes[to_plot_index].set_xticks(np.arange(0,max_num_of_bins+1),minor=True)
                     
                     pdf_axes[to_plot_index].set_ylabel(to_plot_now)
-                    pdf_axes[to_plot_index].set_xticks(range(math.floor(pdf_axes[to_plot_index].get_xlim()[0])+1,math.ceil(pdf_axes[to_plot_index].get_xlim()[1])))
+                    pdf_axes[to_plot_index].set_xticks(range(math.floor(pdf_axes[to_plot_index].get_xlim()[0])+1,math.ceil(pdf_axes[to_plot_index].get_xlim()[1]+1)))
             
             handles, labels = pdf_axes[0].get_legend_handles_labels()
             plt.figlegend(handles, labels, loc='upper right',prop={'size': 10})
@@ -153,20 +154,21 @@ def main_plot(simulations, to_plot, L, Bex, folderName, mech):
 
         #plt.xscale('log')
         #plt.show()
-        #fig.savefig('../figures/plot_equilibration_%s.pdf'%Bex)
+        #fig.savefig('../'+config.system_name+'/figures/plot_equilibration_%s.pdf'%Bex)
     legend_without_duplicate_labels(ax)
     ax.set_xlabel('T')
     ax.set_ylabel('Equilibrated bin')
-    ax.axhline(num_of_bins)
-    fig.savefig('../figures/plot_equilibration_%s.png'%Bex)
+    ax.axhline(num_of_bins-1)
+    fig.savefig('../' + config.system_name + '/figures/plot_equilibration_%s.png'%Bex)
 
 
 def main():
     to_plot = ['Energy','|Magnetization|','Magnetization^2','mk2x']
-    L = sys.argv[4:]
-    Bex = sys.argv[1]
-    folderName = sys.argv[2]
-    mech = sys.argv[3]
+    L = sys.argv[5:]
+    Bex = sys.argv[2]
+    config.system_name = sys.argv[1]
+    folderName = sys.argv[3]
+    mech = sys.argv[4]
 
     simulations = analysis_tools.get_simulations(L, folderName, Bex, mech)
     main_plot(simulations, to_plot, L, Bex, folderName, mech)

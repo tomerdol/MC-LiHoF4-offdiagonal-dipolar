@@ -5,6 +5,18 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import csv
 from matplotlib.ticker import FormatStrFormatter
+import config
+
+
+def parse_arguments():
+    from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
+
+    parser = ArgumentParser(description="Analyzes Monte Carlo results and plots parallel tempering acceptance rates.", formatter_class=ArgumentDefaultsHelpFormatter, parents=[config.parse_arguments()], conflict_handler='resolve')
+
+    args = parser.parse_args()
+    config.system_name = args.system_name
+    return args
+
 
 all_L = [3,4]
 h = 0.0
@@ -17,7 +29,7 @@ all_Bex= [0.0,0.5]
 #all_Bex=[0.0]
 fig = plt.figure()
 for Bex in all_Bex:
-    with open('../temp_schedule_' + folderName + '_' + str(Bex) + '_' + mech + '.txt','r') as temperature_schedule_file:
+    with open('../' + config.system_name + '/temp_schedule_' + folderName + '_' + str(Bex) + '_' + mech + '.txt','r') as temperature_schedule_file:
         reader = csv.reader(temperature_schedule_file)
         temp_list=list(reader)
     xdata = temp_list[0][:-1]
@@ -25,7 +37,7 @@ for Bex in all_Bex:
     for L in all_L:
         singleL_ydata=[]
         for T in xdata:
-            fname='../data/results/'+folderName+'/table_'+str(L)+'_'+str(L)+'_'+str(Bex)+'_'+str(T)+'_'+mech+'.txt'
+            fname='../' + config.system_name + '/data/results/'+folderName+'/table_'+str(L)+'_'+str(L)+'_'+str(Bex)+'_'+str(T)+'_'+mech+'.txt'
             y = pd.read_csv(fname, delim_whitespace=True, error_bad_lines=False, comment='#')
             print(fname)
             try:
@@ -46,7 +58,7 @@ plt.xlabel('T')
 plt.ylabel('Acceptance rate')
 plt.xticks(rotation=90)
 fig.tight_layout()
-fig.savefig('../figures/acceptance_rate.png')
+fig.savefig('../' + config.system_name + '/figures/acceptance_rate.png')
 
 
 

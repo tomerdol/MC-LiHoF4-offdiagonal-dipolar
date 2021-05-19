@@ -7,25 +7,27 @@ import glob
 import analysis_tools
 import pandas as pd
 from scipy.ndimage import gaussian_filter1d
+import config
 
 def parse_arguments():
     from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 
-    parser = ArgumentParser(description="Plots histograms from lattice output files for LiHoF4", formatter_class=ArgumentDefaultsHelpFormatter)
+    parser = ArgumentParser(description="Plots histograms from lattice output files for LiHoF4", formatter_class=ArgumentDefaultsHelpFormatter, parents=[config.parse_arguments()], conflict_handler='resolve')
     parser.add_argument( "-L", nargs='+', type=int, required=True, help = "Linear system sizes.")
-    parser.add_argument( "--h_ex", nargs='+', type=float, help = "External magnetic field value, Bex." , required=True)
-    parser.add_argument( "-m", "--mech", nargs='+', choices=['true','false'], help = ("Whether internal fields are suppressed or not. \'false\' means "
-                                                                                      "that they aren't so the mechanism is on, and \'true\' means that they are and the mechanism is off." ), required=True)
-    parser.add_argument( "-f", "--folder_list", nargs='+', type=str, help = "List of folders in \'data/results/\' in which results should be found. " , required=True)
+    # parser.add_argument( "--h_ex", nargs='+', type=float, help = "External magnetic field value, Bex." , required=True)
+    # parser.add_argument( "-m", "--mech", nargs='+', choices=['true','false'], help = ("Whether internal fields are suppressed or not. \'false\' means "
+    #                                                                                   "that they aren't so the mechanism is on, and \'true\' means that they are and the mechanism is off." ), required=True)
+    # parser.add_argument( "-f", "--folder_list", nargs='+', type=str, help = "List of folders in \'data/results/\' in which results should be found. " , required=True)
     parser.add_argument( "--to_plot", type=str, nargs='+', default='localBx', help = "Which observable should be plotted. Default is \'localBx\'")
     parser.add_argument( "-T", nargs='+', type=float, required=True, help = "Temperature. If not exact match, closest available temperature(s) will be used.")
     parser.add_argument("--flip", action="store_true", help="Also plot the flipped distribution. Useful for visualizing any asymmetry.")
+    parser.add_argument("--seed", type=str, default='*', help="Specify the seed of the simulation whose histogram is to be plotted.")
     args = parser.parse_args()
-
+    config.system_name = args.system_name
     return args
 
 
-def main_hist2(simulations, to_plot, flip=False):
+def main_hist2(simulations, to_plot, flip=False, seed='*'):
     from fit6 import str_with_err
     from plot_bin import format_label
     fig, ax = plt.subplots(figsize=(10,10))
@@ -35,16 +37,17 @@ def main_hist2(simulations, to_plot, flip=False):
         multiple_sim_data=[]
         multiple_sim_groups=[]
         for i, sim in enumerate(simulations.itertuples()):
-            path='../data/lattice_output/'+sim.folderName+'/table_'+str(sim.L)+'_'+str(sim.L)+'_'+str(sim.Bex)+'_'+str(sim.T)+'_'+str(sim.mech)+'_'+'*'+'.txt'
+            path='../' + config.system_name + '/data/lattice_output/'+sim.folderName+'/table_'+str(sim.L)+'_'+str(sim.L)+'_'+str(sim.Bex)+'_'+str(sim.T)+'_'+str(sim.mech)+'_'+str(seed)+'.txt'
+
             file_list = glob.glob(path)
             data=[]
             groups=[]
             num_independent_runs=len(file_list)
-            for i, file in enumerate(file_list):
+            for j, file in enumerate(file_list):
                 shift = 0 if to_plot_now != 'localBx' else float(sim.Bex)
                 temp_data=analysis_tools.get_table_data_by_fname(file)[to_plot_now].to_numpy() - shift
                 data.append(temp_data)
-                groups.append(np.full(temp_data.size,i))
+                groups.append(np.full(temp_data.size,j))
             data=np.concatenate(data).ravel()
             groups=np.concatenate(groups).ravel()
             multiple_sim_data.append(data)
@@ -59,7 +62,7 @@ def main_hist2(simulations, to_plot, flip=False):
             data=multiple_sim_data[sim_index]
             groups=multiple_sim_groups[sim_index]
             shared_bins_to_plot = shared_bins[:-1] + i*np.diff(shared_bins)/num_of_simulations_to_plot
-
+            num_independent_runs=len(np.unique(groups))
             histograms = np.zeros((num_independent_runs, len(shared_bins)-1))
             #smooth_histogram_x = np.linspace(shared_bins[0],shared_bins[-1],num=200)
             #smooth_histogram = np.zeros((num_independent_runs, len(smooth_histogram_x)))
@@ -67,11 +70,11 @@ def main_hist2(simulations, to_plot, flip=False):
             abs_values=np.zeros(num_independent_runs)
             standard_deviations=np.zeros(num_independent_runs)
             #window_size=5
-            for i in range(num_independent_runs):
-                simple_values[i] = np.mean(data[groups==i])
-                abs_values[i] = np.mean(np.abs(data[groups==i]))
-                standard_deviations[i] = np.sqrt(np.mean(data[groups==i]**2))
-                histograms[i], _ = np.histogram(data[groups == i], bins=shared_bins)
+            for j in range(num_independent_runs):
+                simple_values[j] = np.mean(data[groups==j])
+                abs_values[j] = np.mean(np.abs(data[groups==j]))
+                standard_deviations[j] = np.sqrt(np.mean(data[groups==j]**2))
+                histograms[j], _ = np.histogram(data[groups == j], bins=shared_bins)
 
                 #for idx, x in enumerate(smooth_histogram_x):
                 #    bin_width = shared_bins[1]-shared_bins[0]
@@ -118,7 +121,8 @@ def main_hist2(simulations, to_plot, flip=False):
     plt.title('Distribution of ' + to_plot_now)
     ax.set_ylabel('# of spins')
     ax.set_xlabel(to_plot_now + ('' if shift == 0 else ' - ' + str(shift)))
-    fig.savefig('../figures/hist_%s_%s_%s_%s_%s.png'%('_'.join(map(str,simulations['Bex'].unique().tolist())),'_'.join(map(str,simulations['mech'].unique().tolist())),'_'.join(map(str,simulations['L'].unique().tolist())),'_'.join(map(str,simulations['folderName'].unique().tolist())),to_plot_now), dpi=300)
+    plt.tight_layout()
+    fig.savefig('../' + config.system_name + '/figures/hist_%s_%s_%s_%s_%s.png'%('_'.join(map(str,simulations['Bex'].unique().tolist())),'_'.join(map(str,simulations['mech'].unique().tolist())),'_'.join(map(str,simulations['L'].unique().tolist())),'_'.join(map(str,simulations['folderName'].unique().tolist())),to_plot_now), dpi=300)
     plt.close(fig)
 
 
@@ -126,7 +130,7 @@ def main_hist(simulations, to_plot, flip=False):
 
     all_simulations=[]
     for i, sim in enumerate(simulations.itertuples()):
-        path='../data/lattice_output/'+sim.folderName+'/table_'+str(sim.L)+'_'+str(sim.L)+'_'+str(sim.Bex)+'_'+str(sim.T)+'_'+str(sim.mech)+'_'+'*'+'.txt'
+        path='../' + config.system_name + '/data/lattice_output/'+sim.folderName+'/table_'+str(sim.L)+'_'+str(sim.L)+'_'+str(sim.Bex)+'_'+str(sim.T)+'_'+str(sim.mech)+'_'+'*'+'.txt'
 
         file_list = glob.glob(path)
         data = pd.concat((analysis_tools.get_table_data_by_fname(f) for f in file_list))
@@ -155,7 +159,7 @@ def main_hist(simulations, to_plot, flip=False):
         plt.title('Distribution of ' + to_plot_now)
         ax.set_ylabel('# of spins')
         ax.set_xlabel(to_plot_now + ('' if shift == 0 else ' - ' + str(shift)))
-        fig.savefig('../figures/hist_%s_%s_%s_%s_%s.png'%('_'.join(map(str,simulations['Bex'].unique().tolist())),'_'.join(map(str,simulations['mech'].unique().tolist())),'_'.join(map(str,simulations['L'].unique().tolist())),'_'.join(map(str,simulations['folderName'].unique().tolist())),to_plot_now), dpi=300)
+        fig.savefig('../' + config.system_name + '/figures/hist_%s_%s_%s_%s_%s.png'%('_'.join(map(str,simulations['Bex'].unique().tolist())),'_'.join(map(str,simulations['mech'].unique().tolist())),'_'.join(map(str,simulations['L'].unique().tolist())),'_'.join(map(str,simulations['folderName'].unique().tolist())),to_plot_now), dpi=300)
         plt.close(fig)
 
 
@@ -170,9 +174,10 @@ def main():
     T = args.T
     to_plot=listify(to_plot)
     flip=args.flip
+    seed=args.seed
 
     simulations = analysis_tools.get_simulations(L, folderName, h_ex, mech, T=T)
-    main_hist2(simulations, to_plot, flip=flip)
+    main_hist2(simulations, to_plot, flip=flip, seed=seed)
 
 
 if __name__ == "__main__":

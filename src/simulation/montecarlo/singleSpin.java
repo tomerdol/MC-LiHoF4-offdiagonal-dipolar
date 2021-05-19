@@ -1,6 +1,8 @@
 package simulation.montecarlo;
 
 
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+
 import java.io.Serializable;
 
 public class singleSpin implements Serializable{
@@ -174,25 +176,33 @@ public class singleSpin implements Serializable{
 		
 	}
 
-
-	// location getters (calculation)
-	public double getX(int Lz, int Lx){
-		int i = ((this.n/Constants.num_in_cell)/Lz)/Lx;
-		int l = this.n%Constants.num_in_cell;
-
-		return i*Constants.a + Constants.a*Constants.location[l][0];
-	}
-
-	public double getY(int Lz, int Lx){
-		int j = ((this.n/Constants.num_in_cell)/Lz)%Lx;
-		int l = this.n%Constants.num_in_cell;
-		return j*Constants.a + Constants.a*Constants.location[l][1];
-	}
-
-	public double getZ(int Lz, int Lx){
+	public Vector3D getLocation(int Lz, int Ly){
+		int i = ((this.n/Constants.num_in_cell)/Lz)/Ly;
+		int j = ((this.n/Constants.num_in_cell)/Lz)%Ly;
 		int k = (this.n/Constants.num_in_cell)%Lz;
 		int l = this.n%Constants.num_in_cell;
-		return k*Constants.c + Constants.c*Constants.location[l][2];
+
+		int[] locCoordinates = new int[]{i, j, k};
+
+		Vector3D loc = Vector3D.ZERO;
+		for (int coor=0;coor<Constants.primitiveLatticeVectors.length;coor++){
+			loc=loc.add(locCoordinates[coor],Constants.primitiveLatticeVectors[coor]);	// add primitive lattice vectors according to (i,j,k)
+			loc=loc.add(Constants.basis[l][coor],Constants.primitiveLatticeVectors[coor]);	// add fraction of primitive lattice vector according to basis index l
+		}
+		return loc;
+	}
+
+	// location getters (calculation)
+	public double getX(int Lz, int Ly){
+		return getLocation(Lz, Ly).getX();
+	}
+
+	public double getY(int Lz, int Ly){
+		return getLocation(Lz, Ly).getY();
+	}
+
+	public double getZ(int Lz, int Ly){
+		return getLocation(Lz,Ly).getZ();
 	}
 	
 	

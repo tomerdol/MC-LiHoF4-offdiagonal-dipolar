@@ -1,4 +1,5 @@
 import matplotlib
+import config
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
@@ -15,7 +16,7 @@ def pow_fit(x, a, b):
 timestamp = datetime(2021, 1, 16).replace(tzinfo=timezone.utc).timestamp() # datetime when timestamps printed to /output were changed. this script (in contrast to get_Avgs_old.py) only searches newer files
 
 max_L = float(sys.argv[1])
-output_directory = os.fsencode('../output/')
+output_directory = os.fsencode('../' + config.system_name + '/output/')
 
 averages_dict={}
 
@@ -24,14 +25,14 @@ obsPrintSweepNum={2:11000,3:180000,4:18000,5:3000, 6:1500,7:300,8:100,9:75,10:25
 for file in os.listdir(output_directory):
     fname = os.fsdecode(file)
     if ".o" in fname:
-        if os.path.getmtime('../output/'+fname) > timestamp:
+        if os.path.getmtime('../' + config.system_name + '/output/'+fname) > timestamp:
             try:
                 #with open('../output/' + fname) as f:
                 #    seed = f.readline().strip()
                 #stream = os.popen("find ../data/results -name '*" + seed + ".txt' -not -path '*binned_data*' -exec head -n2 {} \\; -quit")
                 #start_time = stream.read().strip()
                 #start_time = start_time.split('#')[-1]
-                y=pd.read_csv('../output/' + fname,header=None,skiprows=0,parse_dates=True,infer_datetime_format=True, comment='S')
+                y=pd.read_csv('../' + config.system_name + '/output/' + fname,header=None,skiprows=0,parse_dates=True,infer_datetime_format=True, comment='S')
                 ts = pd.Series(pd.to_datetime(y[0],errors='coerce'))
                 ts = ts.dropna()
                 #ts = ts.iloc[:-1]
@@ -76,7 +77,7 @@ for (label, df) in averages.groupby(['Bex','mech']):
 ax.set_xlabel('L')
 ax.set_ylabel('Runtime for 1000 MCS [in hours]')
 plt.legend()
-fig.savefig('../figures/runtimes.png',dpi=360)
+fig.savefig('../' + config.system_name + '/figures/runtimes.png',dpi=360)
 #for key in averages_dict:
 #    avg_time = averages_dict[key][0]/averages_dict[key][1]
 #    avg_time_per_thousand_sweeps = 1000*avg_time / obsPrintSweepNum[int(key.split('_')[0][1])]

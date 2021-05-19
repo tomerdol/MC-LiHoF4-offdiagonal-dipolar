@@ -446,13 +446,13 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
                 "#temperature_schedule: " + Arrays.toString(T) + System.lineSeparator() +
                 "#T=" + this.T + ":" + temperatureIndex + System.lineSeparator() +
                 "#" + Constants.constantsToString() + System.lineSeparator() +
-                String.format("# Lx=%s, Ly=%s, Lz=%s, J_ex=%f, spinSize=%.8f, tol=%4.1e, extBx=%s, maxSweeps=%s, suppressInternalTransFields=%s, " +
+                String.format("# Lx=%s, Ly=%s, Lz=%s, J_ex=%f, spinSize=%.8f, tol=%4.1e, extBx=%s, extBy=%s, maxSweeps=%s, suppressInternalTransFields=%s, " +
                         "continueFromSave=%s, maxIter=%s, bufferSize=%s, tempScheduleFileName=%s, parallelTemperingOff=%s, " +
-                        "checkpoint=%s, folderName=%s, alpha=%s, output=%s ",lattice.getLx(),lattice.getLx(),lattice.getLz(),J_ex,spinSize,tol,lattice.getExtBx(), maxSweeps,lattice.isSuppressInternalTransFields(),
+                        "checkpoint=%s, folderName=%s, alpha=%s, output=%s ",lattice.getLx(),lattice.getLx(),lattice.getLz(),J_ex,spinSize,tol,lattice.getExtBx(), lattice.getExtBy(), maxSweeps,lattice.isSuppressInternalTransFields(),
                     continueFromSave, maxIter, outWriter.getBufferSize(),
                     tempScheduleFileName, parallelTemperingOff, checkpoint, outWriter.getFolderName(),
                     alpha, outWriter.getOutType()) + System.lineSeparator() +
-                "#" + Constants.locationsToString() + System.lineSeparator() +
+                "#" + Constants.locationsToString() + "," + Constants.latticeVectorsToString() + System.lineSeparator() +
                 "#seed=" + mutualSeed + " (" + seed + ")" + System.lineSeparator() +
                 extraMessage;
     }

@@ -5,6 +5,7 @@ import os
 import itertools
 import numpy as np
 import pandas as pd
+import config
 from collections import namedtuple
 
 def is_list_type(x):
@@ -37,7 +38,7 @@ def get_simulations(all_L, all_folderName, all_Bex, all_mech, T=None):
 
     simulations=pd.DataFrame(columns=['L','folderName','Bex','mech','T'])
     for x in itertools.product(all_L, all_folderName, all_Bex, all_mech):
-        temp_schedule_file_name = '../temperature_schedules/temp_schedule_' + str(x[0]) + '_' + str(x[0]) + '_' + str(x[1]) + '_' + str(x[2]) + '_' + x[3] + '.txt'
+        temp_schedule_file_name = '../' + config.system_name + '/temperature_schedules/temp_schedule_' + str(x[0]) + '_' + str(x[0]) + '_' + str(x[1]) + '_' + str(x[2]) + '_' + x[3] + '.txt'
         if os.path.exists(temp_schedule_file_name):
             with open(temp_schedule_file_name,'r') as temperature_schedule_file:
                 reader = csv.reader(temperature_schedule_file)
@@ -52,6 +53,8 @@ def get_simulations(all_L, all_folderName, all_Bex, all_mech, T=None):
                 curr_simulations['T']=closest_temperatures
             curr_simulations[['L','folderName','Bex','mech']] = x
             simulations = simulations.append(curr_simulations)
+        else:
+            raise Exception("No temp_schedule found matching the given simulation parameters: %s"%temp_schedule_file_name)
     simulations.reset_index(inplace=True)
     print(simulations)
     return simulations
@@ -66,7 +69,7 @@ def get_simulation(L, folderName, Bex, mech, T):
     
     simulation_tuple = namedtuple('Simulation', ['L', 'folderName','Bex','mech','T'])
     
-    temp_schedule_file_name = '../temperature_schedules/temp_schedule_' + str(L) + '_' + str(L) + '_' + str(folderName) + '_' + str(Bex) + '_' + str(mech) + '.txt'
+    temp_schedule_file_name = '../' + config.system_name + '/temperature_schedules/temp_schedule_' + str(L) + '_' + str(L) + '_' + str(folderName) + '_' + str(Bex) + '_' + str(mech) + '.txt'
     if os.path.exists(temp_schedule_file_name):
         with open(temp_schedule_file_name,'r') as temperature_schedule_file:
             reader = csv.reader(temperature_schedule_file)
@@ -88,7 +91,7 @@ def get_simulation(L, folderName, Bex, mech, T):
 def get_table_data_by_fname(fname, print_prog=True):
     try:
         col_names = pd.read_csv(fname, delim_whitespace=True, error_bad_lines=False, comment='#', nrows=0).columns
-        types_dict = {'index': int, 'swap': int, 'bin' : int, 'n' : int}
+        types_dict = {'index': int, 'bin' : int, 'n' : int}
         types_dict.update({col: np.float64 for col in col_names if col not in types_dict})
         possible_index_column_names = ['index', 'bin', 'n']
         index_col = [name for name in possible_index_column_names if name in col_names]

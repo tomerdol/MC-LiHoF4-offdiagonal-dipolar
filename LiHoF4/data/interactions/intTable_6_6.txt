@@ -1,0 +1,5 @@
+Lx=6
+Lz=6
+real_cutoff=10
+k_cutoff=12
+alpha=2.0
