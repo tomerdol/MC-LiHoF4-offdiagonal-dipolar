@@ -91,7 +91,7 @@ def get_simulation(L, folderName, Bex, mech, T):
 def get_table_data_by_fname(fname, print_prog=True):
     try:
         col_names = pd.read_csv(fname, delim_whitespace=True, error_bad_lines=False, comment='#', nrows=0).columns
-        types_dict = {'index': int, 'swap': int, 'bin' : int, 'n' : int}
+        types_dict = {'index': int, 'bin' : int, 'n' : int}
         types_dict.update({col: np.float64 for col in col_names if col not in types_dict})
         possible_index_column_names = ['index', 'bin', 'n']
         index_col = [name for name in possible_index_column_names if name in col_names]

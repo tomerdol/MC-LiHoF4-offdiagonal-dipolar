@@ -37,7 +37,7 @@ def bin_single_column_data(a, start_bin):
     return array
     
 def bin_data(a, l, start_bin):
-    binned_data = pd.DataFrame(columns=a.drop(['Energy','Magnetization','swap'],axis=1).columns)
+    binned_data = pd.DataFrame(columns=a.drop(['Energy','Magnetization'],axis=1).columns)
     
     # special columns:
     # Energy
@@ -56,14 +56,14 @@ def bin_data(a, l, start_bin):
     binned_data_with_error = bin_single_column_data(a['Magnetization']**4, start_bin)
     binned_data['Magnetization^4']=binned_data_with_error[:,0]
     binned_data['Magnetization^4_err']=binned_data_with_error[:,1]
-    
-    for col_name in a.drop(['Energy','Magnetization','swap'],axis=1).columns:
+
+    for col_name in a.drop(['Energy','Magnetization'],axis=1).columns:
         binned_data_with_error = bin_single_column_data(a[col_name], start_bin)
         binned_data[col_name]=binned_data_with_error[:,0]
         binned_data[col_name+'_err']=binned_data_with_error[:,1]
-    
+
     binned_data['bin'] = binned_data.index
-    
+
     # reorder columns
     move_col_to_front(binned_data, 'Magnetization^4')
     move_col_to_front(binned_data, 'Magnetization^2')
