@@ -4,7 +4,6 @@ import math
 import pandas as pd
 import sys
 import os
-
 import config
 
 
@@ -48,7 +47,6 @@ jy = (jplus - jminus) * (-0.5j)
 jz = hbar * np.diag(np.arange(-J,J+1))
 I_J = np.diag(np.ones(int(round(deg_J))))
 
-
 # crystal field equivalent operators
 O02 = 3 * LA.matrix_power(jz,2) - J*(J+1)*I_J
 O04 = 35 * LA.matrix_power(jz,4) - 30 * J * (J+1) * LA.matrix_power(jz,2) + 25*LA.matrix_power(jz,2) - 6 * J * (J+1) * I_J + 3 * J**2 * (J+1)**2 * I_J
@@ -75,11 +73,6 @@ H_cf = B02*O02 + B04*O04 + B06*O06 + B44C*O44C + B46C*O46C + B46S*O46S
 
 # Magnetic field Zeeman term
 meanBx = float(sys.argv[1])
-"""
-Bx = np.linspace(meanBx-2.,meanBx+2.,num=50)
-By = np.linspace(-2.,2.,num=50)
-Bz = np.linspace(-2.,2.,num=51)
-"""
 maxBx=3.0	# the real max is one less than this
 maxBz=3.0	# the real max is one less than this
 number=40	# the real number is twice this
@@ -93,31 +86,123 @@ By = np.geomspace(1,maxBx,num=number) - 1 + np.geomspace(1,maxBx,num=number)[1] 
 By = np.concatenate((np.flip(-1*By),By),axis=0)
 Bz = np.geomspace(1,maxBz,num=number) - 1 + min_bz
 Bz = np.concatenate((np.flip(-1*Bz),Bz),axis=0)
-"""
-Bx = np.geomspace(1,maxBx,num=number) - 1 + np.geomspace(1,maxBx,num=number)[1] - np.geomspace(1,maxBx,num=number)[0]
-Bx = np.concatenate((np.flip(-1*Bx),Bx),axis=0)
-Bx += meanBx
-By = np.geomspace(1,maxBx,num=number) - 1 + np.geomspace(1,maxBx,num=number)[1] - np.geomspace(1,maxBx,num=number)[0]
-By = np.concatenate((np.flip(-1*By),By),axis=0)
-Bz = np.geomspace(1,maxBz,num=number) - 1 + np.geomspace(1,maxBz,num=number)[1] - np.geomspace(1,maxBz,num=number)[0]
-Bz = np.concatenate((np.flip(-1*Bz),Bz),axis=0)
-"""
+
+H_zeeman = [[ -g_L * u_B * (Bx[i]*jx + By[j]*jy) for i in range(len(Bx)) ] for j in range(len(By))]
+
+# full Hamiltonian
+H = [ [( H_cf + H_zeeman_xy ) for H_zeeman_xy in H_zeeman_x ] for H_zeeman_x in H_zeeman ]
+
+H=np.array(H)
+assert np.allclose(H.transpose(0,1,3,2).conj(), H) # check Hermiticity
+
+### diagonalization
+res=[]
+eigen_energies=[]
+for hx in H:
+	res_x=[]
+	eigen_energies_x=[]
+	for hxy in hx:
+		w,v = LA.eigh(hxy)
+		res_x.append(v.T)
+		eigen_energies_x.append(w)
+	res.append(res_x)
+	eigen_energies.append(eigen_energies_x)
+
+eigenstates1=np.array(res)
+# 1st index is H, 2nd index is eigenvalue number (from lowest to highest)
+change_of_basis_matrix_inverse=np.transpose(eigenstates1,axes=(0,1,3,2))
+change_of_basis_matrix=LA.inv(change_of_basis_matrix_inverse)
+new_jz=change_of_basis_matrix @ jz @ change_of_basis_matrix_inverse
+new_jx=change_of_basis_matrix @ jx @ change_of_basis_matrix_inverse
+new_jy=change_of_basis_matrix @ jy @ change_of_basis_matrix_inverse
+
+# print(np.matrix(new_jz))
+
+part_new_jz=np.array(((new_jz[:,:,0,0],new_jz[:,:,0,1]),(new_jz[:,:,1,0],new_jz[:,:,1,1])))
+part_new_jx=np.array(((new_jx[:,:,0,0],new_jx[:,:,0,1]),(new_jx[:,:,1,0],new_jx[:,:,1,1])))
+part_new_jy=np.array(((new_jy[:,:,0,0],new_jy[:,:,0,1]),(new_jy[:,:,1,0],new_jy[:,:,1,1])))
+
+eigenvalues=[]
+eigenstates=[]
+
+j=0
+for part_new_jz_i in part_new_jz.transpose(2,3,0,1):
+	eigenvalues_i=[]
+	eigenstates_i=[]
+	for part_new_jz_ij in part_new_jz_i:
+		#     print("part_new_jz_i")
+		#     print(part_new_jz_i)
+		w1,v1 = LA.eigh(part_new_jz_ij)
+		eigenvalues_i.append(w1)
+		#     print('Bx='+str(Bx[j]))
+		#     j+=1
+		for i in range(v1.T[:,0].size):
+			v1.T[i,:]*=np.exp(-1j*np.angle(v1.T[i,0]))
+		#     print(np.angle(v1.T))
+		#     print(np.abs(v1.T))
+		eigenstates_i.append(v1)
+	eigenstates.append(eigenstates_i)
+	eigenvalues.append(eigenvalues_i)
+
+
+# # checks:
+# alpha = eigenstates1[0, 0, :]
+# beta = eigenstates1[0, 1, :]
+# up_coord=v1[:,0]
+# down_coord=v1[:,1]
+# print('up_coord='+str(np.angle(up_coord)))
+# print('down_coord='+str(np.angle(down_coord)))
+# up=up_coord[0]*alpha + up_coord[1]*beta
+# down=down_coord[0]*alpha + down_coord[1]*beta
+# print('up='+str(up))
+# print('down='+str(down))
+# print("up@down="+str(np.conj(np.transpose(up)) @ down))
+# # print("up@jz@down="+str(np.conj(np.transpose(up)) @ jz @ down))
+# # print("down@jz@up="+str(np.conj(np.transpose(down)) @ jz @ up))
+# # print("down@jz@down="+str(np.conj(np.transpose(down)) @ jz @ down))
+# # print("up@jz@up="+str(np.conj(np.transpose(up)) @ jz @ up))
+
+eigenvalues=np.array(eigenvalues)
+eigenstates=np.array(eigenstates)
+
+upjzup=[]
+downjzdown=[]
+upjxup=[]
+downjxdown=[]
+upjyup=[]
+downjydown=[]
+upjzdown=[]
+downjzup=[]
+upjxdown=[]
+downjxup=[]
+upjydown=[]
+downjyup=[]
+
+for x in range(eigenstates.shape[0]):
+	upjzup_x=[]
+	downjzdown_x=[]
+	for y in range(eigenstates.shape[1]):
+		upjzup_x.append(np.conj(eigenstates[x,y,:,0].T) @ part_new_jz.transpose(2,3,0,1)[x,y] @ eigenstates[x,y,:,0])
+		downjzdown_x.append(np.conj(eigenstates[x,y,:,1].T) @ part_new_jz.transpose(2,3,0,1)[x,y] @ eigenstates[x,y,:,1])
+	upjzup.append(upjzup_x)
+	downjzdown.append(downjzdown_x)
+
+upjzup=np.array(upjzup)
+downjzdown=np.array(downjzdown)
+
+data=np.broadcast_to(0.5*abs(upjzup-downjzdown),(2*number,2*number,2*number))
+
+write_to_file('magnetic_moment_up_arr_%1.2f_chak'%meanBx, data, Bx, By, Bz)
 
 # create zeeman term for different combination of Bx,By,Bz
 res_energy_up=[]
 res_energy_down=[]
-res_magnetic_moment_up=[]
-res_magnetic_moment_down=[]
 for i, bz in enumerate(Bz):
 	res_energy_y_up=[]
 	res_energy_y_down=[]
-	res_magnetic_moment_y_up=[]
-	res_magnetic_moment_y_down=[]
 	for by in By:
 		res_energy_x_up=[]
 		res_energy_x_down=[]
-		res_magnetic_moment_x_up=[]
-		res_magnetic_moment_x_down=[]
 		for bx in Bx:
 			H_zeeman = u_B*g_L*(bx*jx + by*jy + bz*jz)    # zeeman term
 			H = H_cf - H_zeeman                 # full hamiltonian
@@ -130,7 +215,7 @@ for i, bz in enumerate(Bz):
 				temp = energy_up
 				energy_up = energy_down
 				energy_down = temp
-			effective_bz = math.sqrt(bx**2 + by**2)
+			effective_bz = 1.1*math.sqrt(bx**2 + by**2)
 			H_zeeman = u_B*g_L*(bx*jx + by*jy + effective_bz*jz)    # zeeman term
 			H = H_cf - H_zeeman                 # full hamiltonian
 			w,v = LA.eigh(H)
@@ -139,7 +224,7 @@ for i, bz in enumerate(Bz):
 			H = H_cf - H_zeeman                 # full hamiltonian
 			w,v = LA.eigh(H)
 			magnetic_moment_down = np.real(np.diagonal(np.conj(v.T)@jz@v)[0])
-			
+
 			if (magnetic_moment_up < magnetic_moment_down):
 				# switch moments
 				temp = magnetic_moment_up
@@ -149,42 +234,16 @@ for i, bz in enumerate(Bz):
 				temp = energy_up
 				energy_up = energy_down
 				energy_down = temp
-			
-			if  bz==0 and (bx!=0 or by!=0): #math.isclose(bz,0,abs_tol=1e-15)
-				print('(%s,%s,%s): %s'%(bx,by,bz,magnetic_moment_up))
-				print('(%s,%s,%s): %s'%(bx,by,bz,magnetic_moment_down))
-				print('(%s,%s,%s): %s'%(bx,by,bz,energy_up))
-				print('(%s,%s,%s): %s'%(bx,by,bz,energy_down))
+
 			res_energy_x_up.append(energy_up)
 			res_energy_x_down.append(energy_down)
-			
-			res_magnetic_moment_x_up.append(magnetic_moment_up)
-			res_magnetic_moment_x_down.append(magnetic_moment_down)
+
 		res_energy_y_up.append(res_energy_x_up)
 		res_energy_y_down.append(res_energy_x_down)
-		res_magnetic_moment_y_up.append(res_magnetic_moment_x_up)
-		res_magnetic_moment_y_down.append(res_magnetic_moment_x_down)
 	res_energy_up.append(res_energy_y_up)
 	res_energy_down.append(res_energy_y_down)
-	res_magnetic_moment_up.append(res_magnetic_moment_y_up)
-	res_magnetic_moment_down.append(res_magnetic_moment_y_down)
 	print(str(100*i/Bz.size) + "%")
-		
+
 energy_up_arr = np.array(res_energy_up)
 energy_down_arr = np.array(res_energy_down)
-magnetic_moment_up_arr = np.array(res_magnetic_moment_up)
-magnetic_moment_down_arr = np.array(res_magnetic_moment_down)
-print("check up and down magnetic moment arrays are the same: " + str(np.allclose((-1)*(np.flip(magnetic_moment_down_arr, 0)), magnetic_moment_up_arr, atol=1e-15)))
-print("check up and down energy arrays are the same: " + str(np.allclose(np.flip(energy_down_arr, 0), energy_up_arr, atol=1e-15)))
-if (np.allclose((-1)*(np.flip(magnetic_moment_down_arr, 0)), magnetic_moment_up_arr, atol=1e-15)):
-	write_to_file('magnetic_moment_up_arr_%1.2f_const'%meanBx,magnetic_moment_up_arr, Bx, By, Bz)
- 	# pass
-else:
-    print('magnetic moment table not transposable!')
-if (np.allclose(np.flip(energy_down_arr, 0), energy_up_arr, atol=1e-15)):
-	write_to_file('energy_up_arr_%1.2f_const'%meanBx,energy_up_arr, Bx, By, Bz)
- 	#pass
-else:
-    print('energy table not transposable!')
-
-
+write_to_file('energy_up_arr_%1.2f_chak'%meanBx,energy_up_arr, Bx, By, Bz)
