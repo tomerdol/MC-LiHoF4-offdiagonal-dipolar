@@ -1,6 +1,6 @@
 #!/bin/bash
 
-name="exact_test_const2"
+name="exact_test_const4"
 arrayMech=( "false" )
 arrayL=( 1 )
 #arrayH=( 0.0 0.3 0.6 1.0 1.5 2.0 )
@@ -81,7 +81,7 @@ while [ $COUNT -lt $runs ]; do
     #echo "${seeds[$i]}"
     ((i++))
     ((COUNT++))
-    sleep 60
+    sleep 10
 done
 fi
 done

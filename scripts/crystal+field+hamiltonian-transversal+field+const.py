@@ -130,7 +130,7 @@ for i, bz in enumerate(Bz):
 				temp = energy_up
 				energy_up = energy_down
 				energy_down = temp
-			effective_bz = math.sqrt(bx**2 + by**2)
+			effective_bz = 0.3 * math.sqrt(bx**2 + by**2)
 			H_zeeman = u_B*g_L*(bx*jx + by*jy + effective_bz*jz)    # zeeman term
 			H = H_cf - H_zeeman                 # full hamiltonian
 			w,v = LA.eigh(H)
@@ -178,7 +178,7 @@ print("check up and down magnetic moment arrays are the same: " + str(np.allclos
 print("check up and down energy arrays are the same: " + str(np.allclose(np.flip(energy_down_arr, 0), energy_up_arr, atol=1e-15)))
 if (np.allclose((-1)*(np.flip(magnetic_moment_down_arr, 0)), magnetic_moment_up_arr, atol=1e-15)):
 	write_to_file('magnetic_moment_up_arr_%1.2f_const'%meanBx,magnetic_moment_up_arr, Bx, By, Bz)
- 	# pass
+ 	#pass
 else:
     print('magnetic moment table not transposable!')
 if (np.allclose(np.flip(energy_down_arr, 0), energy_up_arr, atol=1e-15)):

@@ -1,7 +1,8 @@
 # $1=Lx $2=Lz $3=max_sweeps $4=extBx $5=mech $6=name $7=seed $8=interpolation_table_name
 if [ $SYS_NAME == "LiHoF4" ]; then
-jex="1.16e-3"
+#jex="1.16e-3"
 #jex="3.91e-3"
+jex="0.0"
 elif [ $SYS_NAME == "Fe8" ]; then
 jex="0.0"
 fi
