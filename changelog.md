@@ -1,5 +1,29 @@
 # Change log
 
+# v1.3.0b - 24/05/2021
+* Restructure for multiple projects
+* New module to parse arguments for all scripts and hold variables that would be accessible from other scripts
+* Added config module with the name of the system and added it to all paths
+* Removed old functions from phase_diagram_bin.py
+* Removed MagneticMomentsSolveIter.java and MonteCarloMetropolis.java
+* Add extBy
+* New class for system specific nearest neighbors configurations
+* Added option to plot histogram of specific run
+* Fixed reading L=10 obsPrintSweepNum
+* Added primitive lattice vectors printing to results file
+* Added function to calculate simple dipolar interactions with PBC in ewaldSum
+* Upgraded find_unfinished_simulations.sh to find max steps
+* Added single submission to sub scripts
+* Upgraded find_unfinished_simulations.sh
+* Add delta x as command line argument to phase_diagram_bin.py
+* Changed plot_bin.py to use latest bin
+* Cosmetic fix to plot_equilibration_pdf_bin.py
+* BUGFIX: plot_histogram.py can now process simulations with different numbers of independent runs
+* Show warning when using unequilibrated data
+* Add swap to binned data
+* Enable acceptance rate plot with plot_bin.py
+* Add script to create magnetic moment table according to the calculation in P. B. Chakraborty, P. Henelius, H. Kjønsberg, A. W. Sandvik, and S. M. Girvin, Phys. Rev. B 70, 144411 (2004).
+
 # v1.2.0b - 08/03/2021
 * Write full lattice state at the end of the simulation
 * Count Bx-maximizing configurations
