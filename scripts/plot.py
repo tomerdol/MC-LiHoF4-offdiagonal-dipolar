@@ -7,6 +7,7 @@ import pandas as pd
 import math
 import csv
 import os
+import config
 
 def bootstrap_resample(X, n=None):
     """ Bootstrap resample an array_like
@@ -44,7 +45,7 @@ def plot_multiple(all_L, xdata, all_ydata, err_y, h_ex):
     axes = plt.gca()
     #axes.set_ylim([0.5,1])
 
-    fig.savefig('../figures/plot_%s.png'%h_ex)
+    fig.savefig('../'+config.system_name+'/figures/plot_%s.png'%h_ex)
 
 def get_binder(m2,m4):
     m2=np.mean(m2)
@@ -75,7 +76,7 @@ def get_binned_array(arr):
         return 0.5*(arr[:-1:2]+arr[1::2])
     
 
-def main_plot(all_L, L_equilibrated_min_value, tau_dict, boot_num, h_ex, mech, folderName, xdata, folder='../data/results', start_in_middle=True):
+def main_plot(all_L, L_equilibrated_min_value, tau_dict, boot_num, h_ex, mech, folderName, xdata, folder='../'+config.system_name+'/data/results', start_in_middle=True):
     all_yboot=[]
     Nsigma=1.
     markers=['o','s','^','D','v']
@@ -156,7 +157,7 @@ def main_plot(all_L, L_equilibrated_min_value, tau_dict, boot_num, h_ex, mech, f
     plt.legend(loc='best')
     plt.tight_layout()
     axes = plt.gca()
-    fig.savefig('../figures/plot_%s_%s_%s_cl.png'%(h_ex,mech,'_'.join(map(str,all_L))))
+    fig.savefig('../'+config.system_name+'/figures/plot_%s_%s_%s_cl.png'%(h_ex,mech,'_'.join(map(str,all_L))))
     plt.close()
     #return ([xdata[l] for l in sorted(xdata.keys())],all_y_curves)
     return all_y_curves
@@ -164,14 +165,12 @@ def main_plot(all_L, L_equilibrated_min_value, tau_dict, boot_num, h_ex, mech, f
 
 def parse_arguments():  
     from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
-    
-    parser = ArgumentParser(description="Analyzes Monte Carlo results and plots correlation length curves for LiHoF4", formatter_class=ArgumentDefaultsHelpFormatter)
+    parser = ArgumentParser(description="Analyzes Monte Carlo results and plots correlation length curves.", formatter_class=ArgumentDefaultsHelpFormatter, parents=[config.parse_arguments()], conflict_handler='resolve')
     parser.add_argument( "-L", nargs='+', type=int, required=True, help = "Linear system sizes. At least 2 required.")
-    parser.add_argument( "-b", "--boot_num", type=int, default = 100, help = "Number of bootstrap samples.")
-    parser.add_argument( "--h_ex", type=float, help = "External magnetic field value, Bex." , required=True)
-    parser.add_argument( "-m", "--mech", choices=['true','false'], help = ("Whether internal fields are suppressed or not. \'false\' means "
-    "that they aren't so the mechanism is on, and \'true\' means that they are and the mechanism is off." ), required=True)
-    parser.add_argument( "-f", "--folder_list", nargs='+', type=str, help = "List of folders in \'data/results\' in which results should be found. " , required=True)
+    # parser.add_argument( "--h_ex", type=float, help = "External magnetic field value, Bex." , required=True)
+    # parser.add_argument( "-m", "--mech", choices=['true','false'], help = ("Whether internal fields are suppressed or not. \'false\' means "
+    # "that they aren't so the mechanism is on, and \'true\' means that they are and the mechanism is off." ), required=True)
+    # parser.add_argument( "-f", "--folder_list", nargs='+', type=str, help = "List of folders in \'data/results\' in which results should be found. " , required=True)
     #parser.add_argument( "-o", "--overwrite_tmp", action='store_true', default=False, help = ("Overwrite parsed files in /tmp. If not given, existing files will "
     #"be used (which probably means older results)."))
     parser.add_argument( "--tmp", default=False, action="store_true", help = "Read from /tmp")
@@ -179,6 +178,7 @@ def parse_arguments():
     if len(args.folder_list)>1 and len(args.folder_list)!=len(args.L): 
         parser.error("--folder_list and -L argument number mismatch.")
 
+    config.system_name = args.system_name
     return args
 
 
@@ -193,7 +193,7 @@ def main():
         folder='/tmp'
     else:
         L_equilibrated_min_value = {}
-        folder='../data/results'
+        folder='../'+config.system_name+'/data/results'
     boot_num = args.boot_num           
     h_ex = args.h_ex         
     tau_dict={k:2 for k in all_L}
@@ -218,7 +218,7 @@ def main():
         xdata[L]=[float(i) for i in xdata[L]]
     
     main_plot(all_L, L_equilibrated_min_value, tau_dict, boot_num, h_ex, mech, folderName_dict, xdata, folder=folder)
-    #os.system("rsync -avzhe ssh ../figures/ tomerdol@newphysnet1:~/graphs/")
+    #os.system("rsync -avzhe ssh ../"+config.system_name+"/figures/ tomerdol@newphysnet1:~/graphs/")
 
 if __name__ == "__main__":
     main()

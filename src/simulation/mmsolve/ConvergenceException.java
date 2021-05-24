@@ -1,7 +1,5 @@
 package simulation.mmsolve;
 
-import simulation.montecarlo.MonteCarloMetropolis;
-
 /**
  * Exception for failure to converge when performing the self consistent calculation after a spin-flip.
  * @see simulation.montecarlo.Lattice#solveSelfConsistentCalc(int, double, int, int, int[][], double)

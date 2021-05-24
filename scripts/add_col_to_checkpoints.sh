@@ -1,7 +1,7 @@
 #!/bin/bash
 
 name=$1
-for file in ./checkpoints/"$name"/save_state_*.txt
+for file in ./"$SYS_NAME"/checkpoints/"$name"/save_state_*.txt
 do
 filename=${file##*/}
 name_no_ext="${filename%.txt}"
@@ -17,6 +17,6 @@ suppress_tag=""
 fi
 
 echo "Fixing ${filename}."
-java -classpath "./bin/production/LiHoF4_transverse_field_MC/:./lib/*" utilities.fixBackwardsCompatibility -max_iter 0 -max_sweeps 0 -s yes -mode s -L "$Lx","$Lz" -extBx "$H" -name "$name" -seed "$seed" -new_col_num 36 "$suppress_tag"
+java -Dsystem="$SYS_NAME" -classpath "./bin/production/LiHoF4_transverse_field_MC/:./lib/*" utilities.fixBackwardsCompatibility -max_iter 0 -max_sweeps 0 -s yes -mode s -L "$Lx","$Lz" -extBx "$H" -name "$name" -seed "$seed" -new_col_num 36 "$suppress_tag"
 
 done

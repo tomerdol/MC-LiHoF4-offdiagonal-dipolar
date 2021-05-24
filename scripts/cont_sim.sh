@@ -1,9 +1,9 @@
 #!/bin/bash
 unset module
-name="temp_res_test_ex_0.014"
-arrayMech=( "true" )
-arrayL=( 4 5 6 7 )
-arrayH=( 2.0 )
+name="temp_Fe8_test8"
+arrayMech=( "false" "true" )
+arrayL=( 5 6 7 8 9 )
+arrayH=( 0.0 )
 
 # Check input
 if [[ ! $# > 0 || ! $1 =~ ^[0-9]+$ ]]
@@ -27,7 +27,7 @@ for L in "${arrayL[@]}"
 do
 
 COUNT=0
-for file in ./checkpoints/"$name"/save_state_"$L"_"$L"_"$H"_"$mech"_*.txt
+for file in ./"$SYS_NAME"/checkpoints/"$name"/save_state_"$L"_"$L"_"$H"_"$mech"_*.txt
 do
     seed=$(echo ${file##*_} | cut -f 1 -d '.')
     # check that the seed does not belong to an already running job
@@ -46,11 +46,14 @@ do
       fi
       fi
 
-      qsub -pe shared 24 -l mem_free=40G -V -S /bin/bash -cwd -N tr"$L"_"$H"_"$COUNT"_"$mech_initial" -o ./output/ -e ./output/ -q "$queues" ./scripts/met_with_t.sh "$L" "$L" "$max_sweeps" "$H" "$mech" "$name" "$seed" "$extra"
+      # parallel submission
+#      qsub -pe shared 24 -l mem_free=40G -V -S /bin/bash -cwd -N tr"$L"_"$H"_"$COUNT"_"$mech_initial" -o ./"$SYS_NAME"/output/ -e ./"$SYS_NAME"/output/ -q "$queues" ./scripts/met_with_t.sh "$L" "$L" "$max_sweeps" "$H" "$mech" "$name" "$seed" "$extra"
       #echo "${seeds[$i]}"
+      # single submission
+      qsub -l mem_free=4G -V -S /bin/bash -cwd -N tr"$L"_"$H"_"$COUNT"_"$mech_initial" -o ./"$SYS_NAME"/output/ -e ./"$SYS_NAME"/output/ -q smoshe.q,lublin.q,intel_all.q ./scripts/met_with_t_single.sh "$L" "$L" "$max_sweeps" "$H" "$mech" "$name" "$seed" "$extra"
 
       ((COUNT++))
-      sleep 120
+      sleep 60
     fi
 done
 done

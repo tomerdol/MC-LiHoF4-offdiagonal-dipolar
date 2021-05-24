@@ -5,7 +5,7 @@
       <sshConfig authType="PASSWORD" host="newphysnet1.bgu.ac.il" id="9f3abc1e-f2d1-40f8-a374-d5a1c782e221" port="22" customName="newphysnet1.bgu.ac.il" nameFormat="CUSTOM" username="tomerdol">
         <option name="customName" value="newphysnet1.bgu.ac.il" />
       </sshConfig>
-      <sshConfig authType="PASSWORD" host="sge250.bgu.ac.il" id="5d3872d5-a07d-4c49-9ca4-bef47991dcc9" port="22" customName="cluster" nameFormat="CUSTOM" username="tomerdol">
+      <sshConfig authType="PASSWORD" connectionConfig="{&quot;serverAliveInterval&quot;:300}" host="sge250.bgu.ac.il" id="5d3872d5-a07d-4c49-9ca4-bef47991dcc9" port="22" customName="cluster" nameFormat="CUSTOM" username="tomerdol">
         <option name="customName" value="cluster" />
       </sshConfig>
     </configs>

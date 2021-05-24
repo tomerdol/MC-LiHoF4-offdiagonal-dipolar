@@ -15,7 +15,7 @@ do
 echo "Binning data"
 python3 bin_data.py "$H" "$name" "$mech" "$L"
 echo "Removing raw data"
-rm -f ../data/results/"$name"/table_"$L"_"$L"_"$H"_*_"$mech".txt
+rm -f ../"$SYS_NAME"/data/results/"$name"/table_"$L"_"$L"_"$H"_*_"$mech".txt
 
 done
 done

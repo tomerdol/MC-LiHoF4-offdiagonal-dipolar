@@ -14,24 +14,37 @@ import java.util.Properties;
 
 
 public class GenerateLattice {
+
 	/**
 	 * Generates a singleSpin array of LiHo_{x}Y_{1-x}F_4
 	 * @param Lx - Number of unit cells in x and in y directions
 	 * @param Lz - Number of unit cells in z direction
-	 * @param a - Size of unit cell in x and y directions
-	 * @param c - Size of unit cell in z direction
 	 * @param dilution - Dilution of Holmium atoms (x)
 	 * @param h - Random field parameter
 	 * @param rnd_spin - PRNG for random dilution. If null is given then an empty lattice will be returned (all spin 0) which still can be useful for Ewald summation.
 	 * @return An array of spins that represent a Lx*Lx*Lz lattice of LiHo_{x}Y_{1-x}F_4
 	 */
-	public static singleSpin[] generate_ising_lattice(int Lx, int Lz, double a, double c, double dilution, double h, MersenneTwister rnd_spin) {
+	public static singleSpin[] generate_ising_lattice(int Lx, int Lz, double dilution, double h, MersenneTwister rnd_spin) {
+		return generate_ising_lattice(Lx, Lx, Lz, dilution, h, rnd_spin);
+	}
+
+	/**
+	 * Generates a singleSpin array of LiHo_{x}Y_{1-x}F_4
+	 * @param Lx - Number of unit cells in x direction
+	 * @param Ly - Number of unit cells in y direction
+	 * @param Lz - Number of unit cells in z direction
+	 * @param dilution - Dilution of Holmium atoms (x)
+	 * @param h - Random field parameter
+	 * @param rnd_spin - PRNG for random dilution. If null is given then an empty lattice will be returned (all spin 0) which still can be useful for Ewald summation.
+	 * @return An array of spins that represent a Lx*Lx*Lz lattice of LiHo_{x}Y_{1-x}F_4
+	 */
+	public static singleSpin[] generate_ising_lattice(int Lx, int Ly, int Lz, double dilution, double h, MersenneTwister rnd_spin) {
 		final double spinSize = CrystalField.getMagneticMoment(0.0, 0.0, 0.05);
 
         int i, j, k, l;
         // create the array that will hold the lattice. the array's cells correspond
         // to the unit cells of the LiHo{x}Y{x-1}F4.
-        singleSpin[] arr = new singleSpin[Constants.num_in_cell*Lx*Lx*Lz];
+        singleSpin[] arr = new singleSpin[Constants.num_in_cell*Lx*Ly*Lz];
         
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         // get location matrix (3D coordinates for each of the 4 atoms)
@@ -47,7 +60,7 @@ public class GenerateLattice {
         
         for (i = 0; i < Lx; i++)
         {
-            for (j = 0; j < Lx; j++)
+            for (j = 0; j < Ly; j++)
             {
             	for (k = 0; k < Lz; k++)
             	{
@@ -58,9 +71,9 @@ public class GenerateLattice {
 	            		if (rnd_spin!=null && rnd_spin.nextDouble()<dilution){
 	            			int s=1;
 	            			//if (rnd_spin.nextBoolean()) s=-1;
-	            			arr[i*Lx*Lz*Constants.num_in_cell+j*Lz*Constants.num_in_cell+k*Constants.num_in_cell+l]=new singleSpin(1,i*Lx*Lz*Constants.num_in_cell+j*Lz*Constants.num_in_cell+k*Constants.num_in_cell+l, spinSize);
+	            			arr[i*Ly*Lz*Constants.num_in_cell+j*Lz*Constants.num_in_cell+k*Constants.num_in_cell+l]=new singleSpin(1,i*Ly*Lz*Constants.num_in_cell+j*Lz*Constants.num_in_cell+k*Constants.num_in_cell+l, spinSize);
 	            		}else{
-		                	arr[i*Lx*Lz*4+j*Lz*4+k*4+l]=new singleSpin(0,i*Lx*Lz*4+j*Lz*4+k*4+l, spinSize);
+		                	arr[i*Ly*Lz*Constants.num_in_cell+j*Lz*Constants.num_in_cell+k*Constants.num_in_cell+l]=new singleSpin(0,i*Ly*Lz*Constants.num_in_cell+j*Lz*Constants.num_in_cell+k*Constants.num_in_cell+l, spinSize);
 	            		}
             		}
             	}
@@ -117,7 +130,7 @@ public class GenerateLattice {
         for (int i=startConfigNum;i<=numOfConfigurations;i++){
         	BufferedWriter out = null;
         	try {
-	            out = new BufferedWriter(new FileWriter("data" + File.separator + "configurations" + File.separator + "config_"+Lx+"_"+Lz+"_"+dilution+"_"+h+"_"+i+".txt"));
+	            out = new BufferedWriter(new FileWriter(System.getProperty("system") + File.separator + "data" + File.separator + "configurations" + File.separator + "config_"+Lx+"_"+Lz+"_"+dilution+"_"+h+"_"+i+".txt"));
 	            
 	            //initialize PRNG
 	            long seed = System.currentTimeMillis();
@@ -132,7 +145,7 @@ public class GenerateLattice {
 	            out.newLine();
 	            
 	            // print the lattice itself
-	            printArr(generate_ising_lattice(Lx,Lz,a,c,dilution,h, rnd), Lz, Lx, out);
+	            printArr(generate_ising_lattice(Lx,Lz,dilution,h, rnd), Lz, Lx, out);
 	            
 	            out.close();
 	        }

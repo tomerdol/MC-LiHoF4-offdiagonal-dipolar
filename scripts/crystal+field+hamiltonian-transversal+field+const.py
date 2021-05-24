@@ -5,9 +5,12 @@ import pandas as pd
 import sys
 import os
 
+import config
+
+
 def write_to_file(name, data, Bx, By, Bz):
 	script_dir = os.path.dirname(os.path.abspath(__file__)) #<-- absolute dir the script is in
-	rel_path = "/../data/interactions/" + name + '.txt'
+	rel_path = '/../LiHoF4/data/interactions/' + name + '.txt'
 	print(script_dir)
 	abs_file_path = script_dir + rel_path
 	with open(abs_file_path, 'w') as outfile:
@@ -99,6 +102,7 @@ By = np.concatenate((np.flip(-1*By),By),axis=0)
 Bz = np.geomspace(1,maxBz,num=number) - 1 + np.geomspace(1,maxBz,num=number)[1] - np.geomspace(1,maxBz,num=number)[0]
 Bz = np.concatenate((np.flip(-1*Bz),Bz),axis=0)
 """
+
 # create zeeman term for different combination of Bx,By,Bz
 res_energy_up=[]
 res_energy_down=[]
@@ -126,7 +130,7 @@ for i, bz in enumerate(Bz):
 				temp = energy_up
 				energy_up = energy_down
 				energy_down = temp
-			effective_bz = 1.1*max(abs(bx),abs(by))
+			effective_bz = 0.3 * math.sqrt(bx**2 + by**2)
 			H_zeeman = u_B*g_L*(bx*jx + by*jy + effective_bz*jz)    # zeeman term
 			H = H_cf - H_zeeman                 # full hamiltonian
 			w,v = LA.eigh(H)

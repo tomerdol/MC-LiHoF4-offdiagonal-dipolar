@@ -6,6 +6,7 @@ import pandas as pd
 import csv, sys, os
 import plot, plot_equilibration_pdf, check_equilibration, fit6, test_autocorrelation
 import itertools
+import config
 from shutil import copyfile
 
 
@@ -20,16 +21,17 @@ def check_exists_and_not_empty(T, L, Bex, folderName, mech):
         L_exists_dict[l] = exists
     return L_exists_dict
 
+
 def parse_arguments():  
     from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
     
-    parser = ArgumentParser(description="Analyzes Monte Carlo results to create a phase diagram for LiHoF4", formatter_class=ArgumentDefaultsHelpFormatter)
+    parser = ArgumentParser(description="Analyzes Monte Carlo results to create a phase diagram for LiHoF4", formatter_class=ArgumentDefaultsHelpFormatter, parents=[config.parse_arguments()], conflict_handler='resolve')
     parser.add_argument( "-L", nargs='+', type=int, required=True, help = "Linear system sizes. At least 2 required.")
-    parser.add_argument( "-b", "--boot_num", type=int, default = 100, help = "Number of bootstrap samples.")
-    parser.add_argument( "--h_ex_list", nargs='+', type=float, help = "List of external magnetic field values, Bex." , required=True)
-    parser.add_argument( "-m", "--mech", choices=['true','false'], help = ("Whether internal fields are suppressed or not. \'false\' means "
-    "that they aren't so the mechanism is on, and \'true\' means that they are and the mechanism is off." ), required=True)
-    parser.add_argument( "-f", "--folder_list", nargs='+', type=str, help = "List of folders in \'/data/results\' in which results should be found. " , required=True)
+    # parser.add_argument( "-b", "--boot_num", type=int, default = 100, help = "Number of bootstrap samples.")
+    # parser.add_argument( "--h_ex_list", nargs='+', type=float, help = "List of external magnetic field values, Bex." , required=True)
+    # parser.add_argument( "-m", "--mech", choices=['true','false'], help = ("Whether internal fields are suppressed or not. \'false\' means "
+    # "that they aren't so the mechanism is on, and \'true\' means that they are and the mechanism is off." ), required=True)
+    # parser.add_argument( "-f", "--folder_list", nargs='+', type=str, help = "List of folders in \'/data/results\' in which results should be found. " , required=True)
     parser.add_argument( "-o", "--overwrite_tmp", action='store_true', default=False, help = ("Overwrite parsed files in /tmp. If not given, existing files will "
     "be used (which probably means older results)."))
     
@@ -39,9 +41,9 @@ def parse_arguments():
     if len(args.folder_list)>1 and len(args.folder_list)!=len(args.L): 
         parser.error("--folder_list and -L argument number mismatch.")
 
-
-        
+    config.system_name = args.system_name
     return args
+
 
 def find_initial_xc_idx(arr_x,arr_y):
     # find average x_c from crossing of all possible pairs of L's 
@@ -53,6 +55,7 @@ def find_initial_xc_idx(arr_x,arr_y):
     initial_xc = sum/num_of_pairs
     # return the index of the nearest value in the first given array (smallest L)
     return (np.abs(arr_x[0] - initial_xc)).argmin()
+
 
 def find_initial_xc_from_pair(arr1,arr2):
     # arr 1&2 are the curves for which a approximate crossing is found
@@ -89,7 +92,7 @@ def plot_previous_data(ax):
     
     return ax
     
-def copy_files_to_tmp(T, cols_to_copy, L, Bex, folderName, mech, folder='../data/results'):
+def copy_files_to_tmp(T, cols_to_copy, L, Bex, folderName, mech, folder='../'+config.system_name+'/data/results'):
     path='/tmp/'+folderName
     try:
         os.mkdir(path)
@@ -127,11 +130,11 @@ def main():
     
     all_L = args.L
     boot_num = args.boot_num
-    h_ex_list = args.h_ex_list
+    h_ex_list = args.h_ex
     mech = args.mech
     folderName_list = args.folder_list
     overwrite_tmp = args.overwrite_tmp
-    
+
     # create L-folder dict
     if len(folderName_list)==1:
         folderName_dict={k:folderName_list[0] for k in all_L}
@@ -166,11 +169,11 @@ def main():
         print('Starting equilibration tests...')
         temp_all_L=create_temp_all_L(all_L, check_exists_and_not_empty(xdata, all_L, h_ex, folderName_dict, mech), overwrite_tmp_dict)
         print('L=%s already exist in /tmp'%[item for item in all_L if item not in temp_all_L])
-        L_equilibrated_min_value=check_equilibration.check_equilib(xdata, to_check, temp_all_L, h_ex, folderName_dict, mech, folder='../data/results')
+        L_equilibrated_min_value=check_equilibration.check_equilib(xdata, to_check, temp_all_L, h_ex, folderName_dict, mech, folder='../'+config.system_name+'/data/results')
         print('Finished equilibration tests.')
         print('Starting autocorrelation tests...')
         test_autocorrelation.save_uncorrelated_timeseries(xdata, to_check, temp_all_L, L_equilibrated_min_value, h_ex,
-        folderName_dict, mech, folder='../data/results')
+        folderName_dict, mech, folder='../'+config.system_name+'/data/results')
         print('Finished autocorrelation tests.')
         L_equilibrated_min_value = {k:0 for k in all_L}
         tau_dict = {k:1 for k in all_L}
@@ -241,8 +244,8 @@ def main():
     f.close()
     
     #save fig
-    fig.savefig('../figures/phase_diagram_%s_%s.png'%(mech,'_'.join(map(str,all_L))))
-    #os.system("rsync -avzhe ssh ../figures/ tomerdol@newphysnet1:~/graphs/")
+    fig.savefig('../'+config.system_name+'/figures/phase_diagram_%s_%s.png'%(mech,'_'.join(map(str,all_L))))
+    #os.system("rsync -avzhe ssh ../"+config.system_name+"/figures/ tomerdol@newphysnet1:~/graphs/")
     
 if __name__ == "__main__":
     main()

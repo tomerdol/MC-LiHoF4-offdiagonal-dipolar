@@ -46,7 +46,7 @@ def main():
     ax.set_ylabel(r'$B_x$')
     ax.legend()
     
-    fig.savefig('../figures/phase_diagram_full_%s.png'%('_'.join(map(str,all_L))))
+    fig.savefig('../' + config.system_name + '/figures/phase_diagram_full_%s.png'%('_'.join(map(str,all_L))))
     
     plt.close()
     

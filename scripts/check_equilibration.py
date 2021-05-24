@@ -14,6 +14,9 @@ import warnings
 # not means real equilibration)
 # consec_bins_for_equilib: the minimum number of consecutive bins that agree within error bars for
 # equilibration
+import config
+
+
 def check(a, min_bin, consec_bins_for_equilib):
     max_num_of_bins=0
     num_of_bins = int(math.log2(a.size+1))
@@ -92,7 +95,7 @@ def check_from_end(array):
     
 
 
-def check_equilib(T, to_check, L, Bex, folderName, mech, folder='../data/results'):
+def check_equilib(T, to_check, L, Bex, folderName, mech, folder='../' + config.system_name + '/data/results'):
     min_steps_dict={}
     all_equilibrated=True
     for l in L:
@@ -151,7 +154,7 @@ def main():
     folderName = sys.argv[2]
     mech = sys.argv[3]
 
-    with open('../temp_schedule_' + folderName + '_' + str(Bex) + '_' + mech + '.txt','r') as temperature_schedule_file:
+    with open('../' + config.system_name + '/temp_schedule_' + folderName + '_' + str(Bex) + '_' + mech + '.txt','r') as temperature_schedule_file:
     #with open('../temperature_schedule_t.txt','r') as temperature_schedule_file:
         reader = csv.reader(temperature_schedule_file)
         temp_list=list(reader) 

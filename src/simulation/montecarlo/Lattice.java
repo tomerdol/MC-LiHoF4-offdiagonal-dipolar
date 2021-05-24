@@ -12,7 +12,7 @@ import java.util.Properties;
 public class Lattice implements Serializable {
     private static final long serialVersionUID = -9119463380760410942L;
     private final int N, Lx, Lz;
-    private final double extBx;
+    private final double extBx, extBy;
     private final boolean suppressInternalTransFields;
     private final double spinSize;
     // after deserialization these must be set:
@@ -27,11 +27,12 @@ public class Lattice implements Serializable {
     private singleSpin[] lattice;
 
     @CreatesInconsistency("If intTable, exchangeIntTable, energyTable, momentTable or measure are null")
-    public Lattice(int Lx, int Lz, double extBx, boolean suppressInternalTransFields, double spinSize, double[][][] intTable, double[][] exchangeIntTable, int[][] nnArray, FieldTable energyTable, FieldTable momentTable, final ObservableExtractor measure){
+    public Lattice(int Lx, int Lz, double extBx, double extBy, boolean suppressInternalTransFields, double spinSize, double[][][] intTable, double[][] exchangeIntTable, int[][] nnArray, FieldTable energyTable, FieldTable momentTable, final ObservableExtractor measure){
         this.N=Lx*Lx*Lz*Constants.num_in_cell;
         this.Lx=Lx;
         this.Lz=Lz;
         this.extBx=extBx;
+        this.extBy=extBy;
         this.suppressInternalTransFields=suppressInternalTransFields;
         this.spinSize = spinSize;
         this.intTable=intTable;
@@ -51,6 +52,7 @@ public class Lattice implements Serializable {
         this.Lx=other.Lx;
         this.Lz=other.Lz;
         this.extBx=other.extBx;
+        this.extBy=other.extBy;
         this.suppressInternalTransFields=other.suppressInternalTransFields;
         this.spinSize=other.spinSize;
         this.intTable=other.intTable;
@@ -80,6 +82,7 @@ public class Lattice implements Serializable {
         this.Lx=other.Lx;
         this.Lz=other.Lz;
         this.extBx=other.extBx;
+        this.extBy=other.extBy;
         this.suppressInternalTransFields=newSuppressInternalFields;
         this.spinSize=other.spinSize;
         this.intTable=other.intTable;
@@ -146,6 +149,10 @@ public class Lattice implements Serializable {
 
     public double getExtBx() {
         return extBx;
+    }
+
+    public double getExtBy() {
+        return extBy;
     }
 
     public boolean isSuppressInternalTransFields() {
@@ -261,7 +268,7 @@ public class Lattice implements Serializable {
                 method -= 10;
             }
 
-            fi_xi funcToSolve = new func(intTable, momentTable, lattice, extBx, suppressInternalTransFields);
+            fi_xi funcToSolve = new func(intTable, momentTable, lattice, extBx, extBy, suppressInternalTransFields);
 
             // newton's method
             if (method == 4) {
@@ -373,7 +380,7 @@ public class Lattice implements Serializable {
         for (i=0;i<lattice.length;i++) {
             int j;
             if (lattice[i].getSpin()!=0){
-                double Bz=0, Bx = extBx, By = 0;
+                double Bz=0, Bx = extBx, By = extBy;
                 for(j=0;j<lattice.length;j++){
                     if (lattice[j].getSpin()!=0){
                         Bz += lattice[j].getSpinSize()*intTable[2][i][j];
@@ -384,7 +391,7 @@ public class Lattice implements Serializable {
                     }
                 }
                 lattice[i].setLocalBz(Bz);
-                // if suppressInternalTransFields==true then Bx==extBx and By==0.
+                // if suppressInternalTransFields==true then Bx==extBx and By==extBy.
                 lattice[i].setLocalBx(Bx);
                 lattice[i].setLocalBy(By);
             }
@@ -464,7 +471,7 @@ public class Lattice implements Serializable {
         for (i=0;i<lattice.length && ret;i++) {
             int j;
 
-            double Bx=extBx, By=0, Bz=0;
+            double Bx=extBx, By=extBy, Bz=0;
             // add up all contributions to local field from other spins at spin i
             for(j=0;j<lattice.length;j++){
                 if (lattice[j].getSpin()!=0){
@@ -521,7 +528,7 @@ public class Lattice implements Serializable {
         final double spinSize = CrystalField.getMagneticMoment(0.0, 0.0, 0.05);
 
         singleSpin[] arr = null;
-        try (BufferedReader in = new BufferedReader(new FileReader("data" + File.separator + "configurations" + File.separator + "config_"+Lx+"_"+Lz+"_"+dilution+"_"+h+"_"+fileNumber+".txt"))){;
+        try (BufferedReader in = new BufferedReader(new FileReader(System.getProperty("system") + File.separator + "data" + File.separator + "configurations" + File.separator + "config_"+Lx+"_"+Lz+"_"+dilution+"_"+h+"_"+fileNumber+".txt"))){;
             String str;
             String[] params;
             int i=0;

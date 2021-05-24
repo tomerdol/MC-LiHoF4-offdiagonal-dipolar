@@ -1,39 +1,32 @@
 import numpy as np
 
-def check_exists_and_not_empty(T, L, Bex, folderName, mech):
-    L_exists_dict={k:False for k in L}
-    for l in L:
-        exists=True
-        for temperature in T[l]:
-            path='/tmp/'+folderName[l]+'/table_'+str(l)+'_'+str(l)+'_'+str(Bex)+'_'+str(temperature)+'_'+mech+'.txt'
-            exists = exists and (os.path.exists(path) and os.path.getsize(path) > 0)
-                
-        L_exists_dict[l] = exists
-    return L_exists_dict
 
-def parse_arguments():  
+def parse_arguments():
     from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
     
-    parser = ArgumentParser(description="Analyzes Monte Carlo results to create a phase diagram for LiHoF4", formatter_class=ArgumentDefaultsHelpFormatter)
+    parser = ArgumentParser(description="Analyzes Monte Carlo results to create a phase diagram for LiHoF4", formatter_class=ArgumentDefaultsHelpFormatter, parents=[config.parse_arguments()], conflict_handler='resolve')
     parser.add_argument( "-L", nargs='+', type=int, required=True, help = "Linear system sizes. At least 2 required.")
-    parser.add_argument( "-b", "--boot_num", type=int, default = 100, help = "Number of bootstrap samples.")
-    parser.add_argument( "--h_ex_list", nargs='+', type=float, help = "List of external magnetic field values, Bex." , required=True)
-    parser.add_argument( "-m", "--mech", nargs='+', choices=['true','false'], help = ("Whether internal fields are suppressed or not. \'false\' means "
-    "that they aren't so the mechanism is on, and \'true\' means that they are and the mechanism is off." ), required=True)
-    parser.add_argument( "-f", "--folder_list", nargs='+', type=str, help = "List of folders in \'data/results\' in which results should be found. " , required=True)
+    # parser.add_argument( "-b", "--boot_num", type=int, default = 100, help = "Number of bootstrap samples.")
+    # parser.add_argument( "--h_ex_list", nargs='+', type=float, help = "List of external magnetic field values, Bex." , required=True)
+    # parser.add_argument( "-m", "--mech", nargs='+', choices=['true','false'], help = ("Whether internal fields are suppressed or not. \'false\' means "
+    # "that they aren't so the mechanism is on, and \'true\' means that they are and the mechanism is off." ), required=True)
+    # parser.add_argument( "-f", "--folder_list", nargs='+', type=str, help = "List of folders in \'data/results\' in which results should be found. " , required=True)
     parser.add_argument( "-o", "--overwrite_tmp", action='store_true', default=False, help = ("Overwrite parsed files in /tmp. If not given, existing files will "
     "be used (which probably means older results)."))
     parser.add_argument( "-s", "--scaling_func", choices=['binder','corr_length'], help = "Scaling function to use for finite-size scaling analysis. Possible choices are \'binder\' for the Binder ratio or \'corr_length\' for the finite-size correlation length"
                                                                                           " divided by the linear system size. Default is \'corr_length_x\'." , required=False, default='corr_length')
     parser.add_argument( "-a", "--corr_length_axis", nargs='?', choices=['x','y','z'], help = "The axis along which the correlation length should be measured for the finite-size correlation length.", required=False, default='x', const='x')
+    parser.add_argument( "--delta", help = "The temperature range around the initial critical temperature that will be used for fitting.", required=False, default=0.04)
 
     args = parser.parse_args()
     if len(args.L)<2:
         parser.error("-L must have at least 2 different system sizes for finite size scaling analysis.")
     if len(args.folder_list)>1 and len(args.folder_list)!=len(args.L): 
         parser.error("--folder_list and -L argument number mismatch.")
-        
+
+    config.system_name = args.system_name
     return args
+
 
 def find_initial_xc(all_y_curves):
     arr_x=[]
@@ -44,6 +37,7 @@ def find_initial_xc(all_y_curves):
         arr_y.append(L_group[y_column].to_numpy())
 
     return find_initial_xc_from_arr(arr_x,arr_y)
+
 
 def find_initial_xc_from_arr(arr_x,arr_y):
     # find average x_c from crossing of all possible pairs of L's 
@@ -93,32 +87,6 @@ def plot_previous_data(ax):
     
     return ax
     
-def copy_files_to_tmp(T, cols_to_copy, L, Bex, folderName, mech, folder='../data/results'):
-    path='/tmp/'+folderName
-    try:
-        os.mkdir(path)
-    except OSError:
-        print ("Creation of the directory %s failed" % path)
-    
-    for l in L:
-        for temperature in T:
-            fname=folder+'/'+folderName+'/table_'+str(l)+'_'+str(l)+'_'+str(Bex)+'_'+str(temperature)+'_'+mech+'.txt'
-            dest='/tmp/'+folderName+'/table_'+str(l)+'_'+str(l)+'_'+str(Bex)+'_'+str(temperature)+'_'+mech+'.txt'
-            y = pd.read_csv(fname, delim_whitespace=True, error_bad_lines=False, index_col='index', comment='#')
-            print('copying file ' + fname + ' to /tmp/')
-            y[cols_to_copy].to_csv(dest, sep='\t')
-            
-            del y
-
-# returns an alternate all_L list with only L's that do not already exist in /tmp.
-def create_temp_all_L(all_L, L_exists_dict, overwrite_tmp_dict):
-    new_all_L=[]
-    #print(overwrite_tmp_dict)
-    for l in all_L:
-        if (not L_exists_dict[l]) or overwrite_tmp_dict[l]:
-            new_all_L.append(l)
-    return new_all_L
-
 def add_overwrite_col(overwrite_tmp, simulations):
     table = np.genfromtxt('simulation_plan',comments='$',dtype=str,encoding=None)
     overwrite_tmp_dict={}
@@ -127,7 +95,7 @@ def add_overwrite_col(overwrite_tmp, simulations):
         #group[0]=Bex; group[1]=L; group[2]=folderName; group[3]=mech
         matching_row = table[(table[:,6] == group[2]) & (table[:,1] == str(group[1])) & (table[:,2] == str(group[0])) & (table[:,3] == str(group[3]))]
         
-        path_to_saved_equilib_file='../data/results/'+str(group[2])+'/binned_data/equilib_data_'+str(group[1])+'_'+str(group[1])+'_'+str(group[0])+'_'+str(group[3])+'.txt'
+        path_to_saved_equilib_file='../' + config.system_name + '/data/results/'+str(group[2])+'/binned_data/equilib_data_'+str(group[1])+'_'+str(group[1])+'_'+str(group[0])+'_'+str(group[3])+'.txt'
         file_exists = os.path.exists(path_to_saved_equilib_file) and os.path.getsize(path_to_saved_equilib_file) > 0
         
         overwrite_tmp_dict[group] = not file_exists or (overwrite_tmp and not (len(matching_row)>0 and matching_row[0][0] == 'done'))
@@ -149,7 +117,7 @@ def main():
     
     all_L = args.L
     boot_num = args.boot_num
-    h_ex_list = args.h_ex_list
+    h_ex_list = args.h_ex
     mech_list = args.mech
     folderName_list = args.folder_list
     overwrite_tmp = args.overwrite_tmp
@@ -182,7 +150,7 @@ def main():
     # iterate over the 2 mech options. within the loop 'simulations_mech' is a DataFrame for just one of the options
     for mech, simulations_mech in simulations.groupby(['mech']):
         # file to write results to
-        f = open("phase_diagram_%s_%s_%s_res.txt"%(mech,'_'.join(map(str,all_L)), '_'.join(map(str,folderName_list))), "w")
+        f = open("phase_diagram_%s_%s_%s_%s_res.txt"%(config.system_name, mech,'_'.join(map(str,all_L)), '_'.join(map(str,folderName_list))), "w")
         f.write('Tc\tTc_err\tBx\tSimulation_name\n')
         
         fig, ax = plt.subplots()
@@ -217,9 +185,10 @@ def main():
                     continue
                 
                 good_fit=False
-                delta=min(0.04,min(simulations_mech_folderName_Bex['T'].max()-initial_xc,initial_xc-simulations_mech_folderName_Bex['T'].min()))
+                delta=min(float(args.delta),min(simulations_mech_folderName_Bex['T'].max()-initial_xc,initial_xc-simulations_mech_folderName_Bex['T'].min()))
+                delta_step = delta*0.25
                 #delta=0.04
-                while not good_fit and delta<0.2:
+                while not good_fit and delta<20*delta_step:
                     min_x = initial_xc-delta
                     max_x = initial_xc+delta
                     print('Starting fitting...')
@@ -232,7 +201,7 @@ def main():
                         print('x_c=%s, x_c_err=%s, v=%s, v_err=%s, r_squared=%s, max_x=%s, min_x=%s'%(x_c, x_c_err, v, v_err, r_squared, max_x, min_x))
                         print('Could not find good fit. Trying again.')
                         # retry
-                        delta = delta+0.01
+                        delta = delta+delta_step
                         try:
                             print(all_y_curves)
                             initial_xc = find_initial_xc(all_y_curves)    # this is the index in the smaller array
@@ -265,8 +234,8 @@ def main():
         f.close()
     
         #save fig
-        fig.savefig('../figures/phase_diagram_%s_%s_%s.png'%(mech,'_'.join(map(str,all_L)),folderName_list[0]))
-    #os.system("rsync -avzhe ssh ../figures/ tomerdol@newphysnet1:~/graphs/")
+        fig.savefig('../' + config.system_name + '/figures/phase_diagram_%s_%s_%s.png'%(mech,'_'.join(map(str,all_L)),folderName_list[0]))
+    #os.system("rsync -avzhe ssh ../"+config.system_name+"/figures/ tomerdol@newphysnet1:~/graphs/")
     
 if __name__ == "__main__":
     import matplotlib
@@ -275,6 +244,6 @@ if __name__ == "__main__":
     import pandas as pd
     import csv, sys, os
     import plot, plot_bin, plot_equilibration_pdf_bin, check_equilibration, fit6, test_autocorrelation, bin_data, analysis_tools
-    
+    import config
     from shutil import copyfile
     main()

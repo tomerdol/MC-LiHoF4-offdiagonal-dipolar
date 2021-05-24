@@ -12,14 +12,16 @@ public class func extends fi_xi {
     final FieldTable momentTable;
     final singleSpin[] arr;
     final double extBx;
+    final double extBy;
     int numManualCalc;
     final boolean suppressInternalTransFields;
 
-    public func(final double[][][] intTable0, final FieldTable momentTable0, final singleSpin[] arr0, double extBx0, boolean suppressInternalTransFields0){
+    public func(final double[][][] intTable0, final FieldTable momentTable0, final singleSpin[] arr0, double extBx0, double extBy0, boolean suppressInternalTransFields0){
         intTable = intTable0;
         momentTable=momentTable0;
         arr=arr0;
         extBx=extBx0;
+        extBy=extBy0;
         numManualCalc =0;
         suppressInternalTransFields=suppressInternalTransFields0;
     }
@@ -44,6 +46,10 @@ public class func extends fi_xi {
         return extBx;
     }
 
+    public double getExtBy() {
+        return extBy;
+    }
+
     public boolean isSuppressInternalTransFields() {
         return suppressInternalTransFields;
     }
@@ -56,7 +62,7 @@ public class func extends fi_xi {
     public double[] func(double[] x) throws ConvergenceException {
         double[] retVec=new double[x.length];
         for (int i = 0; i<retVec.length && numManualCalc <20; i++) {
-            retVec[i] = x[i] - g(x, i, intTable, momentTable, arr, extBx, suppressInternalTransFields);
+            retVec[i] = x[i] - g(x, i, intTable, momentTable, arr, extBx, extBy, suppressInternalTransFields);
         }
 
         if (numManualCalc >=20) {
@@ -78,10 +84,11 @@ public class func extends fi_xi {
      * @param momentTable - Magnetic moment table
      * @param arr - The full system array. Used for the spin direction
      * @param extBx - External Bx magnetic field
+     * @param extBy - External By magnetic field
      * @return the objective moment, i.e. what the magnetic moment should be, considering the current configuration
      */
-    public double g(final double[] x, int i, double[][][] int_config_Matrix, FieldTable momentTable, singleSpin[] arr, double extBx, boolean suppressInternalTransFields){
-        double[] B = new double[]{extBx, 0, 0};
+    public double g(final double[] x, int i, double[][][] int_config_Matrix, FieldTable momentTable, singleSpin[] arr, double extBx, double extBy, boolean suppressInternalTransFields){
+        double[] B = new double[]{extBx, extBy, 0};
 
         for (int dim=0; dim<B.length; dim++){
             if (!suppressInternalTransFields || dim==2) {
