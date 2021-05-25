@@ -7,12 +7,18 @@ import java.io.IOException;
 
 public abstract class ReadInteractionsTable {
     public static void receiveIntTable(double[][][] intTable, int Lx, int Lz){
+        boolean[] noDilution = new boolean[Constants.num_in_cell*Lx*Lx*Lz];
+        for (int i=0;i<noDilution.length;i++) noDilution[i] = true;
+        receiveIntTable(intTable, Lx, Lz, noDilution);
+    }
+
+    public static void receiveIntTable(double[][][] intTable, int Lx, int Lz, boolean[] dilution){
         final double c = -Constants.mu_0*Constants.mu_B*Constants.g_L*0.25/Math.PI;	// coefficient dipolar spin-spin interaction. The minus sign is because
         // we use Ewald to calc the effective field and not the interaction
 
         int fileLx=0, fileLz=0;
         final int N=Lx*Lx*Lz*Constants.num_in_cell;
-        try (BufferedReader in = new BufferedReader(new FileReader(System.getProperty("system") + File.separator + "data" + File.separator + "interactions" + File.separator + "intTable_"+Lx+"_"+Lz+".txt"))){
+        try (BufferedReader in = new BufferedReader(    new FileReader(System.getProperty("system") + File.separator + "data" + File.separator + "interactions" + File.separator + "intTable_"+Lx+"_"+Lz+".txt"))){
             String str;
             // verify Lx and Lz make sense
             if ((str = in.readLine()) != null)
@@ -29,24 +35,32 @@ public abstract class ReadInteractionsTable {
             in.readLine();
             in.readLine();
 
-            for (int i=0;i<N;i++){
-                for (int j=i;j<N;j++){
+            // indices i & j go over the full interaction table (without regard for dilution)
+            // indices m & n go over the compact interaction table
+            for (int i=0, m=0;i<N;i++){
+                for (int j=i, n=m;j<N;j++){
                     if ((str = in.readLine()) != null){
-                        String[] xyzInteractions = str.split(",");
-                        for (int k=0;k<xyzInteractions.length;k++) {
+                        if (dilution[i] && dilution[j]){
+                            String[] xyzInteractions = str.split(",");
+                            for (int k = 0; k < xyzInteractions.length; k++) {
 
-                            intTable[k][i][j] = c * Double.parseDouble(xyzInteractions[k]);
-                            intTable[k][j][i] = c * Double.parseDouble(xyzInteractions[k]);
-                            if (k==2){  // for the zz interactions we multiply by half to avoid double counting.
-                                intTable[k][i][j] *= 0.5;
-                                intTable[k][j][i] *= 0.5;
+                                intTable[k][m][n] = c * Double.parseDouble(xyzInteractions[k]);
+                                intTable[k][n][m] = c * Double.parseDouble(xyzInteractions[k]);
+
+                                if (k == 2) {  // for the zz interactions we multiply by half to avoid double counting.
+                                    intTable[k][m][n] *= 0.5;
+                                    if (m!=n) intTable[k][n][m] *= 0.5;
+                                }
                             }
+                            n++;
                         }
-
                     } else {
                         System.err.println("reached end of interactions file before int table is full!");
                         System.exit(1);
                     }
+                }
+                if (dilution[i]){
+                    m++;
                 }
             }
 
