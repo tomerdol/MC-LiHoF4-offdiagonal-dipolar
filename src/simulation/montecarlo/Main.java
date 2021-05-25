@@ -144,6 +144,7 @@ public class Main {
         double tol;
         double[] T=null;    // temperature array
         String interpolationTableFileNameExtension = "";
+        double x=1.0;   // Ho concentration, between 0 and 1
 
 
         // get Properties object that reads parameters from file
@@ -219,7 +220,7 @@ public class Main {
             if (commandLine.hasOption("tol")) tol = ((Number) commandLine.getParsedOptionValue("tol")).doubleValue();
             if (commandLine.hasOption("Jex")) tempJ_ex = ((Number) commandLine.getParsedOptionValue("Jex")).doubleValue();
             if (commandLine.hasOption("interpolation_table_name")) interpolationTableFileNameExtension = commandLine.getOptionValue("interpolation_table_name");
-
+            if (commandLine.hasOption("d")) x = ((Number) commandLine.getParsedOptionValue("d")).doubleValue();
 
         }
         catch (ArrayIndexOutOfBoundsException e){
@@ -237,18 +238,47 @@ public class Main {
             System.exit(1);
         }
 
+
         saveState = !printOutput;	// when output is printed to the console the state should not be saved.
         final char parallelMode = tempParallelMode;
         final double J_ex=tempJ_ex;
 
+        MersenneTwister mutualRnd = null;
+        long[] seeds=null;
+        MersenneTwister[] rnd = null;
+        if (!receivedSeed) {
+            seed = 0;   // this is a flag that should be checked later
+        } else {
+            if (seed!=0) {
+                mutualRnd = new MersenneTwister(seed);
+                seeds = GenerateSeeds.generateSeeds(mutualRnd, T.length);
+                rnd = new MersenneTwister[T.length];
+            }
+            else {
+                System.err.println("PRNG seed was not initialized for some reason!");
+                System.exit(1);
+            }
+        }
+
+        // Create dilution structure
+        boolean[] dilution = new boolean[Lx*Lx*Lz*Constants.num_in_cell];
+        int N=0;    // total number of spins in the (diluted) system
+        for (int i=0;i<dilution.length;i++){
+            if (mutualRnd.nextDouble() < x){
+                dilution[i] = true;
+                N++;
+            }else{
+                dilution[i] = false;
+            }
+        }
 
         // first try and get spin size (initial guess) from manual calculation that diagonalizes the Ho C-F hamiltonian
         // using the external Bx, By.
         // pass parameters Bx=extBx, By=extBy, Bz=0.05, spin=1, and calc for "up"
         spinSize = CrystalField.getMagneticMoment(extBx, extBy, 0.05);
 
-        final double[][][] intTable = new double[3][Constants.num_in_cell*Lx*Lx*Lz][Constants.num_in_cell*Lx*Lx*Lz]; // create interaction table that holds all the dipolar interactions. will be full even though it's symmetric. 1st array is x,y,z term
-        final double[][] exchangeIntTable = new double[Constants.num_in_cell*Lx*Lx*Lz][Constants.num_in_cell*Lx*Lx*Lz];
+        final double[][][] intTable = new double[3][N][N]; // create interaction table that holds all the dipolar interactions. will be full even though it's symmetric. 1st array is x,y,z term
+        final double[][] exchangeIntTable = new double[N][N];
 
         ReadInteractionsTable interactionsTableReceiver;
         if (System.getProperty("system").equals("LiHoF4")){
@@ -258,7 +288,7 @@ public class Main {
         } else {
             throw new RuntimeException("Could not read interactions table. Illegal system name given.");
         }
-        ReadInteractionsTable.receiveIntTable(intTable, Lx, Lz);	// get interaction table from file
+        ReadInteractionsTable.receiveIntTable(intTable, Lx, Lz, dilution);	// get interaction table from file
 
         if (suppressInternalTransFields){
             // if we suppress internal transverse fields we can just set the interaction table's x,y all to 0.0
@@ -274,8 +304,6 @@ public class Main {
         int[][] nnArray = interactionsTableReceiver.exchangeInt(exchangeIntTable, Lx, Lx, Lz, J_ex);	// receive the nearest neighbor array and fill exchangeIntTable with the exchange interaction values
 
         // add exchange to intTable
-
-        final int N=Lx*Lx*Lz*Constants.num_in_cell;
         for (int i=0;i<N;i++){
             for (int j=0;j<N;j++){
                 intTable[2][i][j] += -0.5*exchangeIntTable[i][j]*Constants.k_B/(Constants.mu_B*Constants.g_L);
@@ -299,23 +327,6 @@ public class Main {
         FieldTable momentTable = FieldTable.of(String.format("magnetic_moment_up_arr_%1.2f"+interpolationTableFileNameExtension,extBx), true);
 
         ObservableExtractor measure = new ObservableExtractor(k_cos_table, k_sin_table);
-
-        MersenneTwister mutualRnd = null;
-        long[] seeds=null;
-        MersenneTwister[] rnd = null;
-        if (!receivedSeed) {
-            seed = 0;   // this is a flag that should be checked later
-        } else {
-            if (seed!=0) {
-                mutualRnd = new MersenneTwister(seed);
-                seeds = GenerateSeeds.generateSeeds(mutualRnd, T.length);
-                rnd = new MersenneTwister[T.length];
-            }
-            else {
-                System.err.println("PRNG seed was not initialized for some reason!");
-                System.exit(1);
-            }
-        }
 
         SimulationCheckpointer checkpointer = new SimulationCheckpointer(folderName, Lx, Lz, extBx, suppressInternalTransFields, seed);
         boolean successReadFromFile = false;

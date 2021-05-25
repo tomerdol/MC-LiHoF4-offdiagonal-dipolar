@@ -15,6 +15,7 @@ public class Lattice implements Serializable {
     private final double extBx, extBy;
     private final boolean suppressInternalTransFields;
     private final double spinSize;
+//    private final boolean[] dilution;
     // after deserialization these must be set:
     transient double[][][] intTable=null;
     transient double[][] exchangeIntTable=null;
@@ -35,6 +36,7 @@ public class Lattice implements Serializable {
         this.extBy=extBy;
         this.suppressInternalTransFields=suppressInternalTransFields;
         this.spinSize = spinSize;
+//        this.dilution = dilution;
         this.intTable=intTable;
         this.exchangeIntTable=exchangeIntTable;
         this.energyTable=energyTable;
