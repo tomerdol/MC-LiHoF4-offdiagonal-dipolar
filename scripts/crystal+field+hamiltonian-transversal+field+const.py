@@ -130,7 +130,7 @@ for i, bz in enumerate(Bz):
 				temp = energy_up
 				energy_up = energy_down
 				energy_down = temp
-			effective_bz = 0.3 * math.sqrt(bx**2 + by**2)
+			effective_bz = 1.1 * math.sqrt(bx**2 + by**2)
 			H_zeeman = u_B*g_L*(bx*jx + by*jy + effective_bz*jz)    # zeeman term
 			H = H_cf - H_zeeman                 # full hamiltonian
 			w,v = LA.eigh(H)
