@@ -2,16 +2,19 @@ package simulation.montecarlo;
 
 public class ReadInteractionsTableLiHoF4 extends ReadInteractionsTable{
 
+    public ReadInteractionsTableLiHoF4(boolean[] dilution){
+        setCorrespondenceArray(dilution);
+    }
+
     //calculates exchange interaction with nearest neighbors
     // also returns an array of nearest neighbors
     public int[][] exchangeInt(double[][] intTable, int Lx, int Ly, int Lz, double J_ex){
-        final int N = Lx*Ly*Lz*Constants.num_in_cell;
         final int numOfNeighbors = (Lx==1 && Ly==1 && Lz==1) ? 2 : 4;    // number of nearest neighbors for each spin.
         // Lx=Ly=Lz=1 is a unique case where each spin has only 2
         // distinct neighbors
         int[][] nnArray = new int[N][4];;	// nearest neighbor array
 
-        boolean[][] nnArray_test = new boolean[N][N];	// for testing
+        boolean[][] nnArray_test = new boolean[Lx*Ly*Lz*Constants.num_in_cell][Lx*Ly*Lz*Constants.num_in_cell];	// for testing
 
         // neighbor numbers are as follows, for the 0th and 2nd atoms in the base (with respect to ion positions_1.pdf):
         // neighbor1: up-right
@@ -40,8 +43,8 @@ public class ReadInteractionsTableLiHoF4 extends ReadInteractionsTable{
                     int neighbor4=i*Ly*Lz*Constants.num_in_cell+j*Lz*Constants.num_in_cell+((Lz+k-1)%Lz)*Constants.num_in_cell+3;
 
                     // put interactions in intTable and nearest neighbor indices in nnArray
-                    addExchangeToNeighbor(focusSpin, new int[] {neighbor1, neighbor2, neighbor3, neighbor4}, nnArray, nnArray_test, intTable, J_ex);
-
+                    addExchangeToNeighbor(correspondenceArray[focusSpin], new int[]{correspondenceArray[neighbor1], correspondenceArray[neighbor2], correspondenceArray[neighbor3],
+                            correspondenceArray[neighbor4]}, nnArray, nnArray_test, intTable, J_ex);
 
 
                     // now nearest neighbors to 2nd base atom, including periodic boundary conditions
@@ -51,26 +54,32 @@ public class ReadInteractionsTableLiHoF4 extends ReadInteractionsTable{
                     neighbor2=i*Ly*Lz*Constants.num_in_cell+j*Lz*Constants.num_in_cell+k*Constants.num_in_cell+3;
                     neighbor1=((i+1)%Lx)*Ly*Lz*Constants.num_in_cell+j*Lz*Constants.num_in_cell+k*Constants.num_in_cell+3;
                     neighbor4=i*Ly*Lz*Constants.num_in_cell+((j+1)%Ly)*Lz*Constants.num_in_cell+k*Constants.num_in_cell+1;
-                    // put interactions in intTable and nearest neighbor indices in nnArray
-                    addExchangeToNeighbor(focusSpin, new int[]{neighbor1, neighbor2, neighbor3, neighbor4}, nnArray, nnArray_test, intTable, J_ex);
 
+                    // put interactions in intTable and nearest neighbor indices in nnArray
+                    addExchangeToNeighbor(correspondenceArray[focusSpin], new int[]{correspondenceArray[neighbor1], correspondenceArray[neighbor2], correspondenceArray[neighbor3],
+                            correspondenceArray[neighbor4]}, nnArray, nnArray_test, intTable, J_ex);
                 }
             }
         }
 
-        boolean validNNArray=true;
-        for (int i=0;i<nnArray_test.length && validNNArray;i++){
-            int countNearestNeighbors=0;
-            for (int j=0;j<nnArray_test[i].length && validNNArray;j++){
-                if (nnArray_test[i][j]) countNearestNeighbors++;
+        if (N == Lx*Ly*Lz*Constants.num_in_cell) {  // this check is valid only for undiluted systems
+            boolean validNNArray = true;
+            for (int i = 0; i < nnArray_test.length && validNNArray; i++) {
+                int countNearestNeighbors = 0;
+                for (int j = 0; j < nnArray_test[i].length && validNNArray; j++) {
+                    if (nnArray_test[i][j]) countNearestNeighbors++;
+                }
+                if (countNearestNeighbors != numOfNeighbors) validNNArray = false;
             }
-            if (countNearestNeighbors!=numOfNeighbors) validNNArray=false;
-        }
-        if (validNNArray){ return nnArray; }
-        else {
-            System.err.println("There was an error creating the nearest neighbor array. at least one of the spins has more or less than 4 neighbors.");
-            System.exit(1);
-            return null;
+            if (validNNArray) {
+                return nnArray;
+            } else {
+                System.err.println("There was an error creating the nearest neighbor array. at least one of the spins has more or less than 4 neighbors.");
+                System.exit(1);
+                return null;
+            }
+        } else {
+            return nnArray;
         }
     }
 

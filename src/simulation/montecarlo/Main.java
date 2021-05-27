@@ -282,7 +282,7 @@ public class Main {
 
         ReadInteractionsTable interactionsTableReceiver;
         if (System.getProperty("system").equals("LiHoF4")){
-            interactionsTableReceiver = new ReadInteractionsTableLiHoF4();
+            interactionsTableReceiver = new ReadInteractionsTableLiHoF4(dilution);
         } else if (System.getProperty("system").equals("Fe8")){
             interactionsTableReceiver = new ReadInteractionsTableFe8();
         } else {

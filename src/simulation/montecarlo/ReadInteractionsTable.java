@@ -6,6 +6,22 @@ import java.io.FileReader;
 import java.io.IOException;
 
 public abstract class ReadInteractionsTable {
+    int[] correspondenceArray;
+    int N;
+
+    protected void setCorrespondenceArray(boolean[] dilution){
+        correspondenceArray = new int[dilution.length];
+        int count=0;
+        for (int i=0;i<dilution.length;i++){
+            if (dilution[i]){
+                correspondenceArray[i] = count++;
+            } else {
+                correspondenceArray[i] = -1;
+            }
+        }
+        N=count;
+    }
+
     public static void receiveIntTable(double[][][] intTable, int Lx, int Lz){
         boolean[] noDilution = new boolean[Constants.num_in_cell*Lx*Lx*Lz];
         for (int i=0;i<noDilution.length;i++) noDilution[i] = true;
@@ -80,14 +96,20 @@ public abstract class ReadInteractionsTable {
 
     static void addExchangeToNeighbor(int focusSpin, int[] neighbors, int[][] nnArray, boolean[][] nnArray_test, double[][] intTable, double J_ex){
         for (int i=0;i<neighbors.length;i++){
-            intTable[focusSpin][neighbors[i]]+=J_ex;
-            intTable[neighbors[i]][focusSpin]+=J_ex;
+            if (focusSpin >=0 && neighbors[i] >=0) {
+                intTable[focusSpin][neighbors[i]] += J_ex;
+                intTable[neighbors[i]][focusSpin] += J_ex;
 
-            nnArray[focusSpin][i]=neighbors[i];
-            nnArray[neighbors[i]][i]=focusSpin;
+                nnArray_test[focusSpin][neighbors[i]] = true;
+                nnArray_test[neighbors[i]][focusSpin] = true;
+            }
 
-            nnArray_test[focusSpin][neighbors[i]]=true;
-            nnArray_test[neighbors[i]][focusSpin]=true;
+            // only fill nnArray rows that correspond to existing spins,
+            // but do allow -1 values for non-existing neighbors
+            // (this should be checked when using nnArray)
+            if (focusSpin >=0) nnArray[focusSpin][i] = neighbors[i];
+            if (neighbors[i] >=0) nnArray[neighbors[i]][i] = focusSpin;
+
         }
     }
 }

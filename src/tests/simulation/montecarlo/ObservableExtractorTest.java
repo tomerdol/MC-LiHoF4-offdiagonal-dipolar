@@ -5,8 +5,6 @@ import org.junit.Test;
 
 import java.util.Arrays;
 
-import static org.junit.Assert.*;
-
 public class ObservableExtractorTest {
     Lattice lattice;
     ObservableExtractor measure = new ObservableExtractor(null, null);
@@ -22,9 +20,12 @@ public class ObservableExtractorTest {
         double spinSize = 10;
         final double[][] exchangeIntTable = new double[Constants.num_in_cell*Lx*Lx*Lz][Constants.num_in_cell*Lx*Lx*Lz];
         final double[][][] intTable = new double[3][Constants.num_in_cell*Lx*Lx*Lz][Constants.num_in_cell*Lx*Lx*Lz]; // create interaction table that holds all the dipolar interactions. will be full even though it's symmetric. 1st array is x,y,z term
+        boolean[] dilution = new boolean[Constants.num_in_cell*Lx*Lx*Lz];
+        for (int i=0; i< dilution.length; i++) dilution[i]=true;
+
         ReadInteractionsTable interactionsTableReceiver;
         if (System.getProperty("system").equals("LiHoF4")){
-            interactionsTableReceiver = new ReadInteractionsTableLiHoF4();
+            interactionsTableReceiver = new ReadInteractionsTableLiHoF4(dilution);
         } else if (System.getProperty("system").equals("Fe8")){
             interactionsTableReceiver = new ReadInteractionsTableFe8();
         } else {

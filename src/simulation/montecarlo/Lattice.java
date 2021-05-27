@@ -321,6 +321,8 @@ public class Lattice implements Serializable {
 
     // returns new int array which has the BFS order with respect to the given spin index
     // n is the maximum (arr.length)
+    // TODO:
+    //  make compatible with nnArray that has -1 entries for missing spi=ns
     private int[] orderBFS(int n, int root) {
         int[] bfs = new int[n];
         int head = 0, tail = 0; // head and tail of the queue

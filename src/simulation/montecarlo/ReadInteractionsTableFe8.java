@@ -2,7 +2,6 @@ package simulation.montecarlo;
 
 public class ReadInteractionsTableFe8 extends ReadInteractionsTable{
 
-
     //calculates exchange interaction with nearest neighbors
     // also returns an array of nearest neighbors
     public int[][] exchangeInt(double[][] intTable, int Lx, int Ly, int Lz, double J_ex){
