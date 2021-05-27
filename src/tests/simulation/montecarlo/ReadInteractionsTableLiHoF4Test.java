@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.Random;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(Parameterized.class)
 public class ReadInteractionsTableLiHoF4Test{
@@ -53,6 +54,8 @@ public class ReadInteractionsTableLiHoF4Test{
 
         return Arrays.asList(arr);
     }
+
+
 
     @Test
     public void exchangeInt() throws Exception {
@@ -138,6 +141,8 @@ public class ReadInteractionsTableLiHoF4Test{
             }
             System.out.println();
         }
+
+        assertTrue(nnArray.length == n);
 
     }
 }

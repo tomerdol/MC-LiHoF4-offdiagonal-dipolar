@@ -321,9 +321,7 @@ public class Lattice implements Serializable {
 
     // returns new int array which has the BFS order with respect to the given spin index
     // n is the maximum (arr.length)
-    // TODO:
-    //  make compatible with nnArray that has -1 entries for missing spi=ns
-    private int[] orderBFS(int n, int root) {
+    protected int[] orderBFS(int n, int root) {
         int[] bfs = new int[n];
         int head = 0, tail = 0; // head and tail of the queue
         boolean[] visited = new boolean[n];
@@ -338,14 +336,20 @@ public class Lattice implements Serializable {
 
             //get v's neighbors
             for (int neighbor = 0; neighbor < nnArray[v].length; neighbor++) {
-                if (!visited[nnArray[v][neighbor]] && tail < n) {
+                if (nnArray[v][neighbor] >= 0 && !visited[nnArray[v][neighbor]] && tail < n) {
                     bfs[tail++] = nnArray[v][neighbor];
                     visited[nnArray[v][neighbor]] = true;
                 }
             }
-
         }
 
+        if (head < n){ // not all spins were added to the queue
+            for (int i=0; i<n; i++){
+                if (!visited[i]){
+                    bfs[head++] = i;
+                }
+            }
+        }
         /*
         // check all spins were queued
         boolean verify=true;
