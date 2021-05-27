@@ -103,7 +103,7 @@ public class ObservableExtractor {
         for (int i=0; i<arr.length;i++){
             for (int j=i+1;j<arr.length;j++){
                 //exchangeEnergy += arr[i].getSpin()*arr[i].getSpinSize()*arr[j].getSpin()*arr[j].getSpinSize()*exchangeIntTable[arr[i].getN()][arr[j].getN()];
-                exchangeEnergy += arr[i].getSpinSize()*arr[j].getSpinSize()*exchangeIntTable[arr[i].getN()][arr[j].getN()];
+                exchangeEnergy += arr[i].getSpinSize()*arr[j].getSpinSize()*exchangeIntTable[i][j];
             }
         }
         return exchangeEnergy;

@@ -742,10 +742,10 @@ public class Lattice implements Serializable {
                     if (lattice[j].getSpin() != 0) {
                         // remove interaction with prevSpinSize and add interaction with current spinSize
                         if (!suppressInternalTransFields) {
-                            lattice[j].setLocalBx(lattice[j].getLocalBx() - magneticMomentToRemove * intTable[0][lattice[spinToRemove].getN()][lattice[j].getN()]);
-                            lattice[j].setLocalBy(lattice[j].getLocalBy() - magneticMomentToRemove * intTable[1][lattice[spinToRemove].getN()][lattice[j].getN()]);
+                            lattice[j].setLocalBx(lattice[j].getLocalBx() - magneticMomentToRemove * intTable[0][spinToRemove][j]);
+                            lattice[j].setLocalBy(lattice[j].getLocalBy() - magneticMomentToRemove * intTable[1][spinToRemove][j]);
                         }
-                        lattice[j].setLocalBz(lattice[j].getLocalBz() - magneticMomentToRemove * intTable[2][lattice[spinToRemove].getN()][lattice[j].getN()]);
+                        lattice[j].setLocalBz(lattice[j].getLocalBz() - magneticMomentToRemove * intTable[2][spinToRemove][j]);
 
                     }
                 }
@@ -757,10 +757,10 @@ public class Lattice implements Serializable {
 
             for (i = 0; i < lattice.length; i++) {
                 if (lattice[i].getSpin() != 0) {
-                    lattice[i].setLocalBz(lattice[i].getLocalBz() + magneticMoment * intTable[2][lattice[i].getN()][lattice[flipSpin].getN()]);
+                    lattice[i].setLocalBz(lattice[i].getLocalBz() + magneticMoment * intTable[2][i][flipSpin]);
                     if (!suppressInternalTransFields) {
-                        lattice[i].setLocalBx(lattice[i].getLocalBx() + magneticMoment * intTable[0][lattice[i].getN()][lattice[flipSpin].getN()]);
-                        lattice[i].setLocalBy(lattice[i].getLocalBy() + magneticMoment * intTable[1][lattice[i].getN()][lattice[flipSpin].getN()]);
+                        lattice[i].setLocalBx(lattice[i].getLocalBx() + magneticMoment * intTable[0][i][flipSpin]);
+                        lattice[i].setLocalBy(lattice[i].getLocalBy() + magneticMoment * intTable[1][i][flipSpin]);
                     }
                 }
             }
