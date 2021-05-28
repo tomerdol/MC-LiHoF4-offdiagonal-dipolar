@@ -101,7 +101,7 @@ public class ParseCommandLine {
                 .desc("Location of file containing the temperature schedule.")
                 .build();
         final Option seed = Option.builder("seed")
-                .required(false)
+                .required(true)
                 .longOpt("PRNG_seed")
                 .hasArg()
                 .desc("Seed for random number generator. Do not set unless for debugging.")
