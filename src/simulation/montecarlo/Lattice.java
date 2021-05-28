@@ -15,7 +15,7 @@ public class Lattice implements Serializable {
     private final double extBx, extBy;
     private final boolean suppressInternalTransFields;
     private final double spinSize;
-//    private final boolean[] dilution;
+    private final boolean[] dilution;
     // after deserialization these must be set:
     transient double[][][] intTable=null;
     transient double[][] exchangeIntTable=null;
@@ -28,7 +28,7 @@ public class Lattice implements Serializable {
     private singleSpin[] lattice;
 
     @CreatesInconsistency("If intTable, exchangeIntTable, energyTable, momentTable or measure are null")
-    public Lattice(int Lx, int Lz, double extBx, double extBy, boolean suppressInternalTransFields, double spinSize, double[][][] intTable, double[][] exchangeIntTable, int[][] nnArray, FieldTable energyTable, FieldTable momentTable, final ObservableExtractor measure){
+    public Lattice(int Lx, int Lz, double extBx, double extBy, boolean suppressInternalTransFields, double spinSize, boolean[] dilution, double[][][] intTable, double[][] exchangeIntTable, int[][] nnArray, FieldTable energyTable, FieldTable momentTable, final ObservableExtractor measure){
         this.N=Lx*Lx*Lz*Constants.num_in_cell;
         this.Lx=Lx;
         this.Lz=Lz;
@@ -36,7 +36,7 @@ public class Lattice implements Serializable {
         this.extBy=extBy;
         this.suppressInternalTransFields=suppressInternalTransFields;
         this.spinSize = spinSize;
-//        this.dilution = dilution;
+        this.dilution = dilution;
         this.intTable=intTable;
         this.exchangeIntTable=exchangeIntTable;
         this.energyTable=energyTable;
@@ -44,7 +44,7 @@ public class Lattice implements Serializable {
         this.nnArray=nnArray;
         this.measure=measure;
         this.iterativeSolver = new MagneticMomentsSolveIter();
-        this.lattice=generateIsingLattice(Lx,Lz,spinSize);
+        this.lattice=generateIsingLattice(Lx,Lz,spinSize, dilution);
         if (intTable!=null && exchangeIntTable!=null && energyTable!=null && momentTable!=null && measure!=null)
             this.updateAllLocalFields();
     }
@@ -57,6 +57,7 @@ public class Lattice implements Serializable {
         this.extBy=other.extBy;
         this.suppressInternalTransFields=other.suppressInternalTransFields;
         this.spinSize=other.spinSize;
+        this.dilution=other.dilution;
         this.intTable=other.intTable;
         this.exchangeIntTable=other.exchangeIntTable;
         this.energyTable=other.energyTable;
@@ -87,6 +88,7 @@ public class Lattice implements Serializable {
         this.extBy=other.extBy;
         this.suppressInternalTransFields=newSuppressInternalFields;
         this.spinSize=other.spinSize;
+        this.dilution=other.dilution;
         this.intTable=other.intTable;
         this.exchangeIntTable=other.exchangeIntTable;
         this.energyTable=other.energyTable;
@@ -584,11 +586,18 @@ public class Lattice implements Serializable {
      * @return An array of spins that represent a Lx*Lx*Lz lattice of LiHo_{x}F_4
      * with all local fields set to zero and all spin sizes set to the (positive) default spin size (from parameter file).
      */
-    public static singleSpin[] generateIsingLattice(int Lx, int Lz, final double spinSize) {
+    public static singleSpin[] generateIsingLattice(int Lx, int Lz, final double spinSize, boolean[] dilution) {
         int i, j, k, l;
+
+        // count real number of spins in lattice
+        int N=0;
+        for (int s=0; s< dilution.length; s++){
+            if (dilution[s]) N++;
+        }
+
         // create the array that will hold the lattice. the array's cells correspond
         // to the unit cells of the LiHo{x}Y{x-1}F4.
-        singleSpin[] arr = new singleSpin[Constants.num_in_cell*Lx*Lx*Lz];
+        singleSpin[] arr = new singleSpin[N];
 
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         // get location matrix (3D coordinates for each of the 4 atoms)
@@ -612,13 +621,32 @@ public class Lattice implements Serializable {
                     // a lattice is created with all spins +1
                     for (l = 0; l < Constants.num_in_cell; l++)
                     {
-                        arr[i*Lx*Lz*Constants.num_in_cell+j*Lz*Constants.num_in_cell+k*Constants.num_in_cell+l]=new singleSpin(1,i*Lx*Lz*Constants.num_in_cell+j*Lz*Constants.num_in_cell+k*Constants.num_in_cell+l, spinSize);
+                        int fullArrayIndex = i*Lx*Lz*Constants.num_in_cell+j*Lz*Constants.num_in_cell+k*Constants.num_in_cell+l;
+                        arr[getCompactArrayIndex(dilution, fullArrayIndex)]=new singleSpin(1,fullArrayIndex, spinSize);
                     }
                 }
             }
         }
 
         return arr;
+    }
+
+    /**
+     * Get the index in the compact spin array that corresponds to the given index in the full spin array.
+     * @param dilution - array that holds the dilution config
+     * @param index - index in the full array
+     * @return corresponding index in the compact array
+     * @throws IndexOutOfBoundsException when {@code index} is larger than the size of the given dilution array
+     */
+    public static int getCompactArrayIndex(boolean[] dilution, int index){
+        if (index >= dilution.length) throw new IndexOutOfBoundsException("Index given is outside the bounds of the dilution array.");
+        int count=0;
+        for (int i=0; i<index; i++){
+            if (dilution[i]){
+                count++;
+            }
+        }
+        return count;
     }
 
 

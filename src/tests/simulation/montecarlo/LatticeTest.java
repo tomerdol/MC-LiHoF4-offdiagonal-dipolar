@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Random;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(Parameterized.class)
@@ -90,7 +91,7 @@ public class LatticeTest {
             }
         }
 
-        Lattice lattice = new Lattice(Lx, Lz, extBx, extBy, suppressInternalTransFields, spinSize,intTable, exchangeIntTable, nnArray, null, null, null);
+        Lattice lattice = new Lattice(Lx, Lz, extBx, extBy, suppressInternalTransFields, spinSize,dilution, intTable, exchangeIntTable, nnArray, null, null, null);
 
         for (int test=0; test<n; test++){
             System.out.println("*** testing spins " + test + " ***");
@@ -105,5 +106,27 @@ public class LatticeTest {
             assertTrue(verify);
         }
 
+    }
+
+    @Test
+    public void getCompactArrayIndex() {
+        int n = 0;
+        for (int i=0;i<dilution.length;i++){
+            if (dilution[i]) n++;
+//            System.out.print(dilution[i] + " ");
+        }
+
+        ReadInteractionsTable interactionsTableReceiver;
+        if (System.getProperty("system").equals("LiHoF4")){
+            interactionsTableReceiver = new ReadInteractionsTableLiHoF4(dilution);
+        } else if (System.getProperty("system").equals("Fe8")){
+            interactionsTableReceiver = new ReadInteractionsTableFe8();
+        } else {
+            throw new RuntimeException("Could not read interactions table. Illegal system name given.");
+        }
+
+        for (int i=0; i<4*Lx*Lx*Lz; i++){
+            assertEquals(interactionsTableReceiver.correspondenceArray[i], Lattice.getCompactArrayIndex(dilution, i));
+        }
     }
 }
