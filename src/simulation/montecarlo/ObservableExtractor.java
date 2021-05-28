@@ -140,10 +140,12 @@ public class ObservableExtractor {
         singleSpin[] arr = lattice.getArray();
 
         for (int i=0;i<arr.length;i++){
-            // TODO: make compatible with nnArray containing -1 entries
             // identify transverse field maximizing configurations:
             // the pairs of spins that share a common plane with the z axis are neighbors 0&1 and 2&3
-            if (arr[lattice.nnArray[i][0]].getSpin()*arr[lattice.nnArray[i][1]].getSpin()==-1 && arr[lattice.nnArray[i][2]].getSpin()*arr[lattice.nnArray[i][3]].getSpin()==-1){
+            if (lattice.nnArray[i][0] >=0 && lattice.nnArray[i][1] >=0 &&
+                    arr[lattice.nnArray[i][0]].getSpin()*arr[lattice.nnArray[i][1]].getSpin()==-1 &&
+                    lattice.nnArray[i][2] >=0 && lattice.nnArray[i][3] >=0 &&
+                    arr[lattice.nnArray[i][2]].getSpin()*arr[lattice.nnArray[i][3]].getSpin()==-1){
                 boolean allNeighborSpinSizesLarge=true;
                 for (int j=0; j<lattice.nnArray[i].length && allNeighborSpinSizesLarge; j++) {
                     allNeighborSpinSizesLarge &= arr[lattice.nnArray[i][j]].getSpin()*arr[lattice.nnArray[i][j]].getSpinSize() > 1.0;   // should (almost) always be positive
