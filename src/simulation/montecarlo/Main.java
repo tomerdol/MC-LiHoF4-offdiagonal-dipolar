@@ -243,6 +243,7 @@ public class Main {
         final char parallelMode = tempParallelMode;
         final double J_ex=tempJ_ex;
 
+        // TODO: change this so that seed must be received
         MersenneTwister mutualRnd = null;
         long[] seeds=null;
         MersenneTwister[] rnd = null;
@@ -259,7 +260,6 @@ public class Main {
                 System.exit(1);
             }
         }
-
         // Create dilution structure
         boolean[] dilution = new boolean[Lx*Lx*Lz*Constants.num_in_cell];
         int N=0;    // total number of spins in the (diluted) system

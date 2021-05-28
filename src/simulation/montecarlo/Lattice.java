@@ -15,7 +15,6 @@ public class Lattice implements Serializable {
     private final double extBx, extBy;
     private final boolean suppressInternalTransFields;
     private final double spinSize;
-    private final boolean[] dilution;
     // after deserialization these must be set:
     transient double[][][] intTable=null;
     transient double[][] exchangeIntTable=null;
@@ -36,7 +35,6 @@ public class Lattice implements Serializable {
         this.extBy=extBy;
         this.suppressInternalTransFields=suppressInternalTransFields;
         this.spinSize = spinSize;
-        this.dilution = dilution;
         this.intTable=intTable;
         this.exchangeIntTable=exchangeIntTable;
         this.energyTable=energyTable;
@@ -49,6 +47,12 @@ public class Lattice implements Serializable {
             this.updateAllLocalFields();
     }
 
+    @CreatesInconsistency("If intTable, exchangeIntTable, energyTable, momentTable or measure are null")
+    public Lattice(int Lx, int Lz, double extBx, double extBy, boolean suppressInternalTransFields, double spinSize, double[][][] intTable, double[][] exchangeIntTable, int[][] nnArray, FieldTable energyTable, FieldTable momentTable, final ObservableExtractor measure){
+        // if no dilution array is given, create full lattice
+        this(Lx, Lz, extBx, extBy, suppressInternalTransFields, spinSize, trueArray(Lx*Lx*Lz*Constants.num_in_cell), intTable, exchangeIntTable, nnArray, energyTable, momentTable, measure);
+    }
+
     public Lattice(Lattice other){
         this.N=other.N;
         this.Lx=other.Lx;
@@ -57,7 +61,6 @@ public class Lattice implements Serializable {
         this.extBy=other.extBy;
         this.suppressInternalTransFields=other.suppressInternalTransFields;
         this.spinSize=other.spinSize;
-        this.dilution=other.dilution;
         this.intTable=other.intTable;
         this.exchangeIntTable=other.exchangeIntTable;
         this.energyTable=other.energyTable;
@@ -88,7 +91,6 @@ public class Lattice implements Serializable {
         this.extBy=other.extBy;
         this.suppressInternalTransFields=newSuppressInternalFields;
         this.spinSize=other.spinSize;
-        this.dilution=other.dilution;
         this.intTable=other.intTable;
         this.exchangeIntTable=other.exchangeIntTable;
         this.energyTable=other.energyTable;
@@ -103,6 +105,11 @@ public class Lattice implements Serializable {
         }
     }
 
+    public static boolean[] trueArray(int N){
+        boolean[] arr = new boolean[N];
+        for (int i=0; i<arr.length; i++) arr[i]=true;
+        return arr;
+    }
     public void setIntTable(double[][][] intTable) {
         this.intTable = intTable;
     }
