@@ -129,7 +129,6 @@ public class Main {
         int maxIter=80;
         int bufferSize=0;
         String tempScheduleFileName = "temperature_schedule_t.txt";
-        boolean receivedSeed = false;
         long seed=0;	// should never happen;
         boolean parallelTemperingOff = false;;
         boolean printProgress = false, printOutput=true, saveState;
@@ -199,16 +198,7 @@ public class Main {
                 obsPrintSweepNum = obsPrintSweepNum/T.length;
             }
 
-            if (commandLine.hasOption("seed")){
-                receivedSeed=true;
-                seed = ((Number) commandLine.getParsedOptionValue("seed")).longValue();
-            }else{
-                // if no seed is given then this must be a continuing simulation
-                if (!continueFromSave){
-                    throw new RuntimeException("No seed was given. This is only possible if the simulation is being continued from a checkpoint, in " +
-                            "which case the \"continue_from_save\" option should be set to \"yes\". ");
-                }
-            }
+            seed = ((Number) commandLine.getParsedOptionValue("seed")).longValue();
             parallelTemperingOff = commandLine.hasOption("pt_off");
             printProgress = commandLine.hasOption("p");
             printOutput = commandLine.hasOption("output");
@@ -243,24 +233,12 @@ public class Main {
         final char parallelMode = tempParallelMode;
         final double J_ex=tempJ_ex;
 
-        // TODO: change this so that seed must be received
-        MersenneTwister mutualRnd = null;
-        long[] seeds=null;
-        MersenneTwister[] rnd = null;
-        if (!receivedSeed) {
-            seed = 0;   // this is a flag that should be checked later
-        } else {
-            if (seed!=0) {
-                mutualRnd = new MersenneTwister(seed);
-                seeds = GenerateSeeds.generateSeeds(mutualRnd, T.length);
-                rnd = new MersenneTwister[T.length];
-            }
-            else {
-                System.err.println("PRNG seed was not initialized for some reason!");
-                System.exit(1);
-            }
-        }
-        // Create dilution structure
+        // initialize RNGs
+        MersenneTwister mutualRnd = new MersenneTwister(seed);
+        long[] seeds = GenerateSeeds.generateSeeds(mutualRnd, T.length);
+        MersenneTwister[] rnd = new MersenneTwister[T.length];
+
+        // Create dilution structure (based on given seed)
         boolean[] dilution = new boolean[Lx*Lx*Lz*Constants.num_in_cell];
         int N=0;    // total number of spins in the (diluted) system
         for (int i=0;i<dilution.length;i++){
