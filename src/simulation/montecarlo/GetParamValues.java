@@ -155,7 +155,7 @@ public class GetParamValues {
 			}
 
 		}catch(Exception e){
-			throw new RuntimeException("error reading parameter "+param);
+			throw new RuntimeException("error reading parameter "+param, e);
 		}
 		
 		return p;

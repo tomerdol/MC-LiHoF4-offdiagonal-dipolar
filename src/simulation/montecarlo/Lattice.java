@@ -28,7 +28,11 @@ public class Lattice implements Serializable {
 
     @CreatesInconsistency("If intTable, exchangeIntTable, energyTable, momentTable or measure are null")
     public Lattice(int Lx, int Lz, double extBx, double extBy, boolean suppressInternalTransFields, double spinSize, boolean[] dilution, double[][][] intTable, double[][] exchangeIntTable, int[][] nnArray, FieldTable energyTable, FieldTable momentTable, final ObservableExtractor measure){
-        this.N=Lx*Lx*Lz*Constants.num_in_cell;
+        int numOfSpins=0;    // total number of spins in the (diluted) system
+        for (int i=0;i<dilution.length;i++){
+                if (dilution[i]) numOfSpins++;
+        }
+        this.N=numOfSpins;
         this.Lx=Lx;
         this.Lz=Lz;
         this.extBx=extBx;
