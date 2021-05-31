@@ -24,7 +24,7 @@ num_of_samples=$(tail -q -n 1 ${file} | awk 'END{print $1}')
 if [ $num_of_samples != "index" ]
 then
 start_point=$((num_of_samples / 2))
-energy=$(tail -q -n ${start_point} ${file} | awk '{ total += $3/4 } END { print total/NR }')
+energy=$(tail -q -n ${start_point} ${file} | awk '!/^ *#/{ total += $3/4; count++ } END { print total/count }')
 magnetization=$(tail -q -n ${start_point} ${file} | awk '{ total += $2 } END { print total/NR }')
 else
 energy=""

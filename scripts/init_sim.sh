@@ -121,9 +121,9 @@ for mech in "${arrayMech[@]}"; do
 
           num_of_samples=$(tail -q -n 1 ${file} | awk 'END{print $1}')
           start_point=$((num_of_samples / 4))
-          energy=$(tail -q -n ${start_point} ${file} | awk '{ total += $3 } END { print total/NR }')
-          m2=$(tail -q -n ${start_point} ${file} | awk '{ total += ($2)^2 } END { print total/NR }')
-          mk2=$(tail -q -n ${start_point} ${file} | awk '{ total += $15 } END { print total/NR }')
+          energy=$(tail -q -n ${start_point} ${file} | awk '!/^ *#/{ total += $3; count++ } END { print total/count }')
+          m2=$(tail -q -n ${start_point} ${file} | awk '!/^ *#/{ total += ($2)^2; count++ } END { print total/count }')
+          mk2=$(tail -q -n ${start_point} ${file} | awk '!/^ *#/{ total += $15; count++ } END { print total/count }')
 
           corr_length=$(bc -l <<<"scale=5; sqrt(($m2/$mk2)-1)/(2*$L*s(4*a(1)/$L))")
 

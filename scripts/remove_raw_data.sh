@@ -1,9 +1,9 @@
 #!/bin/bash
 
-name="res_test"
+name="temp_Fe8_test8"
 arrayMech=( "false" "true" )
-arrayL=( 6 5 4 )
-arrayH=( 0.0 0.3 0.6 )
+arrayL=( 5 6 7 8 9 )
+arrayH=( 0.0 )
 
 for L in "${arrayL[@]}"
 do
@@ -13,7 +13,7 @@ for mech in "${arrayMech[@]}"
 do
 
 echo "Binning data"
-python3 bin_data.py "$H" "$name" "$mech" "$L"
+python3 bin_data.py "$SYS_NAME" "$H" "$name" "$mech" "$L"
 echo "Removing raw data"
 rm -f ../"$SYS_NAME"/data/results/"$name"/table_"$L"_"$L"_"$H"_*_"$mech".txt
 

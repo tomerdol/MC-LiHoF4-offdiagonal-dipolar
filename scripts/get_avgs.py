@@ -16,6 +16,7 @@ def pow_fit(x, a, b):
 timestamp = datetime(2021, 1, 16).replace(tzinfo=timezone.utc).timestamp() # datetime when timestamps printed to /output were changed. this script (in contrast to get_Avgs_old.py) only searches newer files
 
 max_L = float(sys.argv[1])
+config.system_name = sys.argv[2]
 output_directory = os.fsencode('../' + config.system_name + '/output/')
 
 averages_dict={}

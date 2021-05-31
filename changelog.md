@@ -23,6 +23,7 @@
 * Add swap to binned data
 * Enable acceptance rate plot with plot_bin.py
 * Add script to create magnetic moment table according to the calculation in P. B. Chakraborty, P. Henelius, H. Kjønsberg, A. W. Sandvik, and S. M. Girvin, Phys. Rev. B 70, 144411 (2004).
+* (31/5/2021) Fixed double multiplying by 0.5 for self-interactions
 
 # v1.2.0b - 08/03/2021
 * Write full lattice state at the end of the simulation
