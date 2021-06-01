@@ -52,7 +52,7 @@ if true; then
 
   # run initial temporary run
   sub "temp_" 513 20
-
+fi
 # wait until temporary runs finish
 running_jobs=$(qstat -u tomerdol | awk '$3 ~ /^tr/' | awk 'END {print NR}')
 while [ $running_jobs -gt 0 ]; do
@@ -61,7 +61,6 @@ while [ $running_jobs -gt 0 ]; do
   running_jobs=$(qstat -u tomerdol | awk '$3 ~ /^tr/' | awk 'END {print NR}')
 done
 
-fi
 #*************************************************************************
 # check that there are results
 #*************************************************************************
@@ -149,7 +148,7 @@ for mech in "${arrayMech[@]}"; do
   for H in "${arrayH[@]}"; do
 
     all_L="${arrayL[@]}"
-    initial_tc=$(/gpfs0/smoshe/projects/Python-3.8_old/bin/python3 ./scripts/find_initial_tc.py --h_ex_list ${H} --mech ${mech} --folder_list temp_${name} -L ${all_L})
+    initial_tc=$(/gpfs0/smoshe/projects/Python-3.8_old/bin/python3 ./scripts/find_initial_tc.py -sys ${SYS_NAME} -h_ex ${H} --mech ${mech} --folder_list temp_${name} -L ${all_L})
     echo "Hex=$H mech=$mech : initial Tc = $initial_tc"
 
     for L in "${arrayL[@]}"; do
