@@ -12,7 +12,7 @@ import java.util.Properties;
 public class Lattice implements Serializable {
     private static final long serialVersionUID = -9119463380760410942L;
     private final int N, Lx, Lz;
-    private final double extBx, extBy;
+    private final double extBx, extBy, x;
     private final boolean suppressInternalTransFields;
     private final double spinSize;
     // after deserialization these must be set:
@@ -27,7 +27,7 @@ public class Lattice implements Serializable {
     private singleSpin[] lattice;
 
     @CreatesInconsistency("If intTable, exchangeIntTable, energyTable, momentTable or measure are null")
-    public Lattice(int Lx, int Lz, double extBx, double extBy, boolean suppressInternalTransFields, double spinSize, boolean[] dilution, double[][][] intTable, double[][] exchangeIntTable, int[][] nnArray, FieldTable energyTable, FieldTable momentTable, final ObservableExtractor measure){
+    public Lattice(int Lx, int Lz, double x, double extBx, double extBy, boolean suppressInternalTransFields, double spinSize, boolean[] dilution, double[][][] intTable, double[][] exchangeIntTable, int[][] nnArray, FieldTable energyTable, FieldTable momentTable, final ObservableExtractor measure){
         int numOfSpins=0;    // total number of spins in the (diluted) system
         for (int i=0;i<dilution.length;i++){
                 if (dilution[i]) numOfSpins++;
@@ -35,6 +35,7 @@ public class Lattice implements Serializable {
         this.N=numOfSpins;
         this.Lx=Lx;
         this.Lz=Lz;
+        this.x=x;
         this.extBx=extBx;
         this.extBy=extBy;
         this.suppressInternalTransFields=suppressInternalTransFields;
@@ -54,13 +55,14 @@ public class Lattice implements Serializable {
     @CreatesInconsistency("If intTable, exchangeIntTable, energyTable, momentTable or measure are null")
     public Lattice(int Lx, int Lz, double extBx, double extBy, boolean suppressInternalTransFields, double spinSize, double[][][] intTable, double[][] exchangeIntTable, int[][] nnArray, FieldTable energyTable, FieldTable momentTable, final ObservableExtractor measure){
         // if no dilution array is given, create full lattice
-        this(Lx, Lz, extBx, extBy, suppressInternalTransFields, spinSize, trueArray(Lx*Lx*Lz*Constants.num_in_cell), intTable, exchangeIntTable, nnArray, energyTable, momentTable, measure);
+        this(Lx, Lz, 1.0, extBx, extBy, suppressInternalTransFields, spinSize, trueArray(Lx*Lx*Lz*Constants.num_in_cell), intTable, exchangeIntTable, nnArray, energyTable, momentTable, measure);
     }
 
     public Lattice(Lattice other){
         this.N=other.N;
         this.Lx=other.Lx;
         this.Lz=other.Lz;
+        this.x=other.x;
         this.extBx=other.extBx;
         this.extBy=other.extBy;
         this.suppressInternalTransFields=other.suppressInternalTransFields;
@@ -91,6 +93,7 @@ public class Lattice implements Serializable {
         this.N=other.N;
         this.Lx=other.Lx;
         this.Lz=other.Lz;
+        this.x=other.x;
         this.extBx=other.extBx;
         this.extBy=other.extBy;
         this.suppressInternalTransFields=newSuppressInternalFields;
@@ -114,6 +117,11 @@ public class Lattice implements Serializable {
         for (int i=0; i<arr.length; i++) arr[i]=true;
         return arr;
     }
+
+    public double getConcentration() {
+        return x;
+    }
+
     public void setIntTable(double[][][] intTable) {
         this.intTable = intTable;
     }

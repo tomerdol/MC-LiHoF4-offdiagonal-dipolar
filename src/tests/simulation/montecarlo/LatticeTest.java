@@ -18,6 +18,7 @@ public class LatticeTest {
     int Lx;
     int Lz;
     double J_ex;
+    double x;
     boolean[] dilution;
 
     public LatticeTest(double[][][] intTable, int Lx, int Lz, double J_ex, boolean[] dilution) {
@@ -50,7 +51,7 @@ public class LatticeTest {
             }
 
             final double[][][] intTable = new double[3][N][N];
-            arr[i] = new Object[]{intTable, Lx, Lz, 1.16e-3, inputArray};
+            arr[i] = new Object[]{intTable, Lx, Lz, x, 1.16e-3, inputArray};
         }
 
         return Arrays.asList(arr);
@@ -91,7 +92,7 @@ public class LatticeTest {
             }
         }
 
-        Lattice lattice = new Lattice(Lx, Lz, extBx, extBy, suppressInternalTransFields, spinSize,dilution, intTable, exchangeIntTable, nnArray, null, null, null);
+        Lattice lattice = new Lattice(Lx, Lz, x, extBx, extBy, suppressInternalTransFields, spinSize,dilution, intTable, exchangeIntTable, nnArray, null, null, null);
 
         for (int test=0; test<n; test++){
             System.out.println("*** testing spins " + test + " ***");

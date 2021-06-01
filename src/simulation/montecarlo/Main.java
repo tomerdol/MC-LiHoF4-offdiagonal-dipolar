@@ -293,7 +293,7 @@ public class Main {
         {   // code block: tempLattice is discarded at the end
 
             // temporary lattice objecct used to create k_tables
-            Lattice tempLattice = new Lattice(Lx, Lz, extBx, extBy, suppressInternalTransFields, spinSize, dilution, null, null, null, null, null, null);
+            Lattice tempLattice = new Lattice(Lx, Lz, x, extBx, extBy, suppressInternalTransFields, spinSize, dilution, null, null, null, null, null, null);
 
             // initialize sin, cos tables for mk^2 calculation (correlation length)
             k_cos_table = new double[3][tempLattice.getN()];
@@ -374,7 +374,7 @@ public class Main {
                     ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).printRunParameters(VERSION, T, "# successfully read saved state"+System.lineSeparator()+'#'+outputWriter.makeTableHeader().substring(1), simulation.getSeed(), tempScheduleFileName, parallelTemperingOff);
                 }else{
                     // initialize new simulation
-                    Lattice lattice = new Lattice(Lx, Lz, extBx, extBy, suppressInternalTransFields, spinSize, dilution, intTable, exchangeIntTable, nnArray, energyTable, momentTable, measure);
+                    Lattice lattice = new Lattice(Lx, Lz, x, extBx, extBy, suppressInternalTransFields, spinSize, dilution, intTable, exchangeIntTable, nnArray, energyTable, momentTable, measure);
                     rnd[i] = new MersenneTwister(seeds[i]);
                     subSimulations[i] = new SingleTMonteCarloSimulation(T[i], i, T.length, lattice, 36, maxSweeps, seeds[i], rnd[i], continueFromSave,
                             realTimeEqTest, outputWriter, saveState, maxIter, alpha, outProblematicConfigs, spinSize, tol, J_ex);
