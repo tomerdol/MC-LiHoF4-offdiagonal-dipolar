@@ -3,7 +3,8 @@ import numpy as np
 
 def parse_arguments():
     from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
-    
+    import config
+
     parser = ArgumentParser(description="Analyzes Monte Carlo results to create a phase diagram for LiHoF4", formatter_class=ArgumentDefaultsHelpFormatter, parents=[config.parse_arguments()], conflict_handler='resolve')
     parser.add_argument( "-L", nargs='+', type=int, required=True, help = "Linear system sizes. At least 2 required.")
     # parser.add_argument( "-b", "--boot_num", type=int, default = 100, help = "Number of bootstrap samples.")
