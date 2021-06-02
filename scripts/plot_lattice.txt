@@ -1,0 +1,5 @@
+rawData = OpenRead["/gpfs0/smoshe/users/tomerdol/home/LiHoF4_transverse_field_MC/dev/scripts/temp_lattice.txt"];
+data = ToExpression@ReadList[rawData, {Record, Record, Record, Record},RecordSeparators -> {",", "\n"}];
+Close[rawData];
+plot = ListPointPlot3D[List /@ data[[All, {1, 2, 3}]], PlotStyle -> ({PointSize[Large], Blend[{{-1, Darker[Green]}, {1, Yellow}}, #1]} &/@Flatten[data[[All, 4]]]), Axes -> True, BoxRatios -> Automatic, AxesLabel -> {"x", "y", "z"}];
+Export["lattice_output.png",plot]

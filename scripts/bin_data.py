@@ -228,10 +228,15 @@ def last_index(fname):
 
 def main_bin(simulations):
     for sim in simulations.itertuples(index=False):
-        mkdir('../' + config.system_name + '/data/results/'+sim.folderName+'/binned_data')
+        # if specific project name is given, the binned_data folder can be created just once, now
+        if sim.folderName != '*': mkdir('../' + config.system_name + '/data/results/'+sim.folderName+'/binned_data')
+
         path='../' + config.system_name + '/data/results/'+sim.folderName+'/table_'+str(sim.L)+'_'+str(sim.L)+'_'+str(sim.Bex)+'_'+str(sim.T)+'_'+str(sim.mech)+'_'+'*'+'.txt'
         #print(glob.glob(path))
         for fname in glob.glob(path):
+            # if no project name is given, the existence of a corresponding binned_data folder must be verified for each file
+            if sim.folderName == '*': mkdir(os.path.dirname(fname) + '/binned_data')
+
             tmp_fname_bin = fname.split('/')
             tmp_fname_bin.insert(5,'binned_data')
             fname_bin='/'.join(tmp_fname_bin)
@@ -251,12 +256,17 @@ def main_bin(simulations):
                     pass
             
 def main():
-    L = sys.argv[5:]
-    Bex = sys.argv[2]
-    folderName = sys.argv[3]
-    mech = sys.argv[4]
+
     config.system_name = sys.argv[1]
-    simulations = analysis_tools.get_simulations(L, folderName, Bex, mech)
+    if sys.argv[2] == '*':
+        simulations=pd.DataFrame(columns=['L','folderName','Bex','mech','T'])
+        simulations.loc[0] = '*'
+    else:
+        L = sys.argv[5:]
+        Bex = sys.argv[2]
+        folderName = sys.argv[3]
+        mech = sys.argv[4]
+        simulations = analysis_tools.get_simulations(L, folderName, Bex, mech)
     main_bin(simulations) 
     
        

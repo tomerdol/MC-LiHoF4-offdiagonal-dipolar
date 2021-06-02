@@ -4,13 +4,13 @@ source ./scripts/sub.sh
 
 # this should override the definitions from sub.sh
 if [ $SYS_NAME == "LiHoF4" ]; then
-name="res_test_ex_0.014"
+name="dilution_test_1.0"
 arrayMech=("false")
-arrayL=( 5 6 7 )
+arrayL=( 4 5 6 )
 arrayLexclude=()
-arrayH=( 0.0 0.3 0.6 1.0 1.5 2.0 )
-minT_false=1.4
-maxT_false=2.0
+arrayH=( 0.0 0.3 0.6 1.0 )
+minT_false=1.3
+maxT_false=1.8
 #minT_true=1.55
 #maxT_true=2.0
 minT_true=1.0
@@ -44,7 +44,7 @@ gen_temp_schedules() {
   done
 }
 
-if true; then
+if false; then
   # generate temporary temperature schedules for "true"
   gen_temp_schedules $minT_true $maxT_true "true" "temp_"
   # generate temporary temperature schedules for "false"
