@@ -66,11 +66,18 @@ def read_equilibration_data(sim_name):
 def main_check_equilibration(simulations, to_check):
     # a temperature ensemble is considered for equilibration (due to the use of parallel tempering)
     equilibrated_bin_dict={}
+    simulations_to_remove=[]
     for group_name, group_df in simulations.groupby(['Bex','L','folderName','mech']):
         if group_df['overwrite'].any():
             max_bin=0
             for i, sim in enumerate(group_df.itertuples()):
-                data = bin_data.read_binned(sim, use_latest=False)
+                try:
+                    data = bin_data.read_binned(sim, use_latest=False)
+                except Exception as e:
+                    print(e)
+                    print("Dropping missing simulations from current analysis.")
+                    simulations_to_remove.append(sim.index)
+                    continue
                 for to_check_now in to_check:
                     a_index=data[0][:,0]
                     a=data[0][:,to_plot_col_index(to_check_now)]
@@ -88,7 +95,7 @@ def main_check_equilibration(simulations, to_check):
             equilibrated_bin_dict[group_name]=read_equilibration_data(group_name)
     # add column eq_bin with equilibrated bin
     simulations['eq_bin']=simulations.apply(lambda row: equilibrated_bin_dict[(row['Bex'],row['L'],row['folderName'],row['mech'])], axis=1)
-    print(simulations)
+    print(simulations.drop(simulations_to_remove,inplace=True))
     # simulations['eq_bin']=11
     return simulations
 
@@ -109,8 +116,12 @@ def main_plot(simulations, to_plot, L, Bex, folderName, mech):
         for temperature_index, temperature in enumerate(simulations['T'].unique()):
             pdf_fig, pdf_axes = plt.subplots(len(to_plot),1, figsize=(7,len(to_plot)*3))
             for i, sim in enumerate(simulations[simulations['T']==temperature].itertuples()):
-                data = bin_data.read_binned(sim, use_latest=False)
-                
+                try:
+                    data = bin_data.read_binned(sim, use_latest=False)
+                except Exception as e:
+                    print(e)
+                    print("Dropping missing simulations from current analysis.")
+                    continue
                 pdf_axes[0].set_title("Bex=%s , T=%1.5f"%(sim.Bex,temperature))
                 for to_plot_index, to_plot_now in enumerate(to_plot):
                     a_index=data[0][:,0]
@@ -160,6 +171,7 @@ def main_plot(simulations, to_plot, L, Bex, folderName, mech):
     ax.set_ylabel('Equilibrated bin')
     ax.axhline(num_of_bins-1)
     fig.savefig('../' + config.system_name + '/figures/plot_equilibration_%s.png'%Bex)
+    print(simulations)
 
 
 def main():

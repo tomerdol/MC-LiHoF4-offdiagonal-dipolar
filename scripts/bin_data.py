@@ -99,7 +99,7 @@ def read_binned(sim, use_latest=True):
     files = glob.glob(path)
     if not files:
         # no files matching pattern found
-        raise RuntimeError("No binned files found matching the given pattern for " + str(sim))
+        raise Exception("No binned files found matching the given pattern for " + str(sim))
     for fname in files:
         curr_array=np.genfromtxt(fname,skip_header=1)
         max_bins = len(curr_array) if len(curr_array)>max_bins else max_bins
