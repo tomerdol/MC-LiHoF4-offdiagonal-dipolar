@@ -96,7 +96,11 @@ def read_binned(sim, use_latest=True):
     max_bins=0
     min_bins=0
     first_iter=True
-    for fname in glob.glob(path):
+    files = glob.glob(path)
+    if not files:
+        # no files matching pattern found
+        raise RuntimeError("No binned files found matching the given pattern for " + str(sim))
+    for fname in files:
         curr_array=np.genfromtxt(fname,skip_header=1)
         max_bins = len(curr_array) if len(curr_array)>max_bins else max_bins
         min_bins = len(curr_array) if len(curr_array)<min_bins or first_iter else min_bins
