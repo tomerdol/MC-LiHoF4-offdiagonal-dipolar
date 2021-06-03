@@ -76,7 +76,7 @@ def main_check_equilibration(simulations, to_check):
                 except Exception as e:
                     print(e)
                     print("Dropping missing simulations from current analysis.")
-                    simulations_to_remove.append(sim.index)
+                    simulations_to_remove.append(sim.Index)
                     continue
                 for to_check_now in to_check:
                     a_index=data[0][:,0]
@@ -89,13 +89,14 @@ def main_check_equilibration(simulations, to_check):
                         max_bin = equilibrated_bin if equilibrated_bin>max_bin else max_bin
                     else:
                         max_bin = -1
-            equilibrated_bin_dict[group_name]=max_bin+1
+            equilibrated_bin_dict[group_name]=max_bin
             save_equilibration_data(group_name, max_bin)
         else:
             equilibrated_bin_dict[group_name]=read_equilibration_data(group_name)
+    simulations.drop(simulations_to_remove,inplace=True)
     # add column eq_bin with equilibrated bin
     simulations['eq_bin']=simulations.apply(lambda row: equilibrated_bin_dict[(row['Bex'],row['L'],row['folderName'],row['mech'])], axis=1)
-    print(simulations.drop(simulations_to_remove,inplace=True))
+    print(simulations)
     # simulations['eq_bin']=11
     return simulations
 
