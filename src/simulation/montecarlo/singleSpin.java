@@ -6,6 +6,7 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import java.io.Serializable;
 
 public class singleSpin implements Serializable{
+	private static final long serialVersionUID = 625318162648175439L;
 	private int s;			// spin
 	private double spinSize;	//spin size
 	private double localBz;	// local field - comparable to EO fitness
