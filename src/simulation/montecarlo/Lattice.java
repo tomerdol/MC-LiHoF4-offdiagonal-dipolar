@@ -641,7 +641,9 @@ public class Lattice implements Serializable {
                     for (l = 0; l < Constants.num_in_cell; l++)
                     {
                         int fullArrayIndex = i*Lx*Lz*Constants.num_in_cell+j*Lz*Constants.num_in_cell+k*Constants.num_in_cell+l;
-                        arr[getCompactArrayIndex(dilution, fullArrayIndex)]=new singleSpin(1,fullArrayIndex, spinSize);
+                        if (dilution[fullArrayIndex]) {
+                            arr[getCompactArrayIndex(dilution, fullArrayIndex)] = new singleSpin(1, fullArrayIndex, spinSize);
+                        }
                     }
                 }
             }
