@@ -84,10 +84,10 @@ public class OutputWriter implements Closeable {
 
     public void writeObservablesVerbose(final long sweeps, final double m, final double currentEnergy, final double magField0, final double magField1, final double magField2,
                                  final double magField3, final double magField4, final double magField5, final double magField6, final double magField7, final double magField8,
-                                 final double spinSizes0, final double spinSizes1, final double mk2x, final double mk2y, final double mk2z, final double transFieldMaxConfig, final boolean lastSwapAccepted){
+                                 final double spinSizes0, final double spinSizes1, final double mk2x, final double mk2y, final double mk2z, final boolean lastSwapAccepted){
         if (outType == OutputType.VERBOSE) {
             Formatter formatter = new Formatter(outputBuffer);
-            formatter.format(makeTableRowFormat(new char[]{'d', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'c'}), sweeps, m, currentEnergy, magField0, magField1, magField2, magField3, magField4, magField5, magField6, magField7, magField8, spinSizes0, spinSizes1, mk2x, mk2y, mk2z, transFieldMaxConfig, (lastSwapAccepted ? '1' : '0'));
+            formatter.format(makeTableRowFormat(new char[]{'d', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'c'}), sweeps, m, currentEnergy, magField0, magField1, magField2, magField3, magField4, magField5, magField6, magField7, magField8, spinSizes0, spinSizes1, mk2x, mk2y, mk2z, (lastSwapAccepted ? '1' : '0'));
             outputBuffer.append(System.lineSeparator());
         }
     }

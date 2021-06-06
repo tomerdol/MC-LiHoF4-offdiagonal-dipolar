@@ -135,7 +135,6 @@ public class Main {
         long obsPrintSweepNum=15;
         String folderName="default";
         double alpha=1.0;
-        boolean realTimeEqTest=false;
         boolean verboseOutput=false;
         char tempParallelMode='t';
         double tempJ_ex;
@@ -205,7 +204,6 @@ public class Main {
             if (commandLine.hasOption("print_sweep_num")) obsPrintSweepNum = ((Number) commandLine.getParsedOptionValue("print_sweep_num")).longValue();
             if (commandLine.hasOption("name")) folderName = commandLine.getOptionValue("name");
             if (commandLine.hasOption("alpha")) alpha = ((Number) commandLine.getParsedOptionValue("alpha")).doubleValue();
-            realTimeEqTest = commandLine.hasOption("test_eq");
 
             if (commandLine.hasOption("tol")) tol = ((Number) commandLine.getParsedOptionValue("tol")).doubleValue();
             if (commandLine.hasOption("Jex")) tempJ_ex = ((Number) commandLine.getParsedOptionValue("Jex")).doubleValue();
@@ -368,7 +366,6 @@ public class Main {
                     ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).setOutProblematicConfigs(outProblematicConfigs);
                     ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).setContinueFromSave(continueFromSave);
                     ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).setCheckpoint(saveState);
-                    ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).setRealTimeEqTest(realTimeEqTest);
 
                     // print parameters and table headers (with preceding '#') to results output file
                     ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).printRunParameters(VERSION, T, "# successfully read saved state"+System.lineSeparator()+'#'+outputWriter.makeTableHeader().substring(1), simulation.getSeed(), tempScheduleFileName, parallelTemperingOff);
@@ -376,8 +373,8 @@ public class Main {
                     // initialize new simulation
                     Lattice lattice = new Lattice(Lx, Lz, x, extBx, extBy, suppressInternalTransFields, spinSize, dilution, intTable, exchangeIntTable, nnArray, energyTable, momentTable, measure);
                     rnd[i] = new MersenneTwister(seeds[i]);
-                    subSimulations[i] = new SingleTMonteCarloSimulation(T[i], i, T.length, lattice, 36, maxSweeps, seeds[i], rnd[i], continueFromSave,
-                            realTimeEqTest, outputWriter, saveState, maxIter, alpha, outProblematicConfigs, spinSize, tol, J_ex);
+                    subSimulations[i] = new SingleTMonteCarloSimulation(T[i], i, T.length, lattice, 35, maxSweeps, seeds[i], rnd[i], continueFromSave,
+                            outputWriter, saveState, maxIter, alpha, outProblematicConfigs, spinSize, tol, J_ex);
                     // print parameters and table headers
                     subSimulations[i].printRunParameters(VERSION, T, "# unsuccessful reading checkpoint... Starting new state."+System.lineSeparator()+outputWriter.makeTableHeader(), seed, tempScheduleFileName, parallelTemperingOff);
                 }
@@ -389,14 +386,13 @@ public class Main {
 
             // initialization of the fields of MultipleTMonteCarloSimulation
             if (!successReadFromFile){
-                simulation=new MultipleTMonteCarloSimulation(T, subSimulations, maxSweeps, seed, mutualRnd, continueFromSave, realTimeEqTest, parallelTemperingOff, saveState, checkpointer, spinSize, tol, J_ex);
+                simulation=new MultipleTMonteCarloSimulation(T, subSimulations, maxSweeps, seed, mutualRnd, continueFromSave, parallelTemperingOff, saveState, checkpointer, spinSize, tol, J_ex);
                 ((MultipleTMonteCarloSimulation) simulation).initSimulation();
             }else{
                 ((MultipleTMonteCarloSimulation)simulation).setCheckpointer(checkpointer);
                 ((MultipleTMonteCarloSimulation)simulation).addSweeps(maxSweeps);
                 ((MultipleTMonteCarloSimulation)simulation).setContinueFromSave(continueFromSave);
                 ((MultipleTMonteCarloSimulation)simulation).setCheckpoint(saveState);
-                ((MultipleTMonteCarloSimulation)simulation).setRealTimeEqTest(realTimeEqTest);
             }
 
             // Run simulation

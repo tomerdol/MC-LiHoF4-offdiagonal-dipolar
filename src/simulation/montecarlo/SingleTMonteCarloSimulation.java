@@ -22,15 +22,12 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
     private long sweeps;
     private long currentBinCount;
     private double[] binAvg;
-    private final ArrayList<CircularFifoQueue<Pair<Double,Double>>> equilibratingObs;
     private Lattice lattice;
     private final MersenneTwister rnd;
     private transient OutputWriter outWriter;
     private double currentEnergy;
     private int acceptanceRateCount;
     private int acceptanceRateSum;
-    private boolean[] equilibratedObs;
-    private boolean equilibrated;
     private boolean lastSwapAccepted;
 
     public final double spinSize, tol, J_ex;
@@ -40,20 +37,18 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
     private transient BufferedWriter outProblematicConfigs;
 
     public SingleTMonteCarloSimulation(final double T, final int temperatureIndex, final int totalNumOfTemperatures, final Lattice lattice, final int numOfObservables, final long maxSweeps,
-                                       final long seed, final MersenneTwister rnd, final boolean continueFromSave, final boolean realTimeEqTest,
-                                       final OutputWriter out, final boolean checkpoint, final int maxIter, final double alpha, final BufferedWriter outProblematicConfigs,
+                                       final long seed, final MersenneTwister rnd, final boolean continueFromSave, final OutputWriter out, final boolean checkpoint,
+                                       final int maxIter, final double alpha, final BufferedWriter outProblematicConfigs,
                                        final double spinSize, final double tol, final double J_ex) {
         this.T = T;
         this.temperatureIndex=temperatureIndex;
         this.sweeps = 0;
         this.currentBinCount = 0;
         binAvg = new double[numOfObservables];
-        equilibratingObs = generateEquilibrationQueues(3,4);
         this.lattice=lattice;
         this.maxSweeps=maxSweeps;
         this.seed=seed;
         this.continueFromSave=continueFromSave;
-        this.realTimeEqTest=realTimeEqTest;
         this.rnd=rnd;
         this.outWriter=out;
         this.checkpoint=checkpoint;
@@ -63,8 +58,6 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
         this.outProblematicConfigs=outProblematicConfigs;
         this.acceptanceRateCount=0;
         this.acceptanceRateSum=0;
-        this.equilibrated=false;
-        this.equilibratedObs = new boolean[4];
         this.lastSwapAccepted=false;
         this.spinSize=spinSize;
         this.tol=tol;
@@ -111,10 +104,6 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
 
     public void incAcceptanceRateCount() {
         this.acceptanceRateCount++;
-    }
-
-    public boolean isEquilibrated() {
-        return equilibrated;
     }
 
     public double getCurrentEnergy() {
@@ -283,10 +272,8 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
         double[] temp = lattice.getMagneticFields();
         double[] tempSpinSizes = lattice.getSpinSizes();
         double[] mk2 = lattice.getMK2();    // m(k)^2, used later for correlation length calculation
-        double transFieldMaxConfig = lattice.getTransverseFieldMaximizingNNConfigsFrac();
 
-
-        outWriter.writeObservablesVerbose(sweeps, m ,currentEnergy ,temp[0] ,temp[1] ,temp[2] ,temp[3] ,temp[4] ,temp[5] ,temp[6] ,temp[7] ,temp[8], tempSpinSizes[0] ,tempSpinSizes[1] ,mk2[0], mk2[1], mk2[2], transFieldMaxConfig, lastSwapAccepted);
+        outWriter.writeObservablesVerbose(sweeps, m ,currentEnergy ,temp[0] ,temp[1] ,temp[2] ,temp[3] ,temp[4] ,temp[5] ,temp[6] ,temp[7] ,temp[8], tempSpinSizes[0] ,tempSpinSizes[1] ,mk2[0], mk2[1], mk2[2], lastSwapAccepted);
 
         if (sweeps>0) currentBinCount++;
         //System.out.println(sweeps+ " , " + sweeps/2 + " , " + currentBinCount + " , " + (sweeps&1));
@@ -304,17 +291,6 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
             // print data from previous bin and
             outWriter.writeObservablesBin(currentBinCount, binAvg, acceptanceRateForBin);
 
-            // add bin averages to queue. only 3 bins are kept at any time.
-            equilibratingObs.get(0).add(Pair.of(binAvg[4]/currentBinCount,getStandardError(binAvg[4],binAvg[5],currentBinCount)));		// m^2
-            equilibratingObs.get(1).add(Pair.of(binAvg[6]/currentBinCount,getStandardError(binAvg[6],binAvg[7],currentBinCount)));		// E
-            equilibratingObs.get(2).add(Pair.of(binAvg[28]/currentBinCount,getStandardError(binAvg[28],binAvg[29],currentBinCount)));	// mk2
-            equilibratingObs.get(3).add(Pair.of(binAvg[0]/currentBinCount,getStandardError(binAvg[0],binAvg[1],currentBinCount)));		// |m|
-
-            for (int i=0;i<4;i++) {
-                equilibratedObs[i] = checkEquilibration(equilibratingObs.get(i));
-            }
-            equilibrated = isAllTrue(equilibratedObs);
-
             //System.out.println(sweeps + ") printed average of bin size "+currentBinCount + " starting from " + binStart);
             for (int avgIndex=0;avgIndex<binAvg.length;avgIndex++) binAvg[avgIndex]=0;
 
@@ -324,16 +300,9 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
             //binStart=sweeps;
 
             currentBinCount=0;
-
-            if (equilibrated){
-                // declare that equilibration has been reached
-                // TODO test the equilibration against the python script. It seems to happen a little faster than expected
-                System.out.println("System equilibrated! T="+T+", sweeps="+sweeps+". Date&Time: "+ LocalDateTime.now());
-
-            }
         }
 
-        addToAvg(binAvg,new double[]{Math.abs(m), m , m*m, currentEnergy , temp[0] , temp[1] , temp[2] , temp[3] , temp[4] , temp[5] , temp[6] , temp[7] , tempSpinSizes[0] , tempSpinSizes[1] , mk2[0], mk2[1], mk2[2], transFieldMaxConfig});
+        addToAvg(binAvg,new double[]{Math.abs(m), m , m*m, currentEnergy , temp[0] , temp[1] , temp[2] , temp[3] , temp[4] , temp[5] , temp[6] , temp[7] , tempSpinSizes[0] , tempSpinSizes[1] , mk2[0], mk2[1], mk2[2]});
 
 
     }

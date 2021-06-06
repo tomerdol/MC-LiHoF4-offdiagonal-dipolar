@@ -150,9 +150,6 @@ public class ParseCommandLine {
                 .required(false)
                 .desc("print out the observables after each Monte Carlo sweep, as opposed to logarithmic binnig.")
                 .build();
-        final Option realTimeEqTest = Option.builder("test_eq")
-                .desc("test equilibration in real-time and stop when it is reached.")
-                .build();
         final Option tol = Option.builder("tol")
                 .longOpt("tolerance")
                 .required(false)
@@ -220,7 +217,6 @@ public class ParseCommandLine {
         options.addOption(interpolationTableName);
         options.addOption(alpha);
         options.addOption(verboseOutput);
-        options.addOption(realTimeEqTest);
         options.addOption(tol);
         options.addOption(parallelMode);
         options.addOption(temperature);
