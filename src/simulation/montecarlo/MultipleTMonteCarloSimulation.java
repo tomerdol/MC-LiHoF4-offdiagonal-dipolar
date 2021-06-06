@@ -128,14 +128,13 @@ public class MultipleTMonteCarloSimulation extends MonteCarloSimulation implemen
     }
 
     public MultipleTMonteCarloSimulation(final double[] T, final SingleTMonteCarloSimulation[] subSimulations, final long maxSweeps, final long seed, final MersenneTwister rnd,
-                                         final boolean continueFromSave, final boolean realTimeEqTest, final boolean parallelTempetingOff, final boolean checkpoint,
+                                         final boolean continueFromSave, final boolean parallelTempetingOff, final boolean checkpoint,
                                          final SimulationCheckpointer checkpointer, final double spinSize, final double tol, final double J_ex){
         this.parallelTempetingOff=parallelTempetingOff;
         this.maxSweeps=maxSweeps;
         this.seed=seed;
         this.rnd=rnd;
         this.continueFromSave=continueFromSave;
-        this.realTimeEqTest=realTimeEqTest;
         this.T = Arrays.copyOf(T, T.length);
         this.simulations = subSimulations;
         this.checkpoint=checkpoint;

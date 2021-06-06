@@ -11,7 +11,7 @@ public class SimulationCheckpointerTest {
 
     @Before
     public void setUp() throws Exception {
-        MonteCarloSimulation simulation=new MultipleTMonteCarloSimulation(new double[]{1.5,1.6,1.7}, null, 1, 1, null, false, false, false, true, checkpointer, 1,1,1);
+        MonteCarloSimulation simulation=new MultipleTMonteCarloSimulation(new double[]{1.5,1.6,1.7}, null, 1, 1, null, false, false, true, checkpointer, 1,1,1);
         checkpointer.writeCheckpoint((MultipleTMonteCarloSimulation) simulation);
     }
 
