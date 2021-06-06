@@ -261,7 +261,6 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
     }
 
     public void printSimulationState(){
-
         if (outWriter.getOutType() == OutputType.SPIN) {
             singleSpin[] arr;
             if (lattice.isSuppressInternalTransFields()) {
