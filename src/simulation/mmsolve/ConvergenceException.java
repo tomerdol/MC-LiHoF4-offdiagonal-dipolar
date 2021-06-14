@@ -1,8 +1,10 @@
 package simulation.mmsolve;
 
+import org.apache.commons.math3.random.MersenneTwister;
+
 /**
  * Exception for failure to converge when performing the self consistent calculation after a spin-flip.
- * @see simulation.montecarlo.Lattice#solveSelfConsistentCalc(int, double, int, int, int[][], double)
+ * @see simulation.montecarlo.Lattice#solveSelfConsistentCalc(int, double, int, int, int[][], double, MersenneTwister) 
  */
 public class ConvergenceException extends Exception {
     private int numManualCalc=0, index=-1, flippedSpin;
