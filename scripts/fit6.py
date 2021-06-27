@@ -339,7 +339,7 @@ def fit_bin(simulations, boot_num, min_x, max_x, initial_xc, fit_options):
     results=np.zeros((len(simulations),boot_num))
     
     for i, sim in enumerate(simulations.itertuples()):
-        y = bin_data.read_binned_data(sim, use_latest=False)
+        y = bin_data.read_binned_data(sim, use_latest=True)
 
         for boot_index in range(boot_num):
             results[i,boot_index] = fit_options['func'](y['Magnetization^2'].sample(frac=1,replace=True),y['Magnetization^4'].sample(frac=1,replace=True),y['mk2'+fit_options['corr_length_axis']].sample(frac=1,replace=True),sim.L*fit_options['unit_cell_length'])
@@ -384,6 +384,20 @@ def fit_bin(simulations, boot_num, min_x, max_x, initial_xc, fit_options):
                 ps.append(curr_fit_param.x)
             else:
                 warnings.warn("Fitting did not converge for bootstrap index: %s "%boot_index,stacklevel=2)
+                simulations['scaling_func'] = data[:,2]
+                markers=['o','s','^','D','v']
+
+                fig, ax = plt.subplots(1,1,figsize=(5,5))
+                for (L, df), marker in zip(simulations.groupby(['L']), cycle(markers)):
+                    data_label = 'L=%d' %L
+                    # plot crossing
+                    df.plot(x='T',y='scaling_func', yerr='scaling_func_err', ax=ax, label=data_label, capsize=3, marker=marker, linestyle='-')
+                    ax1.set_xlabel('T')
+                plt.legend(loc='best',framealpha=1)
+                plt.tight_layout(pad=1.08)
+                fig.savefig('../' + config.system_name + '/figures/unsuccessful_fit_%s_%s_%s_%s_%s.png'%(simulations['Bex'].iloc[0],simulations['mech'].iloc[0],'_'.join(map(str,simulations['L'].unique().tolist())), simulations['folderName'].iloc[0], boot_index),dpi=300)
+
+
             np.seterr(**default_err)
 
         #print('boot index: ' + str(boot_index))
@@ -476,7 +490,7 @@ def main():
     else:
         initial_xc=0.5*(max_x+min_x)
     
-    corr_length_axis='z'
+    corr_length_axis='x'
     plot_options = {'Name':r'$\xi^{(%s)}_{L} / L$'%corr_length_axis, 'axis_yscale':'log', 'func':get_correlation_length, 'corr_length_axis':corr_length_axis, 'unit_cell_length':1.0}
     print('\n'.join(map(str,fit_bin(simulations, boot_num, min_x, max_x, initial_xc, plot_options))))
     

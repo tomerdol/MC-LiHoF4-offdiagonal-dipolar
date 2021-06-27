@@ -53,7 +53,7 @@ def main_plot(simulations, boot_num, plot_options, to_plot='', shift_T=False):
     all_y_curves = []
     
     for i, sim in enumerate(simulations.itertuples()):
-        y = bin_data.read_binned_data(sim, use_latest=False)
+        y = bin_data.read_binned_data(sim, use_latest=True)
 
         single_ydata=[]
         for boot_index in range(boot_num):

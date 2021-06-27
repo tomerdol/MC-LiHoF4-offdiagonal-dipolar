@@ -1,9 +1,9 @@
 #!/bin/bash
 
-name="dilution_test_1.0"
+name="dilution_0.46"
 arrayMech=( "false" )
-arrayL=( 4 )
-arrayH=( 0.3 )
+arrayL=( 5 6 7 )
+arrayH=( 0.0 )
 #name="exact_test_const"
 #arrayMech=( "false" )
 #arrayL=( 1 )
@@ -40,7 +40,7 @@ temp="$1"
 max_sweeps="$2"
 runs="$3"
 extra_par="_const"
-x="1.0"
+x="0.46"
 
 temp_initial="$(echo $temp | head -c 1)"
 
@@ -80,7 +80,7 @@ while [ $COUNT -lt $runs ]; do
     fi
 
     # parallel submission
-    qsub -pe shared 24 -l mem_free=40G -V -S /bin/bash -cwd -N "$temp_initial"r"$L"_"$H"_"$COUNT"_"$mech_initial" -o ./"$SYS_NAME"/output/ -e ./"$SYS_NAME"/output/ -q "$queues" scripts/met_with_t.sh "$L" "$L" "$max_sweeps" "$H" "$mech" "$local_name" "${seeds[$i]}" "$extra_par" "$x"
+    qsub -pe shared 20 -l mem_free=40G -V -S /bin/bash -cwd -N "$temp_initial"r"$L"_"$H"_"$COUNT"_"$mech_initial" -o ./"$SYS_NAME"/output/ -e ./"$SYS_NAME"/output/ -q "$queues" scripts/met_with_t.sh "$L" "$L" "$max_sweeps" "$H" "$mech" "$local_name" "${seeds[$i]}" "$extra_par" "$x"
     # sequential submission
     #qsub -l mem_free=2G -V -S /bin/bash -cwd -N "$temp_initial"r"$L"_"$H"_"$COUNT"_"$mech_initial" -o ./"$SYS_NAME"/output/ -e ./"$SYS_NAME"/output/ -q smoshe.q,lublin.q scripts/met_with_t_single.sh "$L" "$L" "$max_sweeps" "$H" "$mech" "$local_name" "${seeds[$i]}" "$extra_par" "$x"
     #echo "${seeds[$i]}"

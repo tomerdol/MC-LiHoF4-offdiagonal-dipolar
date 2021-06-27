@@ -118,7 +118,7 @@ def main_plot(simulations, to_plot, L, Bex, folderName, mech):
             pdf_fig, pdf_axes = plt.subplots(len(to_plot),1, figsize=(7,len(to_plot)*3))
             for i, sim in enumerate(simulations[simulations['T']==temperature].itertuples()):
                 try:
-                    data = bin_data.read_binned(sim, use_latest=False)
+                    data = bin_data.read_binned(sim, use_latest=True)
                 except Exception as e:
                     print(e)
                     print("Dropping missing simulations from current analysis.")
