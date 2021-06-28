@@ -161,17 +161,15 @@ def read_binned_data(sim, use_latest=False, use_bin=-1):
     return all_tables.loc[use_bin]
     
 
-def bin_by_fname(fname, fname_bin, l, start_bin=0):
+def bin_by_fname(fname, hdf_bin, T, seed, l, start_bin=0):
     y = analysis_tools.get_table_data_by_fname(fname)
 #    pd.read_csv(fname, delim_whitespace=True, error_bad_lines=False, index_col='index', comment='#')
     
-    binned_data=bin_data(y, l, start_bin)
-    
+    binned_data = bin_data(y, l, start_bin)
     print(binned_data)
-    #binned_data.to_csv(fname_bin,index_label='bin')
-    with pd.option_context('display.float_format', '{:0.10f}'.format):
-        with open(fname_bin,'w') as outfile:
-            binned_data.to_string(outfile,index=False)
+    binned_data['T'] = T
+
+    hdf_bin.put('s'+str(seed), binned_data, format='table', data_columns=['T'], append=False)
 
 
 def reverse_readline(filename, buf_size=8192):
@@ -231,33 +229,35 @@ def last_index(fname):
 
 
 def main_bin(simulations):
-    for sim in simulations.itertuples(index=False):
-        # if specific project name is given, the binned_data folder can be created just once, now
-        if sim.folderName != '*': mkdir('../' + config.system_name + '/data/results/'+sim.folderName+'/binned_data')
+    for group, grouped_sim in simulations.groupby(['Bex','L','folderName','mech']):
+    # for sim in simulations.itertuples(index=False):
+        Bex=group[0]
+        L=group[1]
+        folderName=group[2]
+        mech=group[3]
+        mkdir('../' + config.system_name + '/data/results/'+folderName+'/binned_data')
+        hdf_fname = '../' + config.system_name + '/data/results/'+folderName+'/binned_data/table_'+L+'_'+L+'_'+Bex+'_'+mech+'.h5'
+        hdf_bin = pd.HDFStore(hdf_fname)
+        # this basically loops over temperatures
+        for sim in grouped_sim.itertuples(index=False):
+            path='../' + config.system_name + '/data/results/'+sim.folderName+'/table_'+str(sim.L)+'_'+str(sim.L)+'_'+str(sim.Bex)+'_'+str(sim.T)+'_'+str(sim.mech)+'_'+'*'+'.txt'
 
-        path='../' + config.system_name + '/data/results/'+sim.folderName+'/table_'+str(sim.L)+'_'+str(sim.L)+'_'+str(sim.Bex)+'_'+str(sim.T)+'_'+str(sim.mech)+'_'+'*'+'.txt'
-        #print(glob.glob(path))
-        for fname in glob.glob(path):
-            # if no project name is given, the existence of a corresponding binned_data folder must be verified for each file
-            if sim.folderName == '*': mkdir(os.path.dirname(fname) + '/binned_data')
-
-            tmp_fname_bin = fname.split('/')
-            tmp_fname_bin.insert(5,'binned_data')
-            fname_bin='/'.join(tmp_fname_bin)
-
-            # first check if there are enough data for a new bin
-            last_bin = last_index(fname_bin)
-            last_sample = last_index(fname)
-            if last_sample<0:
-                print('No data in simulation: %s. seed: %s. Skipping.' % (str(sim),fname.split("_")[-1].split(".")[0]))
-            else:
-                if (2*(2**(last_bin+1) - 1) <= last_sample):
-                    print('rewriting bins for simulation: %s. seed: %s' % (str(sim),fname.split("_")[-1].split(".")[0]))
-                    bin_by_fname(fname, fname_bin, sim.L)
+            for fname in glob.glob(path):
+                seed = fname.split('/')[-1].split('_')[-1].split('.')[0]
+                # first check if there are enough data for a new bin
+                last_bin = hdf_bin[seed]['bin'].iloc[-1] if 's'+seed in hdf_bin else 0
+                last_sample = last_index(fname)
+                if last_sample<0:
+                    print('No data in simulation: %s. seed: %s. Skipping.' % (str(sim),fname.split("_")[-1].split(".")[0]))
                 else:
-                    print('not writing bins for simulation: %s. last bin: %s. seed: %s' % (str(sim), last_bin, fname.split("_")[-1].split(".")[0]))
-                    # not enough data for another bin
-                    pass
+                    if (2*(2**(last_bin+1) - 1) <= last_sample):
+                        print('rewriting bins for simulation: %s. seed: %s' % (str(sim),fname.split("_")[-1].split(".")[0]))
+                        bin_by_fname(fname, hdf_bin, sim.T, seed, L)
+                    else:
+                        print('not writing bins for simulation: %s. last bin: %s. seed: %s' % (str(sim), last_bin, fname.split("_")[-1].split(".")[0]))
+                        # not enough data for another bin
+                        pass
+        hdf_bin.close()
             
 def main():
 
