@@ -245,7 +245,10 @@ def main_bin(simulations):
             for fname in glob.glob(path):
                 seed = fname.split('/')[-1].split('_')[-1].split('.')[0]
                 # first check if there are enough data for a new bin
-                last_bin = hdf_bin[seed]['bin'].iloc[-1] if 's'+seed in hdf_bin else 0
+                if 's'+seed not in hdf_bin or hdf_bin.select('s'+seed, where="T == "+str(sim.T)).empty:
+                    last_bin=0
+                else:
+                    last_bin = hdf_bin['s'+seed][hdf_bin['s'+seed]['T']==sim.T]['bin'].iloc[-1]
                 last_sample = last_index(fname)
                 if last_sample<0:
                     print('No data in simulation: %s. seed: %s. Skipping.' % (str(sim),fname.split("_")[-1].split(".")[0]))
