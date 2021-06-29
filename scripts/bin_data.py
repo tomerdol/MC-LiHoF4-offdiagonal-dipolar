@@ -123,18 +123,18 @@ def read_binned(sim, use_latest=True):
 def read_binned_data(sim, use_latest=False, use_bin=-1):
     """ Get the binned data as a pandas DataFrame 
     """
-    path='../' + config.system_name + '/data/results/'+sim.folderName+'/binned_data/table_'+str(sim.L)+'_'+str(sim.L)+'_'+str(sim.Bex)+'_'+str(sim.mech)+'.h5'
-    if not os.path.isfile(path):
+    fname='../' + config.system_name + '/data/results/'+sim.folderName+'/binned_data/table_'+str(sim.L)+'_'+str(sim.L)+'_'+str(sim.Bex)+'_'+str(sim.mech)+'.h5'
+    if not os.path.isfile(fname):
         raise Exception("No binned data file found matching the given pattern for " + str(sim))
 
     arrays=[]
 
-    with pd.HDFStore(path, mode='r') as hdf_bin:
+    with pd.HDFStore(fname, mode='r') as hdf_bin:
         # iterate over seeds (ind. runs):
         for (path, subgroups, subkeys) in hdf_bin.walk():
             for subgroup in subgroups:
                 y = hdf_bin.get(subgroup+"/T"+str(sim.T).replace('.','_'))
-                print(path + '/' + subgroup + '/T'+str(sim.T).replace('.','_') + ' : ' + y.size)
+                print(fname + '/' + subgroup + '/T'+str(sim.T).replace('.','_') + ' : ' + str(len(y)))
                 y['seed']=subgroup[1:]    # extract seed from file name
                 arrays.append(y)
 

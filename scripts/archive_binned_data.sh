@@ -85,9 +85,9 @@ done
 
 echo "archiving files..."
 # archive eligible files
-tar -czvf archived_results.tar.gz -C "$dir" -T "$tmp_data_file" --remove-files
+tar -czvf "$dir"/archived_results.tar.gz -C "$dir" -T "$tmp_data_file" --remove-files
 echo "archiving checkpoints..."
-tar -czvf archived_checkpoints.tar.gz -C "$checkpoint_dir" -T "$tmp_checkpoints_file" --remove-files
+tar -czvf "$checkpoint_dir"/archived_checkpoints.tar.gz -C "$checkpoint_dir" -T "$tmp_checkpoints_file" --remove-files
 
 rm $tmp_data_file
 rm $tmp_checkpoints_file
