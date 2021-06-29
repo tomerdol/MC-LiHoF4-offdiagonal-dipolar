@@ -92,21 +92,21 @@ def read_binned(sim, use_latest=True):
     path='../' + config.system_name + '/data/results/'+sim.folderName+'/binned_data/table_'+str(sim.L)+'_'+str(sim.L)+'_'+str(sim.Bex)+'_'+str(sim.mech)+'.h5'
     if not os.path.isfile(path):
         raise Exception("No binned data file found matching the given pattern for " + str(sim))
-    hdf_bin = pd.HDFStore(path, mode='r')
+
     arrays=[]
     seeds=[]
     max_bins=0
     min_bins=0
     first_iter=True
-
-    for (path, subgroups, subkeys) in hdf_bin.walk():
-        for subgroup in subgroups:
-            curr_array = hdf_bin.get(subgroup+"/T"+str(sim.T).replace('.','_'))
-            max_bins = len(curr_array) if len(curr_array)>max_bins else max_bins
-            min_bins = len(curr_array) if len(curr_array)<min_bins or first_iter else min_bins
-            first_iter=False
-            arrays.append(curr_array.to_numpy())
-            seeds.append(subgroup[1:])    # extract and save seed from the group name
+    with pd.HDFStore(path, mode='r') as hdf_bin:
+        for (path, subgroups, subkeys) in hdf_bin.walk():
+            for subgroup in subgroups:
+                curr_array = hdf_bin.get(subgroup+"/T"+str(sim.T).replace('.','_'))
+                max_bins = len(curr_array) if len(curr_array)>max_bins else max_bins
+                min_bins = len(curr_array) if len(curr_array)<min_bins or first_iter else min_bins
+                first_iter=False
+                arrays.append(curr_array.to_numpy())
+                seeds.append(subgroup[1:])    # extract and save seed from the group name
     if abs(max_bins-min_bins)>0:
         print('WARNING: one of the simulations might be lagging behind: max_bins=%s, min_bins=%s \n Simulation details: %s \n Seed: %s'%(max_bins,min_bins,sim,seeds[-1]), file=sys.stderr)
     if use_latest:
@@ -126,17 +126,18 @@ def read_binned_data(sim, use_latest=False, use_bin=-1):
     path='../' + config.system_name + '/data/results/'+sim.folderName+'/binned_data/table_'+str(sim.L)+'_'+str(sim.L)+'_'+str(sim.Bex)+'_'+str(sim.mech)+'.h5'
     if not os.path.isfile(path):
         raise Exception("No binned data file found matching the given pattern for " + str(sim))
-    hdf_bin = pd.HDFStore(path, mode='r')
 
     arrays=[]
-    
-    # iterate over seeds (ind. runs):
-    for (path, subgroups, subkeys) in hdf_bin.walk():
-        for subgroup in subgroups:
-            y = hdf_bin.get(subgroup+"/T"+str(sim.T).replace('.','_'))
-            y['seed']=subgroup[1:]    # extract seed from file name
-            arrays.append(y)
-        
+
+    with pd.HDFStore(path, mode='r') as hdf_bin:
+        # iterate over seeds (ind. runs):
+        for (path, subgroups, subkeys) in hdf_bin.walk():
+            for subgroup in subgroups:
+                y = hdf_bin.get(subgroup+"/T"+str(sim.T).replace('.','_'))
+                print(path + '/' + subgroup + '/T'+str(sim.T).replace('.','_') + ' : ' + y.size)
+                y['seed']=subgroup[1:]    # extract seed from file name
+                arrays.append(y)
+
     all_tables = pd.concat(arrays)
     if use_bin==-1:
         # find last bin
