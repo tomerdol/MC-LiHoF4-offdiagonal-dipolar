@@ -20,6 +20,7 @@ if [ -f $tmp_checkpoints_file ]
 then
 rm $tmp_checkpoints_file
 fi
+touch $tmp_checkpoints_file
 
 # list all files eligible to be archived
 for file in ${dir}/*
@@ -36,7 +37,7 @@ if [ ! -d "$file" ]; then
             # last written data is already binned
             if [ "$last_sample_for_next_bin" -gt "$last_sample" ]; then
                 # we can add this file to the archive
-                echo "$file" >> "$tmp_data_file"
+                basename "$file" >> "$tmp_data_file"
                 echo " binned."
 
                 # find matching checkpoint to also archive
@@ -48,9 +49,9 @@ if [ ! -d "$file" ]; then
                 mech=$(echo ${name_no_ext} | awk -F_ '{print $6}')
                 seed=$(echo ${name_no_ext} | awk -F_ '{print $7}')
 
-                checkpoint_file="$checkpoint_dir""/save_state_${Lx}_${Lz}_${H}_${mech}_${seed}.txt"
-                if [ -f $checkpoint_file ]; then
-                    grep -qxF "$checkpoint_file" $tmp_checkpoints_file || echo "$checkpoint_file" >> $tmp_checkpoints_file
+                checkpoint_file="save_state_${Lx}_${Lz}_${H}_${mech}_${seed}.txt"
+                if [ -f "$checkpoint_dir"/"$checkpoint_file" ]; then
+                    grep -qxF "$checkpoint_file" "$tmp_checkpoints_file" || echo "$checkpoint_file" >> $tmp_checkpoints_file
                     #echo "$checkpoint_file" >> "$tmp_data_file"
                 else
                     echo "checkpoint file does not exist."
@@ -75,9 +76,9 @@ done
 
 echo "archiving files..."
 # archive eligible files
-tar -czvf archived_results.tar.gz -T "$tmp_data_file" --remove-files
+tar -czvf "$dir"/archived_results.tar.gz -C "$dir" -T "$tmp_data_file" --remove-files
 echo "archiving checkpoints..."
-tar -czvf archived_checkpoints.tar.gz -T "$tmp_checkpoints_file" --remove-files
+tar -czvf "$checkpoint_dir"/archived_checkpoints.tar.gz -C "$checkpoint_dir" -T "$tmp_checkpoints_file" --remove-files
 
 rm $tmp_data_file
 rm $tmp_checkpoints_file
