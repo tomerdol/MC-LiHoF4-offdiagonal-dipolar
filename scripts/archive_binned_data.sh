@@ -19,8 +19,8 @@ tmp_checkpoints_file="$checkpoint_dir""/files_to_archive.tmp"
 if [ -f $tmp_checkpoints_file ]
 then
 rm $tmp_checkpoints_file
-touch $tmp_checkpoints_file
 fi
+touch $tmp_checkpoints_file
 
 # list all files eligible to be archived
 for file in ${dir}/*
