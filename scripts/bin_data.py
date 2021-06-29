@@ -123,16 +123,19 @@ def read_binned(sim, use_latest=True):
 def read_binned_data(sim, use_latest=False, use_bin=-1):
     """ Get the binned data as a pandas DataFrame 
     """
-    path='../' + config.system_name + '/data/results/'+sim.folderName+'/binned_data/table_'+str(sim.L)+'_'+str(sim.L)+'_'+str(sim.Bex)+'_'+str(sim.T)+'_'+str(sim.mech)+'_'+'*'+'.txt'
+    path='../' + config.system_name + '/data/results/'+sim.folderName+'/binned_data/table_'+str(sim.L)+'_'+str(sim.L)+'_'+str(sim.Bex)+'_'+str(sim.mech)+'.h5'
+    if not os.path.isfile(path):
+        raise Exception("No binned data file found matching the given pattern for " + str(sim))
+    hdf_bin = pd.HDFStore(path, mode='r')
 
-    file_list = glob.glob(path) # list of all files that match the sim parameters
     arrays=[]
     
     # iterate over seeds (ind. runs):
-    for fname in file_list:
-        y = analysis_tools.get_table_data_by_fname(fname, print_prog=True)
-        y['seed']=fname.split("_")[-1].split(".")[0]    # extract seed from file name
-        arrays.append(y)
+    for (path, subgroups, subkeys) in hdf_bin.walk():
+        for subgroup in subgroups:
+            y = hdf_bin.get(subgroup+"/T"+str(sim.T).replace('.','_'))
+            y['seed']=subgroup[1:]    # extract seed from file name
+            arrays.append(y)
         
     all_tables = pd.concat(arrays)
     if use_bin==-1:
@@ -276,8 +279,9 @@ def main():
         folderName = sys.argv[3]
         mech = sys.argv[4]
         simulations = analysis_tools.get_simulations(L, folderName, Bex, mech)
-    # main_bin(simulations)
-    print(read_binned(list(simulations.itertuples())[4]))
+    main_bin(simulations)
+    # for testing:
+    # print(read_binned_data(list(simulations.itertuples())[3]))
        
 if __name__ == "__main__":
     main()
