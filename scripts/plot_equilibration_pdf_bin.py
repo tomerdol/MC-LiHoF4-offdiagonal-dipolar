@@ -136,6 +136,8 @@ def main_plot(simulations, to_plot, L, Bex, folderName, mech):
                                                             color=colors[groups.index(sim.L) % len(colors)],label=sim.L,
                                                             capsize=2,fillstyle='none',mew=.7,linewidth=0.5)
                     equilibrated_bin = check_equilibration(np.stack([a,a_err],axis=-1),3,3)
+                    if equilibrated_bin >= num_of_bins:
+                        print("Simulation " + str(sim) + " : " + str(to_plot_now) + " not equilibrated.")
                     ax.scatter(temperature, equilibrated_bin, label='L='+str(sim.L), c=colors[groups.index(sim.L) % len(colors)])
                     pdf_axes[to_plot_index].annotate('',(equilibrated_bin,a[equilibrated_bin if equilibrated_bin<num_of_bins else equilibrated_bin-1]),xytext=(i,-4),textcoords='offset points',arrowprops=dict(arrowstyle='simple', color=line.lines[0].get_color()))
 
