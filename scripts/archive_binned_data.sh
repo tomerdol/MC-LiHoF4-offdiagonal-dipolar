@@ -6,6 +6,9 @@ echo Usage $0 [directory]
 exit
 fi
 
+# first bin (hopefully) all data in the project
+python3 bin_data.py --system_name "$SYS_NAME" -h_ex 0.0 0.3 0.6 1.0 1.5 2.0 --folder_list "$1" --mech false true -L 4 5 6 7 8 > /dev/null
+
 dir="../${SYS_NAME}/data/results/""$1"
 
 tmp_data_file="$dir""/files_to_archive.tmp"
