@@ -234,10 +234,10 @@ def last_index(fname):
 def main_bin(simulations):
     for group, grouped_sim in simulations.groupby(['Bex','L','folderName','mech']):
     # for sim in simulations.itertuples(index=False):
-        Bex=group[0]
-        L=group[1]
-        folderName=group[2]
-        mech=group[3]
+        Bex=str(group[0])
+        L=str(group[1])
+        folderName=str(group[2])
+        mech=str(group[3])
         mkdir('../' + config.system_name + '/data/results/'+folderName+'/binned_data')
         hdf_fname = '../' + config.system_name + '/data/results/'+folderName+'/binned_data/table_'+L+'_'+L+'_'+Bex+'_'+mech+'.h5'
         with pd.HDFStore(hdf_fname) as hdf_bin:
