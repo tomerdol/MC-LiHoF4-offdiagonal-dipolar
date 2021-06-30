@@ -268,18 +268,31 @@ def main_bin(simulations):
 def get_dataset_name(seed, T):
     return '/s'+seed+'/T'+str(T).replace('.','_')
 
-def main():
 
-    config.system_name = sys.argv[1]
-    if sys.argv[2] == '*':
-        simulations=pd.DataFrame(columns=['L','folderName','Bex','mech','T'])
-        simulations.loc[0] = '*'
-    else:
-        L = sys.argv[5:]
-        Bex = sys.argv[2]
-        folderName = sys.argv[3]
-        mech = sys.argv[4]
-        simulations = analysis_tools.get_simulations(L, folderName, Bex, mech)
+def parse_arguments():
+    from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
+    parser = ArgumentParser(description="Analyzes Monte Carlo results and plots correlation length curves.", formatter_class=ArgumentDefaultsHelpFormatter, parents=[config.parse_arguments()], conflict_handler='resolve')
+    args = parser.parse_args()
+    config.system_name = args.system_name
+    return args
+
+
+def main():
+    args = parse_arguments()
+    L = args.L
+    h_ex = args.h_ex
+    mech = args.mech
+    folderName = args.folder_list
+
+    # if sys.argv[2] == '*':
+    #     simulations=pd.DataFrame(columns=['L','folderName','Bex','mech','T'])
+    #     simulations.loc[0] = '*'
+    # else:
+    #     L = sys.argv[5:]
+    #     Bex = sys.argv[2]
+    #     folderName = sys.argv[3]
+    #     mech = sys.argv[4]
+    simulations = analysis_tools.get_simulations(L, folderName, h_ex, mech)
     main_bin(simulations)
     # for testing:
     # print(read_binned_data(list(simulations.itertuples())[3]))
