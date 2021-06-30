@@ -43,6 +43,9 @@ def get_simulations(all_L, all_folderName, all_Bex, all_mech, T=None):
             with open(temp_schedule_file_name,'r') as temperature_schedule_file:
                 reader = csv.reader(temperature_schedule_file)
                 temp_list=list(reader)
+                if not temp_list:
+                    print(temp_schedule_file_name + " is empty.")
+                    continue
             curr_simulations=pd.DataFrame(columns=simulations.columns)
             if T is None:
                 curr_simulations['T']=[float(i) for i in temp_list[0]]
