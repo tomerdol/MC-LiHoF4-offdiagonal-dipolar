@@ -258,21 +258,34 @@ def main_bin(simulations):
                     print('not writing bins for simulation: %s. last bin: %s. seed: %s' % (str(sim), last_bin, fname.split("_")[-1].split(".")[0]))
                     # not enough data for another bin
                     pass
-            
-def main():
 
-    config.system_name = sys.argv[1]
-    if sys.argv[2] == '*':
-        simulations=pd.DataFrame(columns=['L','folderName','Bex','mech','T'])
-        simulations.loc[0] = '*'
-    else:
-        L = sys.argv[5:]
-        Bex = sys.argv[2]
-        folderName = sys.argv[3]
-        mech = sys.argv[4]
-        simulations = analysis_tools.get_simulations(L, folderName, Bex, mech)
-    main_bin(simulations) 
-    
+def parse_arguments():
+    from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
+    parser = ArgumentParser(description="Analyzes Monte Carlo results and plots correlation length curves.", formatter_class=ArgumentDefaultsHelpFormatter, parents=[config.parse_arguments()], conflict_handler='resolve')
+    args = parser.parse_args()
+    config.system_name = args.system_name
+    return args
+
+
+def main():
+    args = parse_arguments()
+    L = args.L
+    h_ex = args.h_ex
+    mech = args.mech
+    folderName = args.folder_list
+
+    # if sys.argv[2] == '*':
+    #     simulations=pd.DataFrame(columns=['L','folderName','Bex','mech','T'])
+    #     simulations.loc[0] = '*'
+    # else:
+    #     L = sys.argv[5:]
+    #     Bex = sys.argv[2]
+    #     folderName = sys.argv[3]
+    #     mech = sys.argv[4]
+    simulations = analysis_tools.get_simulations(L, folderName, h_ex, mech)
+    main_bin(simulations)
+    # for testing:
+    # print(read_binned_data(list(simulations.itertuples())[3]))
        
 if __name__ == "__main__":
     main()
