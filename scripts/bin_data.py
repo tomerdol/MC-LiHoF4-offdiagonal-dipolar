@@ -89,8 +89,8 @@ def mkdir(path):
 
 
 def read_binned(sim, use_latest=True):
-    path='../' + config.system_name + '/data/results/'+sim.folderName+'/binned_data/table_'+str(sim.L)+'_'+str(sim.L)+'_'+str(sim.Bex)+'_'+str(sim.mech)+'.h5'
-    if not os.path.isfile(path):
+    fname='../' + config.system_name + '/data/results/'+sim.folderName+'/binned_data/table_'+str(sim.L)+'_'+str(sim.L)+'_'+str(sim.Bex)+'_'+str(sim.mech)+'.h5'
+    if not os.path.isfile(fname):
         raise Exception("No binned data file found matching the given pattern for " + str(sim))
 
     arrays=[]
@@ -98,7 +98,7 @@ def read_binned(sim, use_latest=True):
     max_bins=0
     min_bins=0
     first_iter=True
-    with pd.HDFStore(path, mode='r') as hdf_bin:
+    with pd.HDFStore(fname, mode='r') as hdf_bin:
         for (path, subgroups, subkeys) in hdf_bin.walk():
             for subgroup in subgroups:
                 curr_array = hdf_bin.get(subgroup+"/T"+str(sim.T).replace('.','_'))
@@ -107,6 +107,7 @@ def read_binned(sim, use_latest=True):
                 first_iter=False
                 arrays.append(curr_array.to_numpy())
                 seeds.append(subgroup[1:])    # extract and save seed from the group name
+                # print(fname + '/' + subgroup + '/T'+str(sim.T).replace('.','_') + ' : ' + str(len(curr_array)))
     if abs(max_bins-min_bins)>0:
         print('WARNING: one of the simulations might be lagging behind: max_bins=%s, min_bins=%s \n Simulation details: %s \n Seed: %s'%(max_bins,min_bins,sim,seeds[-1]), file=sys.stderr)
     if use_latest:
@@ -133,7 +134,12 @@ def read_binned_data(sim, use_latest=False, use_bin=-1):
         # iterate over seeds (ind. runs):
         for (path, subgroups, subkeys) in hdf_bin.walk():
             for subgroup in subgroups:
-                y = hdf_bin.get(subgroup+"/T"+str(sim.T).replace('.','_'))
+                try:
+                    y = hdf_bin.get(subgroup+"/T"+str(sim.T).replace('.','_'))
+                except KeyError:
+                    # this means that a seed group exists (otherwise it will not be in subgroups)
+                    # but does not include the required temperature dataset, so we just skip it.
+                    continue
                 print(fname + '/' + subgroup + '/T'+str(sim.T).replace('.','_') + ' : ' + str(len(y)))
                 y['seed']=subgroup[1:]    # extract seed from file name
                 arrays.append(y)

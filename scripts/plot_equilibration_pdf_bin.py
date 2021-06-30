@@ -72,7 +72,7 @@ def main_check_equilibration(simulations, to_check):
             max_bin=0
             for i, sim in enumerate(group_df.itertuples()):
                 try:
-                    data = bin_data.read_binned(sim, use_latest=False)
+                    data = bin_data.read_binned(sim, use_latest=True)
                 except Exception as e:
                     print(e)
                     print("Dropping missing simulations from current analysis.")
