@@ -24,6 +24,7 @@ final public class FieldTable {
      * Reads the energy_arr/magnetic_moment_arr file into a table of double and return a FieldTable object
      * @param fileName - name of table file to be read (without .txt extension)
      * @return FieldTable object that has a table of average energy drop or magnetic moment due to different combinations of local fields (Bx,By,Bz) and also the Bx,By,Bz values themselves
+     * @throws RuntimeException if the FieldTable was not read from file for any reason.
      */
     public static FieldTable of(String fileName, boolean transposedRequiresMinus) {
         double[][][] table = null;
@@ -76,7 +77,7 @@ final public class FieldTable {
         }
 
         if (table!=null) return new FieldTable(table,Bvalues,transposedRequiresMinus, fileName);
-        else throw new RuntimeException("Field interpolation table not read.");
+        else throw new RuntimeException("Field interpolation table not read: " + fileName);
     }
 
     /**
