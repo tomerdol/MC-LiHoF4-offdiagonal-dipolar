@@ -39,6 +39,7 @@ sub() {
 temp="$1"
 max_sweeps="$2"
 runs="$3"
+nT="$4"
 extra_par="_const"
 x="0.46"
 
@@ -74,13 +75,13 @@ while [ $COUNT -lt $runs ]; do
     queues="lublin.q,smoshe.q@sge1081,smoshe.q@sge1082,smoshe.q@sge190,smoshe.q@sge247,smoshe.q@sge249,fairshare.q"
     
     if [ "$used_slots" != "" ]; then
-    if [ $used_slots -le 24 ]; then
+    if [ $used_slots -le $nT ]; then
     queues="lublin.q,smoshe.q,fairshare.q"
     fi
     fi
 
     # parallel submission
-    qsub -pe shared 20 -l mem_free=40G -V -S /bin/bash -cwd -N "$temp_initial"r"$L"_"$H"_"$COUNT"_"$mech_initial" -o ./"$SYS_NAME"/output/ -e ./"$SYS_NAME"/output/ -q "$queues" scripts/met_with_t.sh "$L" "$L" "$max_sweeps" "$H" "$mech" "$local_name" "${seeds[$i]}" "$extra_par" "$x"
+    qsub -pe shared $nT -l mem_free=40G -V -S /bin/bash -cwd -N "$temp_initial"r"$L"_"$H"_"$COUNT"_"$mech_initial" -o ./"$SYS_NAME"/output/ -e ./"$SYS_NAME"/output/ -q "$queues" scripts/met_with_t.sh "$L" "$L" "$max_sweeps" "$H" "$mech" "$local_name" "${seeds[$i]}" "$extra_par" "$x"
     # sequential submission
     #qsub -l mem_free=2G -V -S /bin/bash -cwd -N "$temp_initial"r"$L"_"$H"_"$COUNT"_"$mech_initial" -o ./"$SYS_NAME"/output/ -e ./"$SYS_NAME"/output/ -q smoshe.q,lublin.q scripts/met_with_t_single.sh "$L" "$L" "$max_sweeps" "$H" "$mech" "$local_name" "${seeds[$i]}" "$extra_par" "$x"
     #echo "${seeds[$i]}"
