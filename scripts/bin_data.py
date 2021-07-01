@@ -88,6 +88,39 @@ def mkdir(path):
         print ("Creation of the directory %s failed" % path)
 
 
+def read_binned_txt(sim, use_latest=True):
+    path='../' + config.system_name + '/data/results/'+sim.folderName+'/binned_data/table_'+str(sim.L)+'_'+str(sim.L)+'_'+str(sim.Bex)+'_'+str(sim.T)+'_'+str(sim.mech)+'_'+'*'+'.txt'
+    #print(glob.glob(path))
+    arrays=[]
+    seeds=[]
+    max_bins=0
+    min_bins=0
+    first_iter=True
+    files = glob.glob(path)
+    if not files:
+        # no files matching pattern found
+        raise Exception("No binned files found matching the given pattern for " + str(sim))
+    for fname in files:
+        curr_array=np.genfromtxt(fname,skip_header=1)
+        max_bins = len(curr_array) if len(curr_array)>max_bins else max_bins
+        min_bins = len(curr_array) if len(curr_array)<min_bins or first_iter else min_bins
+        first_iter=False
+        arrays.append(curr_array)
+        seeds.append(fname.split("_")[-1].split(".")[0])    # extract and save seed from file name
+    if abs(max_bins-min_bins)>0:
+        print('WARNING: one of the simulations might be lagging behind: max_bins=%s, min_bins=%s \n Simulation details: %s \n Seed: %s'%(max_bins,min_bins,sim,seeds[-1]), file=sys.stderr)
+    if use_latest:
+        # remove any runs that have length smaller than max_bins, so only the most advanced runs are used
+        arrays = list(filter(lambda x: len(x)==max_bins, arrays))
+        #print(list(map(len,arrays)))
+    else:
+        # remove last bins after min_bin so that all arrays have same dimensions
+        arrays = [np.resize(a, (min_bins,a.shape[1])) for a in arrays]
+        #print(list(map(len,arrays)))
+    print(str(sim) + ": Using %s independent simulations with %s bins in each." % (len(arrays), len(arrays[0])))
+    return (np.mean(arrays, axis=0), np.sqrt(np.std(arrays, axis=0)/(len(arrays)-1)))
+
+
 def read_binned(sim, use_latest=True):
     fname='../' + config.system_name + '/data/results/'+sim.folderName+'/binned_data/table_'+str(sim.L)+'_'+str(sim.L)+'_'+str(sim.Bex)+'_'+str(sim.mech)+'.h5'
     if not os.path.isfile(fname):
@@ -100,7 +133,7 @@ def read_binned(sim, use_latest=True):
     first_iter=True
     with pd.HDFStore(fname, mode='r') as hdf_bin:
         for (path, subgroups, subkeys) in hdf_bin.walk():
-            if path=='':    # we only need to iterate over the root level (seed groups)
+            if path == '':    # we only need to iterate over the root level (seed groups)
                 for subgroup in subgroups:
                     curr_array = hdf_bin.get(subgroup+"/T"+str(sim.T).replace('.','_'))
                     max_bins = len(curr_array) if len(curr_array)>max_bins else max_bins
@@ -121,7 +154,49 @@ def read_binned(sim, use_latest=True):
         #print(list(map(len,arrays)))
     print(str(sim) + ": Using %s independent simulations with %s bins in each." % (len(arrays), len(arrays[0])))
     return (np.mean(arrays, axis=0), np.sqrt(np.std(arrays, axis=0)/(len(arrays)-1)))
-    
+
+
+def read_binned_data_txt(sim, use_latest=False, use_bin=-1):
+    """ Get the binned data as a pandas DataFrame
+    """
+    path='../' + config.system_name + '/data/results/'+sim.folderName+'/binned_data/table_'+str(sim.L)+'_'+str(sim.L)+'_'+str(sim.Bex)+'_'+str(sim.T)+'_'+str(sim.mech)+'_'+'*'+'.txt'
+
+    file_list = glob.glob(path) # list of all files that match the sim parameters
+    arrays=[]
+
+    # iterate over seeds (ind. runs):
+    for fname in file_list:
+        y = analysis_tools.get_table_data_by_fname(fname, print_prog=True)
+        y['seed']=fname.split("_")[-1].split(".")[0]    # extract seed from file name
+        arrays.append(y)
+
+    all_tables = pd.concat(arrays)
+    if use_bin==-1:
+        # find last bin
+        if use_latest:
+            # this means use latest bins regardless of how many have finished
+            last_bin=all_tables.index.max()
+        else:
+            count_rows = all_tables.groupby(all_tables.index).count()
+            # last bin is the latest one where the number of independent runs it consists of is the same as the number bin 0 consists of
+            last_bin = count_rows[count_rows<count_rows.iloc[0]].idxmax()-1
+
+            if last_bin.isnull().all():
+                last_bin = all_tables.index.max()
+            else:
+
+                if not np.all(last_bin==last_bin[0]):
+                    raise Exception("Something wrong with finding the last bin. different observables seem to have different last bins: \n" + str(last_bin[0]))
+                last_bin=last_bin[0]
+        use_bin=last_bin
+    if 'eq_bin' in sim._fields:
+        # equilibration testing has occurred and there is an equilibrated bin.
+        if int(sim.eq_bin) > use_bin:
+            print('WARNING: using data before equilibration: Bin used: %s. Simulation details: %s'%(use_bin, sim))
+
+    return all_tables.loc[use_bin]
+
+
 def read_binned_data(sim, use_latest=False, use_bin=-1):
     """ Get the binned data as a pandas DataFrame 
     """
@@ -237,6 +312,36 @@ def last_index(fname):
         return -1
     except OSError:
         return -1
+
+
+def main_bin_txt(simulations):
+    for sim in simulations.itertuples(index=False):
+        # if specific project name is given, the binned_data folder can be created just once, now
+        if sim.folderName != '*': mkdir('../' + config.system_name + '/data/results/'+sim.folderName+'/binned_data')
+
+        path='../' + config.system_name + '/data/results/'+sim.folderName+'/table_'+str(sim.L)+'_'+str(sim.L)+'_'+str(sim.Bex)+'_'+str(sim.T)+'_'+str(sim.mech)+'_'+'*'+'.txt'
+        #print(glob.glob(path))
+        for fname in glob.glob(path):
+            # if no project name is given, the existence of a corresponding binned_data folder must be verified for each file
+            if sim.folderName == '*': mkdir(os.path.dirname(fname) + '/binned_data')
+
+            tmp_fname_bin = fname.split('/')
+            tmp_fname_bin.insert(5,'binned_data')
+            fname_bin='/'.join(tmp_fname_bin)
+
+            # first check if there are enough data for a new bin
+            last_bin = last_index(fname_bin)
+            last_sample = last_index(fname)
+            if last_sample<0:
+                print('No data in simulation: %s. seed: %s. Skipping.' % (str(sim),fname.split("_")[-1].split(".")[0]))
+            else:
+                if (2*(2**(last_bin+1) - 1) <= last_sample):
+                    print('rewriting bins for simulation: %s. seed: %s' % (str(sim),fname.split("_")[-1].split(".")[0]))
+                    bin_by_fname(fname, fname_bin, sim.L)
+                else:
+                    print('not writing bins for simulation: %s. last bin: %s. seed: %s' % (str(sim), last_bin, fname.split("_")[-1].split(".")[0]))
+                    # not enough data for another bin
+                    pass
 
 
 def main_bin(simulations):
