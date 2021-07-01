@@ -246,7 +246,20 @@ def read_binned_data(sim, use_latest=False, use_bin=-1):
            print('WARNING: using data before equilibration: Bin used: %s. Simulation details: %s'%(use_bin, sim))
 
     return all_tables.loc[use_bin]
-    
+
+
+def bin_by_fname_txt(fname, fname_bin, l, start_bin=0):
+    y = analysis_tools.get_table_data_by_fname(fname)
+    #    pd.read_csv(fname, delim_whitespace=True, error_bad_lines=False, index_col='index', comment='#')
+
+    binned_data=bin_data(y, l, start_bin)
+
+    print(binned_data)
+    #binned_data.to_csv(fname_bin,index_label='bin')
+    with pd.option_context('display.float_format', '{:0.10f}'.format):
+        with open(fname_bin,'w') as outfile:
+            binned_data.to_string(outfile,index=False)
+
 
 def bin_by_fname(fname, hdf_bin, T, seed, l, start_bin=0):
     y = analysis_tools.get_table_data_by_fname(fname)
@@ -337,7 +350,7 @@ def main_bin_txt(simulations):
             else:
                 if (2*(2**(last_bin+1) - 1) <= last_sample):
                     print('rewriting bins for simulation: %s. seed: %s' % (str(sim),fname.split("_")[-1].split(".")[0]))
-                    bin_by_fname(fname, fname_bin, sim.L)
+                    bin_by_fname_txt(fname, fname_bin, sim.L)
                 else:
                     print('not writing bins for simulation: %s. last bin: %s. seed: %s' % (str(sim), last_bin, fname.split("_")[-1].split(".")[0]))
                     # not enough data for another bin

@@ -436,7 +436,7 @@ final public class FieldTable {
                 prevBIndices[0][2]=closestBxIndices[0];
             }
         } else {
-            throw new IndexOutOfBoundsException("value out of bounds of the received table");
+            throw new IndexOutOfBoundsException("values out of bounds of the received table: " + bx + ", " + by + ", " + bz);
         }
 
         return ret;
@@ -449,6 +449,7 @@ final public class FieldTable {
      * @param s spin
      * @param prevBIndices same as in {@link #findInTable(double, double, double, int[][])}
      * @return partial derivative of the (linear) interpolated function at point b_I.
+     * @throws IndexOutOfBoundsException if the received bx, by or bz are outside the bounds of the table.
      */
     public double getDerivative(int diff_by, double[] b_I, double s, int[][] prevBIndices) {
 
@@ -485,7 +486,7 @@ final public class FieldTable {
 
             ret = (triy2 - triy1) / (values[diff_by][closestBIndices[diff_by][1]] - values[diff_by][closestBIndices[diff_by][0]]);
         } else {
-            throw new IndexOutOfBoundsException("value out of bounds of the received table. Cannot calculate derivative.");
+            throw new IndexOutOfBoundsException("value out of bounds of the received table: " + b_I[2] + ", " + b_I[1] + ", " + b_I[0]  + " . Cannot calculate derivative.");
         }
 
         if (transposedRequiresMinus){
