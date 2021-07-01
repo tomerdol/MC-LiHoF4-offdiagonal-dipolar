@@ -206,8 +206,17 @@ public class Lattice implements Serializable {
         }
     }
 
-
-    public void flipSpin(int maxIter, double tol, int flipSpin, double alpha, MersenneTwister rnd) throws ConvergenceException {
+    /**
+     * Flip a given spin and find new magnetic moments self-consistently
+     * @param maxIter - Maximum iterations for iterative solver (Gauss-Seidel)
+     * @param tol - Tolerance for self-consistent solution. Given in terms of the average deviation per spin
+     * @param flipSpin - Index of the spin to flip
+     * @param alpha - Relaxation parameter for iterative solver.
+     * @param rnd - Random number generator used for some solvers that need random initial states
+     * @return the index of the last method used to solve the self-consistent calculation
+     * @throws ConvergenceException when no convergence is achieved after trying all available methods.
+     */
+    public int flipSpin(int maxIter, double tol, int flipSpin, double alpha, MersenneTwister rnd) throws ConvergenceException {
         singleSpin[] tempLattice = Lattice.copyLattice(lattice);    // save original lattice. This is before the spin is actually flipped.
 
         boolean success=false;
@@ -232,6 +241,7 @@ public class Lattice implements Serializable {
         if (!success) {
             throw new ConvergenceException(errorMessage, flipSpin);
         }
+        return methodIndex;
     }
 
     public void updateAllMagneticMoments(int maxIter, double tol, double alpha){
