@@ -13,6 +13,5 @@
     </content>
     <orderEntry type="jdk" jdkName="Python 3.7 (LiHoF4_transverse_field_MC)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="Python 3.7 interpreter library" level="application" />
   </component>
 </module>

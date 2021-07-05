@@ -30,10 +30,29 @@ for file in ${dir}/*
 do
 echo -n "Checking ${file} ... "
 if [ ! -d "$file" ]; then
-    binned_file="${dir}/binned_data/"$(basename ${file})
+    # find matching checkpoint to also archive
+    filename=${file##*/}
+    name_no_ext="${filename%.txt}"
+    Lx=$(echo "${name_no_ext}" | awk -F_ '{print $2}')
+    Lz=$(echo ${name_no_ext} | awk -F_ '{print $3}')
+    H=$(echo ${name_no_ext} | awk -F_ '{print $4}')
+    T=$(echo ${name_no_ext} | awk -F_ '{print $5}' | tr . _)
+    mech=$(echo ${name_no_ext} | awk -F_ '{print $6}')
+    seed=$(echo ${name_no_ext} | awk -F_ '{print $7}')
+    # remove tamperature and seed to get the .h5 file name
+    binned_file="${dir}/binned_data/table_${Lx}_${Lz}_${H}_${mech}.h5"
     if [ -f "$binned_file" ]; then
-        last_sample=$(sed '/^#/d' "$file" | tail -n1 | awk '{print $1}')
-        last_bin=$(sed '/^#/d' "$binned_file" | tail -n1 | awk '{print $1}')
+        # first try to find the last sample in the last 100 lines
+        # this is usually the case, unless a finished simulation
+        # was re-started many time and the headers fill > 100 lines
+        last_sample=$(tail -n100 "$file" | sed '/^#/d' | tail -n1 | awk '{print $1}')
+        # only if last_sample turns out empty, look in the entire file
+        if [ -z "$last_sample" ]; then
+            last_sample=$(sed '/^#/d' "$file" | tail -n1 | awk '{print $1}')
+        fi
+        # if h5ls fails this means that the dataset does not exist so just put 0
+        last_bin=$(h5ls "${binned_file}/s${seed}/T${T}" | grep -oP '{\K.*?(?=/)' || echo "0")
+        last_bin=$(($last_bin-1))
         # both are numeric
         if ([[ $last_sample =~ ^[[:digit:]] ]] && [[ $last_bin =~ ^[[:digit:]] ]]); then
             last_sample_for_next_bin=$(echo "2*(2^($last_bin + 1) - 1)" | bc)
@@ -42,16 +61,6 @@ if [ ! -d "$file" ]; then
                 # we can add this file to the archive
                 basename "$file" >> "$tmp_data_file"
                 echo " binned."
-
-                # find matching checkpoint to also archive
-                filename=${file##*/}
-                name_no_ext="${filename%.txt}"
-                Lx=$(echo "${name_no_ext}" | awk -F_ '{print $2}')
-                Lz=$(echo ${name_no_ext} | awk -F_ '{print $3}')
-                H=$(echo ${name_no_ext} | awk -F_ '{print $4}')
-                mech=$(echo ${name_no_ext} | awk -F_ '{print $6}')
-                seed=$(echo ${name_no_ext} | awk -F_ '{print $7}')
-
                 checkpoint_file="save_state_${Lx}_${Lz}_${H}_${mech}_${seed}.txt"
                 if [ -f "$checkpoint_dir"/"$checkpoint_file" ]; then
                     grep -qxF "$checkpoint_file" "$tmp_checkpoints_file" || echo "$checkpoint_file" >> $tmp_checkpoints_file

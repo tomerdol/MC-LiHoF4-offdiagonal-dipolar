@@ -113,6 +113,15 @@ public class MultipleTMonteCarloSimulation extends MonteCarloSimulation implemen
                 executor.shutdownNow();
             }
         }
+
+        // print out how many times each of the methods for solving the self-consistent calculation was used
+        int[] methodsUsed = new int[20];
+        for (int j=0; j < methodsUsed.length; j++) {
+            for (int i = 0; i < simulations.length; i++) {
+                methodsUsed[j] += simulations[i].getNumOfTimesMethodWasUsed(j);
+            }
+        }
+        System.out.println("# Used methods statistics: " + Arrays.toString(methodsUsed));
     }
 
 

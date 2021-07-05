@@ -29,6 +29,7 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
     private int acceptanceRateCount;
     private int acceptanceRateSum;
     private boolean lastSwapAccepted;
+    private int[] methodsUsed;
 
     public final double spinSize, tol, J_ex;
     // parameters for the iterative solvers
@@ -62,6 +63,7 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
         this.spinSize=spinSize;
         this.tol=tol;
         this.J_ex=J_ex;
+        this.methodsUsed=new int[20];
 
         if (lattice.energyTable==null || lattice.momentTable==null || lattice.nnArray==null || lattice.exchangeIntTable==null || lattice.intTable==null) {
             throw new NullPointerException("The Lattice given to the SingleTMonteCarloSimulation has null some pointers. ");
@@ -124,6 +126,10 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
         this.outProblematicConfigs = outProblematicConfigs;
     }
 
+    public int getNumOfTimesMethodWasUsed(final int methodIndex) {
+        return methodsUsed[methodIndex];
+    }
+
     /**
      * Performs a Monte Carlo metropolis step
      * @param lattice - spin lattice
@@ -139,7 +145,7 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
         // choose random spin
         int flippedSpin = rnd.nextInt(lattice.getN());
 
-        lattice.flipSpin(maxIter, tol, flippedSpin, alpha, rnd);
+        int methodUsed = lattice.flipSpin(maxIter, tol, flippedSpin, alpha, rnd);
 
         double deltaEnergy = lattice.getEnergy() - initLongEnergy;
 
@@ -176,7 +182,7 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
 
         }
 
-        return new deltaEnergyAndLattice(lattice, deltaEnergy);
+        return new deltaEnergyAndLattice(lattice, deltaEnergy, methodUsed);
         //return deltaEnergy;
     }
 
@@ -221,8 +227,10 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
                 if (energyAndLattice!=null){
                     deltaEnergy=energyAndLattice.getDeltaEnergy();
                     lattice=energyAndLattice.getLattice();
+                    methodsUsed[energyAndLattice.getMethodUsed()]++;    // count methods used
                 }else{
                     deltaEnergy=null;
+                    methodsUsed[0]++;   // this signifies a failed spin-flip
                 }
 //                successfulSteps++;
 

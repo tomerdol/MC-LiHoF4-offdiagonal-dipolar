@@ -2,6 +2,8 @@
 
 source ./scripts/sub.sh
 
+nT=20
+
 # this should override the definitions from sub.sh
 if [ $SYS_NAME == "LiHoF4" ]; then
 name="dilution_1.0"
@@ -34,7 +36,7 @@ gen_temp_schedules() {
     if [[ ! " ${arrayLexclude[@]} " =~ " ${L} " ]]; then
       for H in "${arrayH[@]}"; do
 
-        yes n | /gpfs0/smoshe/projects/Python-3.8_old/bin/python3 ./scripts/gen_temp_schedule.py "$1" "$2" 24 | head -n1 >./"$SYS_NAME"/temperature_schedules/temp_schedule_"$L"_"$L"_"$4""$name"_"$H"_"$3".txt
+        yes n | /gpfs0/smoshe/projects/Python-3.8_old/bin/python3 ./scripts/gen_temp_schedule.py "$1" "$2" $nT | head -n1 >./"$SYS_NAME"/temperature_schedules/temp_schedule_"$L"_"$L"_"$4""$name"_"$H"_"$3".txt
         echo "generated ./${SYS_NAME}/temperature_schedules/temp_schedule_${L}_${L}_$4${name}_${H}_$3.txt"
 
       done
@@ -49,7 +51,7 @@ if false; then
   #gen_temp_schedules $minT_false $maxT_false "false" "temp_"
 
   # run initial temporary run
-  sub "temp_" 513 20
+  sub "temp_" 513 20 $nT
 fi
 # wait until temporary runs finish
 running_jobs=$(qstat -u tomerdol | awk '$3 ~ /^tr/' | awk 'END {print NR}')
@@ -151,7 +153,7 @@ for mech in "${arrayMech[@]}"; do
 
     for L in "${arrayL[@]}"; do
       if [[ ! " ${arrayLexclude[@]} " =~ " ${L} " ]]; then
-        bash ./scripts/temp_set_script.sh ./"$SYS_NAME"/data/analysis/sample_energy_"$L"_"$H"_temp_"$name"_"$mech".txt 24 $(bc <<<"$initial_tc-$delta") $(bc <<<"$initial_tc+$delta") | awk -vORS=, '{ print $1 }' | sed 's/,$/\n/' >./"$SYS_NAME"/temperature_schedules/temp_schedule_"$L"_"$L"_"$name"_"$H"_"$mech".txt
+        bash ./scripts/temp_set_script.sh ./"$SYS_NAME"/data/analysis/sample_energy_"$L"_"$H"_temp_"$name"_"$mech".txt $nT $(bc <<<"$initial_tc-$delta") $(bc <<<"$initial_tc+$delta") | awk -vORS=, '{ print $1 }' | sed 's/,$/\n/' >./"$SYS_NAME"/temperature_schedules/temp_schedule_"$L"_"$L"_"$name"_"$H"_"$mech".txt
         echo "created ./${SYS_NAME}/temperature_schedules/temp_schedule_${L}_${L}_${name}_${H}_${mech}.txt"
       fi
     done
@@ -162,6 +164,6 @@ done
 
 # run simulations
 echo "running simulations"
-sub "" 2048 25
+sub "" 2048 25 $nT
 echo "done"
 exit 0
