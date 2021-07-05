@@ -127,7 +127,11 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
     }
 
     public int getNumOfTimesMethodWasUsed(final int methodIndex) {
-        return methodsUsed[methodIndex];
+        if (methodsUsed != null) {
+            return methodsUsed[methodIndex];
+        } else {
+            return -1;
+        }
     }
 
     /**
