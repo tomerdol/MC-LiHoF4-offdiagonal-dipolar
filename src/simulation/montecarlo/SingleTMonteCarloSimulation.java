@@ -130,6 +130,7 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
         if (methodsUsed != null) {
             return methodsUsed[methodIndex];
         } else {
+            // can happen when starting from an old checkpoint
             return -1;
         }
     }
