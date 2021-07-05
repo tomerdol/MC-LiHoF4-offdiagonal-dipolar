@@ -228,7 +228,7 @@ public class OutputWriter implements Closeable {
             String[] colNames;
             switch (outType){
                 case VERBOSE:
-                    colNames = new String[]{"index", "Magnetization", "Energy", "meanBx", "stdBx", "meanBy", "stdBy", "meanBz", "stdBz", "maxBtrans", "maxBlong", "percBz", "meanSpinSize", "stdSpinSize", "mk2x", "mk2y", "mk2z", "tMaxConfigs", "swap"};
+                    colNames = new String[]{"index", "Magnetization", "Energy", "meanBx", "stdBx", "meanBy", "stdBy", "meanBz", "stdBz", "maxBtrans", "maxBlong", "percBz", "meanSpinSize", "stdSpinSize", "mk2x", "mk2y", "mk2z", "swap"};
                     break;
                 case BIN:
                     colNames = new String[]{"binN", "<|M|>", "<|M|2>", "<M>", "<M2>", "<M2>", "<M22>", "<E>", "<E2>", "<meanBx>", "<meanBx2>",
@@ -249,7 +249,7 @@ public class OutputWriter implements Closeable {
             int[] colWidths;
             switch (outType){
                 case VERBOSE:
-                    colWidths = new int[]{10, 17, 19, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 5};
+                    colWidths = new int[]{10, 17, 19, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 5};
                     break;
                 case BIN:
                     colWidths = new int[]{10, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 10};
