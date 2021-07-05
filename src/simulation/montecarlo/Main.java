@@ -366,6 +366,7 @@ public class Main {
                     ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).setOutProblematicConfigs(outProblematicConfigs);
                     ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).setContinueFromSave(continueFromSave);
                     ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).setCheckpoint(saveState);
+                    ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).initMethodsUsedArr();
 
                     // print parameters and table headers (with preceding '#') to results output file
                     ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).printRunParameters(VERSION, T, "# successfully read saved state"+System.lineSeparator()+'#'+outputWriter.makeTableHeader().substring(1), simulation.getSeed(), tempScheduleFileName, parallelTemperingOff);

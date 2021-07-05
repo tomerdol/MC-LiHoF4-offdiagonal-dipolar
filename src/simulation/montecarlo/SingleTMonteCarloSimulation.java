@@ -122,6 +122,12 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
         this.incAcceptanceRateCount();
     }
 
+    public void initMethodsUsedArr(){
+        if (this.methodsUsed == null){
+            this.methodsUsed=new int[20];
+        }
+    }
+
     public void setOutProblematicConfigs(final BufferedWriter outProblematicConfigs) {
         this.outProblematicConfigs = outProblematicConfigs;
     }
@@ -180,15 +186,12 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
 			}
 			*/
 
-            return null;
+            return new deltaEnergyAndLattice(null, deltaEnergy, methodUsed);
 
         } else {    // change is accepted
             // updateLocalFieldsAfterFlip(lattice, flippedSpin, intTable[2]);    // update other *longitudinal* (that's the reason for the [2]) fields
-
+            return new deltaEnergyAndLattice(lattice, deltaEnergy, methodUsed);
         }
-
-        return new deltaEnergyAndLattice(lattice, deltaEnergy, methodUsed);
-        //return deltaEnergy;
     }
 
     public static void printProblematicConfig(Lattice lattice, int flippedSpin, BufferedWriter out){
@@ -229,13 +232,13 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
             try {
                 energyAndLattice = metropolisStep(lattice, T, rnd, maxIter, alpha, tol);
 
-                if (energyAndLattice!=null){
+                if (energyAndLattice.getLattice()!=null){
                     deltaEnergy=energyAndLattice.getDeltaEnergy();
                     lattice=energyAndLattice.getLattice();
                     methodsUsed[energyAndLattice.getMethodUsed()]++;    // count methods used
                 }else{
                     deltaEnergy=null;
-                    methodsUsed[0]++;   // this signifies a failed spin-flip
+                    methodsUsed[energyAndLattice.getMethodUsed()]++;    // count methods used
                 }
 //                successfulSteps++;
 
@@ -244,6 +247,7 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
                 printProblematicConfig(tempLattice, e.getFlippedSpin(), outProblematicConfigs);
                 deltaEnergy=null;
 //                failedSteps++;
+                methodsUsed[0]++;    // this signifies all methods failed
                 System.err.println("There was an error converging, had to abort metropolis step ("+step+ ", sweep="+sweeps+" T="+T+") and try another one. \n" + e.getMessage());
             } catch (IndexOutOfBoundsException e){
                 deltaEnergy=null;
