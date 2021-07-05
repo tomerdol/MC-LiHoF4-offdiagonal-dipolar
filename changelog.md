@@ -1,6 +1,33 @@
 # Change log
 
-# v1.3.0b - 24/05/2021
+## v1.4.0b - 05/07/2021
+* Add script to plot multiple histograms
+* Changed crystal+field+hamiltonian-transversal+field+const.py plateau location back to 1.1
+* Plot (using Mathematica) the lattice output of Fe8
+* Added option to simulate diluted system
+* Seed must be given to simulation (as commandline argument)
+* BUGFIX call to find_inital_tc.py from init_sim.sh to include system name
+* Print concentration (x) to list of parameters
+* Add system name to get_avgs.py
+* Average only uncommented lines in init_sim.sh
+* Added serial version UID to singleSpin
+* Added python exception for missing binned files in bin_data.py
+* Simulations with no binned files are just dropped from the analysis
+* Allow usage of last bin in "3 consecutive bins" as equilibrated bin
+* Removed real time equilibration testing (unused feature)
+* Removed counting of transverse-field-maximizing nearest neighbor configurations
+* Added script archive_binned_data.sh
+* Binning data using hdf5
+* bin_data.py to accept commandline arguments like plot_bin.py
+* analysis_tools.py to ignore non-existent simulations
+* Print which simulations specifically are not equilibrated during plot_equilibration_pdf_bin.py
+* resubmit_to_all.sh to check that the new job is running before grabbing the next queued job
+* FieldTable to specify given field values when throwing IndexOutOfBoundsException
+* Specify file name when unable to read FieldTable
+* Number of temperatures (and therefore needed cores) is saved in a variable $nT in submission scripts
+* Add statistics on methods used to solve self-consistent calculation
+
+## v1.3.0b - 24/05/2021
 * Restructure for multiple projects
 * New module to parse arguments for all scripts and hold variables that would be accessible from other scripts
 * Added config module with the name of the system and added it to all paths
@@ -25,7 +52,7 @@
 * Add script to create magnetic moment table according to the calculation in P. B. Chakraborty, P. Henelius, H. Kjønsberg, A. W. Sandvik, and S. M. Girvin, Phys. Rev. B 70, 144411 (2004).
 * (31/5/2021) Fixed double multiplying by 0.5 for self-interactions
 
-# v1.2.0b - 08/03/2021
+## v1.2.0b - 08/03/2021
 * Write full lattice state at the end of the simulation
 * Count Bx-maximizing configurations
 * Add fraction of transverse field maximizing configurations to thermal averages
@@ -50,7 +77,7 @@
 * Added possibility to exclude system sizes in sub.sh and in init_sim.sh
 * Get user input for system sizes in gen_temp_schedule.py
 
-# v1.1.0b - 24/09/2020
+## v1.1.0b - 24/09/2020
 * Added measurement of mk2 for k in the y and z directions.
 * Added a module that reads old checkpoints and re-saves in new format (with extra column for additional observable).
 * Added serialVersionUID to all serialized objects for better backwards compatibility.
@@ -64,13 +91,13 @@
 * Fixed temperature schedule creation based on initial Tc in init_sim.sh
 * Added interpolation table name to submission scripts
 
-# v1.0.1b - 15/09/2020
+## v1.0.1b - 15/09/2020
 * Fixed scripts for creating interpolation table.
 * Name extension for field interpolation table file can be given as commandline argument.
 * Removed 'broyden' from file names.
 * Added crystal+field+hamiltonian-transversal+field+broyden.py and initiating scripts that create the interpolation tables.
 
-# Before 1.0.1b:
+## Before 1.0.1b:
 30689fa Merge branch 'beta' into dev
 9be1aa6 Added version printing
 39feb77 Added version printing
