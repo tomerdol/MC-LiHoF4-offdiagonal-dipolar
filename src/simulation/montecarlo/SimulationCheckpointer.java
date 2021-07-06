@@ -62,7 +62,7 @@ public class SimulationCheckpointer {
      * @return string containing the incompatibilities between checkpoint parameters and current parameters.
      */
     public static String verifyCheckpointCompatibility(final double[] T, final boolean parallelTemperingOff, final char parallelMode, final double spinSize,
-                                                       final double tol, final double J_ex, final long seed, MonteCarloSimulation simulation){
+                                                       final double tol, final double J_ex, final long seed, final boolean[] dilution, MonteCarloSimulation simulation){
         String ret="";
         if (!verifyNumOfTemperaturesCompatibility(parallelMode, simulation)) ret+="single vs. multiple temperatures, ";
 
@@ -70,6 +70,7 @@ public class SimulationCheckpointer {
         if (!verifySpinSizeCompatibility(spinSize, simulation)) ret+="spinSize, ";
         if (!verifyTolCompatibility(tol, simulation)) ret+="tol, ";
         if (!verifySeedCompatibility(seed, simulation)) ret+="seed, ";
+        if (!verifyDilutionCompatibility(dilution, simulation)) ret+="dilution, ";
 
         if (!ret.isEmpty()){
             if (parallelMode=='t'){
@@ -86,6 +87,36 @@ public class SimulationCheckpointer {
 
         return ret;
 
+    }
+
+    public static boolean verifyDilutionCompatibility(final boolean[] dilution, final MonteCarloSimulation simulation){
+        if (simulation==null) throw new NullPointerException("Received Null simulation. cannot verify dilution compatibility.");
+        if (simulation instanceof MultipleTMonteCarloSimulation) {
+            for (int i=0;i< ((MultipleTMonteCarloSimulation) simulation).T.length;i++) {
+                for (int j = 0; j < dilution.length; j++) {
+                    // if a spin does not exists in the dilution array but exists in the lattice
+                    if (dilution[j] == false && ((MultipleTMonteCarloSimulation) simulation).getIthSubSimulation(i).getLattice().spinExists(j))
+                        return false;
+                    // if a spin exists in the dilution array but not in the lattice
+                    if (dilution[j] == true && !((MultipleTMonteCarloSimulation) simulation).getIthSubSimulation(i).getLattice().spinExists(j))
+                        return false;
+                }
+            }
+            // no incompatibility was found
+            return true;
+        }
+        if (simulation instanceof SingleTMonteCarloSimulation) {
+            for (int j = 0; j < dilution.length; j++) {
+                // if a spin does not exists in the dilution array but exists in the lattice
+                if (dilution[j] == false && ((SingleTMonteCarloSimulation) simulation).getLattice().spinExists(j))
+                    return false;
+                // if a spin exists in the dilution array but not in the lattice
+                if (dilution[j] == true && !((SingleTMonteCarloSimulation) simulation).getLattice().spinExists(j))
+                    return false;
+            }
+            return true;
+        }
+        throw new IllegalArgumentException("simulation arg is neither an instance of SingleTMonteCarloSimulation nor of MultipleTMonteCarloSimulation");
     }
 
     public static boolean verifySeedCompatibility(final long seed, final MonteCarloSimulation simulation){

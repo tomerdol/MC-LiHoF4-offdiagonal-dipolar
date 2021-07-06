@@ -117,7 +117,7 @@ public class Main {
 
 
     public static void main(String[] args){
-        final String VERSION = "1.3.0b";
+        final String VERSION = "1.4.0b";
         int Lx=0;	// lattice x-y size
         int Lz=0;	// lattice z size
         double extBx=-1;   // external Bx
@@ -312,7 +312,7 @@ public class Main {
             simulation = checkpointer.readCheckpoint();
             if (simulation!=null) {
                 successReadFromFile=true;
-                String inconsistencies = SimulationCheckpointer.verifyCheckpointCompatibility(T, parallelTemperingOff, parallelMode, spinSize, tol, J_ex, seed, simulation);
+                String inconsistencies = SimulationCheckpointer.verifyCheckpointCompatibility(T, parallelTemperingOff, parallelMode, spinSize, tol, J_ex, seed, dilution, simulation);
 
                 if (!inconsistencies.isEmpty()) {
                     System.err.println("There were some inconsistencies between the checkpoint parameters and the current parameters: " + inconsistencies);

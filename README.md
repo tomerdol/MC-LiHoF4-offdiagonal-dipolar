@@ -15,11 +15,13 @@ If unavailable, it is also possible to compile using the primary Java compiler, 
 ```
 find src/ -name *.java > sources.txt  
 javac -sourcepath src -d bin/production/LiHoF4_transverse_field_MC/ -classpath "./lib/*" @sources.txt
+rm -f sources.txt
 ```  
 * On Windows:
 ```
 dir /s /B src\*.java > sources.txt
 javac -sourcepath src -d bin/production/LiHoF4_transverse_field_MC/ -classpath "./lib/*" @sources.txt
+del sources.txt
 ```
 
 ### How to run?

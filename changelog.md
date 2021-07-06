@@ -26,6 +26,7 @@
 * Specify file name when unable to read FieldTable
 * Number of temperatures (and therefore needed cores) is saved in a variable $nT in submission scripts
 * Add statistics on methods used to solve self-consistent calculation
+* Added verification of dilution compatibility when loading checkpoint
 
 ## v1.3.0b - 24/05/2021
 * Restructure for multiple projects

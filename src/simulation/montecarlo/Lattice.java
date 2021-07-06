@@ -186,6 +186,15 @@ public class Lattice implements Serializable {
         return copyLattice(this.lattice);
     }
 
+    public boolean spinExists(int n){
+        // not very efficient, so should be used only for compatibility validation
+        boolean found=false;
+        for (int i=0; !found && i < lattice.length; i++){
+            found = found || lattice[i].getN() == n;
+        }
+        return found;
+    }
+
     @CreatesInconsistency
     // randomize the spin configurations
     public void randomizeConfig(MersenneTwister rnd){
@@ -241,7 +250,7 @@ public class Lattice implements Serializable {
         if (!success) {
             throw new ConvergenceException(errorMessage, flipSpin);
         }
-        return methodIndex;
+        return methodsToTry[methodIndex-1];
     }
 
     public void updateAllMagneticMoments(int maxIter, double tol, double alpha){

@@ -228,7 +228,7 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
 
             Lattice tempLattice = new Lattice(lattice);
             Double deltaEnergy;
-            deltaEnergyAndLattice energyAndLattice;
+            deltaEnergyAndLattice energyAndLattice=null;
             try {
                 energyAndLattice = metropolisStep(lattice, T, rnd, maxIter, alpha, tol);
 
@@ -251,8 +251,15 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
                 System.err.println("There was an error converging, had to abort metropolis step ("+step+ ", sweep="+sweeps+" T="+T+") and try another one. \n" + e.getMessage());
             } catch (IndexOutOfBoundsException e){
                 deltaEnergy=null;
+                methodsUsed[0]++;    // this signifies all methods failed
 //                failedSteps++;
-                System.err.println("There was an error while calculating the derivative, had to abort metropolis step ("+step+ ", sweep="+sweeps+" T="+T+") and try another one.\n" + e.toString());
+                if (energyAndLattice != null && (energyAndLattice.getMethodUsed() >= methodsUsed.length || energyAndLattice.getMethodUsed() < 0)){
+                    System.err.println("Method used is out of bounds, had to abort metropolis step (" + step + ", sweep=" + sweeps + " T=" + T + ") and try another one.\n" + e.toString());
+                    e.printStackTrace();
+                }else {
+                    System.err.println("There was an error while calculating the derivative, had to abort metropolis step (" + step + ", sweep=" + sweeps + " T=" + T + ") and try another one.\n" + e.toString());
+                    e.printStackTrace();
+                }
             }
 
             if (deltaEnergy == null) {
