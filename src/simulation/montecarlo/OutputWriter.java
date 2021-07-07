@@ -233,7 +233,7 @@ public class OutputWriter implements Closeable {
                 case BIN:
                     colNames = new String[]{"binN", "<|M|>", "<|M|2>", "<M>", "<M2>", "<M2>", "<M22>", "<E>", "<E2>", "<meanBx>", "<meanBx2>",
                                             "<stdBx>", "<stdBx2>", "<meanBy>", "<meanBy2>","<stdBy>", "<stdBy2>", "<meanBz>", "<meanBz2>", "<stdBz>", "<stdBz2>", "<maxBtrans>",
-                                            "<maxBtrans2>", "<maxBlong>", "<maxBlong2>", "<percBz>", "<percBz2>", "<meanSpinSize>",  "<meanSpinSize2>", "<stdSpinSize>", "<stdSpinSize2>", "<mk2x>", "<mk2x2>", "<mk2y>", "<mk2y2>","<mk2z>", "<mk2z2>","<tMaxConfigs>", "<tMaxConfigs2>", "swap"};
+                                            "<maxBtrans2>", "<maxBlong>", "<maxBlong2>", "<percBz>", "<percBz2>", "<meanSpinSize>",  "<meanSpinSize2>", "<stdSpinSize>", "<stdSpinSize2>", "<mk2x>", "<mk2x2>", "<mk2y>", "<mk2y2>","<mk2z>", "<mk2z2>", "swap"};
                     break;
                 case SPIN:
                     colNames = new String[]{"n", "spin", "spinSize", "localBx", "localBy", "localBz"};
@@ -252,7 +252,7 @@ public class OutputWriter implements Closeable {
                     colWidths = new int[]{10, 17, 19, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 5};
                     break;
                 case BIN:
-                    colWidths = new int[]{10, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 10};
+                    colWidths = new int[]{10, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 10};
                     break;
                 case SPIN:
                     colWidths = new int[]{6, 5, 17, 17, 17, 17};

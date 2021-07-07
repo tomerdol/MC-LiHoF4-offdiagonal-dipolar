@@ -387,7 +387,7 @@ public class MagneticMomentsSolve {
         // Given an n-dimensional point xold[0..n-1], the value of the function
         // and gradient there, fold and g[0..n-1], and a direction p[0..n-1],
         // finds a new point x[0..n-1] along the direction p from xold where the
-        // function or functor func has decreased “sufficiently.” The new
+        // function or functor func has decreased "sufficiently." The new
         // function value is returned. stpmax is an input quantity that limits the
         // length of the steps so that you do not try to evaluate the function
         // in regions where it is undefined or subject to overflow. p is usually

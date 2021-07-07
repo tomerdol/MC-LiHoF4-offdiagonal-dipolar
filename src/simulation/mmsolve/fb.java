@@ -6,13 +6,24 @@ import simulation.montecarlo.*;
  * Jacobian function
  */
 class fb extends fij_xi {
+    /** The function for which a Jacobian is to be calculated. */
     final fi_xi f;
+
+    /**
+     * Constructs a Jacobian function (a function that receives a vector and returns a matrix).
+     * @param fi - the function for which to calculate the Jacobian
+     */
     public fb(fi_xi fi)
     {f=fi;}
 
 
-    // calculate the Jacobian of f at the given point x[0..n-1].
-    // if identity=true the returned Jacobian is just the identity matrix
+    /**
+     * Evaluate the Jacobian of f at the given point x[0..n-1].
+     * @param x - vector specifying the point at which to evaluate the Jacobian
+     * @param identity - if <code>true</code>> the returned Jacobian is just the identity matrix
+     * @return the Jacobian Matrix of the function at the point x[0..n-1]
+     * @throws ConvergenceException only if {@param identity} is false
+     */
     public double[][] func(double x[], boolean identity) throws ConvergenceException
     {
         if (!identity) return func(x);
@@ -30,7 +41,13 @@ class fb extends fij_xi {
         return a;
     }
 
-    public double[][] func(double x[]) throws  ConvergenceException
+    /**
+     *
+     * @param x
+     * @return
+     * @throws ConvergenceException
+     */
+    public double[][] func(double x[]) throws ConvergenceException
     {
         if (!(f instanceof func)) {
             System.err.println("Cannot calculate Jacobian since f is not func.");
