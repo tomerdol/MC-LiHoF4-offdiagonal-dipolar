@@ -18,13 +18,14 @@ class fb extends fij_xi {
 
 
     /**
-     * Evaluate the Jacobian of f at the given point x[0..n-1].
+     * Evaluates the Jacobian of f at the given point x[0..n-1].
      * @param x - vector specifying the point at which to evaluate the Jacobian
-     * @param identity - if <code>true</code>> the returned Jacobian is just the identity matrix
+     * @param identity - if <code>true</code> the returned Jacobian is just the identity matrix
      * @return the Jacobian Matrix of the function at the point x[0..n-1]
      * @throws ConvergenceException only if {@param identity} is false
+     * @throws IndexOutOfBoundsException if the given point is outside the bounds of the {@code FieldTable} (derivative via exact diagonalization is not supported).
      */
-    public double[][] func(double x[], boolean identity) throws ConvergenceException
+    public double[][] func(double x[], boolean identity) throws ConvergenceException, IndexOutOfBoundsException
     {
         if (!identity) return func(x);
 
@@ -42,12 +43,13 @@ class fb extends fij_xi {
     }
 
     /**
-     *
-     * @param x
-     * @return
-     * @throws ConvergenceException
+     * Evaluates the Jacobian of f at the given point x[0..n-1].
+     * @param x - vector specifying the point at which to evaluate the Jacobian
+     * @return the Jacobian Matrix of the function at the point x[0..n-1]
+     * @throws ConvergenceException if the number of times an exact diagonalization was performed exceeds 20.
+     * @throws IndexOutOfBoundsException if the given point is outside the bounds of the {@code FieldTable} (derivative via exact diagonalization is not supported).
      */
-    public double[][] func(double x[]) throws ConvergenceException
+    public double[][] func(double x[]) throws ConvergenceException, IndexOutOfBoundsException
     {
         if (!(f instanceof func)) {
             System.err.println("Cannot calculate Jacobian since f is not func.");
@@ -63,6 +65,7 @@ class fb extends fij_xi {
             flipSpin = ((funcForHomotopy) f).getFlippedSpin();
         }
 
+        // get the properties of f
         FieldTable momentTable = ((func)f).momentTable;
         singleSpin[] arr = ((func)f).arr;
         double extBx = ((func)f).extBx;
@@ -78,10 +81,14 @@ class fb extends fij_xi {
                 if (i==j) ret[i][j]=1;
 
                 if (!homotopy || i!=flipSpin) {
+                    // the derivative of the required magnetic moment at site i is a function of the 3 component field, which is a function of the other spins.
+                    // therefore, we use the chain rule here
                     ret[i][j] = ret[i][j] - (E[0][i][j] * momentTable.getDerivative(2, getField(x, i, E, extBx, extBy, suppressInternalTransFields), arr[i].getSpin(), arr[i].getPrevBIndices())
                             + E[1][i][j] * momentTable.getDerivative(1, getField(x, i, E, extBx, extBy, suppressInternalTransFields), arr[i].getSpin(), arr[i].getPrevBIndices())
                             + E[2][i][j] * momentTable.getDerivative(0, getField(x, i, E, extBx, extBy, suppressInternalTransFields), arr[i].getSpin(), arr[i].getPrevBIndices()));
                 } else{
+                    // this should work, but was not thoroughly tested and is currently unused.
+                    // it is the same as above, with the flipped spin having a mixed magnetic moment.
                     System.err.println("problem! func for homotopy seems to be used");
                     ret[i][j] = ret[i][j] - (1-frac)*(E[0][i][j] * momentTable.getDerivative(2, getField(x, i, E, extBx, extBy, suppressInternalTransFields), arr[i].getSpin(), arr[i].getPrevBIndices())
                             + E[1][i][j] * momentTable.getDerivative(1, getField(x, i, E, extBx, extBy, suppressInternalTransFields), arr[i].getSpin(), arr[i].getPrevBIndices())
@@ -90,16 +97,29 @@ class fb extends fij_xi {
                             + E[1][i][j] * momentTable.getDerivative(1, getField(x, i, E, extBx, extBy, suppressInternalTransFields), -1*arr[i].getSpin(), arr[i].getPrevBIndices())
                             + E[2][i][j] * momentTable.getDerivative(0, getField(x, i, E, extBx, extBy, suppressInternalTransFields), -1*arr[i].getSpin(), arr[i].getPrevBIndices()));
                 }
+                // there is really no reason for this to happen here, but just in case.
                 if (((func)f).numManualCalc >=20){
-                    System.err.println("called python too many times!");
+                    ConvergenceException e = new ConvergenceException.Builder("the function surpassed the permitted threshold (20) for manual calculations. ",
+                            "Function evaluation")
+                            .setNumManualCalc(((func)f).numManualCalc)
+                            .build();
+                    throw e;
                 }
-                //System.out.print(ret[i][j]+" ");
             }
-            //System.out.println();
         }
         return ret;
     }
 
+    /**
+     * Calculates the local field at site i
+     * @param x - vector of the magnetic moments of all of the spins
+     * @param i - the spin at which to calculate the field
+     * @param int_config_Matrix - the interactions table
+     * @param extBx - external Bx
+     * @param extBy - external By
+     * @param suppressInternalTransFields - are internal transverse fields suppressed
+     * @return the magnetic field at spin <i>i</i> in the format {Bz,By,Bx}
+     */
     private double[] getField(final double[] x, int i, double[][][] int_config_Matrix, double extBx, double extBy, boolean suppressInternalTransFields){
         double[] B = new double[]{extBx, extBy, 0};
 
@@ -119,9 +139,9 @@ class fb extends fij_xi {
     }
 
     /**
-     * Evaluate the Jacobian at point x[1..n]
-     * @param x
-     * @return
+     * Evaluates the Jacobian at point x[0..n-1] by finite difference
+     * @param x - vector that signifies the point for the function f at which to evaluate the Jacobian
+     * @return the Jacobian matrix at point x[0...n-1]
      */
     public double[][] funcNumerical(double x[]) throws ConvergenceException
     {
@@ -137,6 +157,11 @@ class fb extends fij_xi {
         return a;
     }
 
+    /**
+     * Numerically calculates a derivative by finite difference - alternative to {@link fb#funcNumerical}
+     * @param x - The point at which the derivative is to be calculated
+     * @return the Jacobian evaluated at point x[0..n-1]
+     */
     public double[][] altFunc(double x[]) throws ConvergenceException {
         double[] fvec = f.func(x);
         final double EPS = Math.ulp(1.0);
@@ -160,7 +185,7 @@ class fb extends fij_xi {
     }
 
     /**
-     * Numerically calculate a derivative by finite difference
+     * Numerically calculates a derivative by finite difference
      * @param x - The point at which the derivative is to be calculated
      * @param denklem_ref - which vector element of the function f should be differentiated
      * @param x_ref - the variable with respect to which the differentiation should be performed
