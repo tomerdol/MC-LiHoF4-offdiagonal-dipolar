@@ -22,7 +22,7 @@ class fb extends fij_xi {
      * @param x - vector specifying the point at which to evaluate the Jacobian
      * @param identity - if <code>true</code> the returned Jacobian is just the identity matrix
      * @return the Jacobian Matrix of the function at the point x[0..n-1]
-     * @throws ConvergenceException only if {@param identity} is false
+     * @throws ConvergenceException only if {@code identity} is false
      * @throws IndexOutOfBoundsException if the given point is outside the bounds of the {@code FieldTable} (derivative via exact diagonalization is not supported).
      */
     public double[][] func(double x[], boolean identity) throws ConvergenceException, IndexOutOfBoundsException

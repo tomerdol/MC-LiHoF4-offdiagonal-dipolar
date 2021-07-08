@@ -4,6 +4,11 @@ package simulation.mmsolve;
 import org.apache.commons.math3.linear.MatrixDimensionMismatchException;
 import org.apache.commons.math3.linear.SingularMatrixException;
 
+/**
+ * Class of special iterative solvers used for the self-consistent determination of magnetic moments in the system.
+ * Three methods are implemented: Newton's and Broyden's methods and (nonlinear) Gauss-Seidel method.
+ * Implementations are from Numerical Recipes (3rd edition)
+ */
 public class MagneticMomentsSolve {
 
     static void printMean(double[] arr){
@@ -12,10 +17,21 @@ public class MagneticMomentsSolve {
         System.out.println(mean/arr.length);
     }
 
-    public static double [] gauss_seidel(fi_xi f, double xx[], double alpha, int iter, final double tol) throws ConvergenceException {
+    /**
+     * Finds roots of a function f using a nonlinear Gauss-Seidel method (with a relaxation parameter).
+     * @deprecated since this is basically what the implementation of {@code MagneticMomentsSolveIter} in {@link simulation.montecarlo.Lattice} does.
+     * @param f - the function whose roots are to be found
+     * @param xx - the initial solution and also where the solution will be stored
+     * @param alpha - relaxation parameter, the update iteration is x(new_iter)=(1-alpha)*x(previous_iter)+alpha*f[x];
+     * @param iter - number of allowed iterations
+     * @param tol - tolerance. how small successive changes need to get for convergence to be announced.
+     * @return the solution vector (root of f)
+     * @throws ConvergenceException
+     */
+    @Deprecated public static double[] gauss_seidel(fi_xi f, double[] xx, double alpha, int iter, final double tol) throws ConvergenceException {
         int n=xx.length;
-        //double xx[]=new double[n];
-        double xx1[]=new double[n];
+        // array to keep the previous value of the solution (to check when it converges)
+        double[] xx1=new double[n];
         double delta=0;
         //for(int i=0;i<n;i++) xx[i]=x[i];
         double[] g;
@@ -31,7 +47,6 @@ public class MagneticMomentsSolve {
                 delta+=Math.abs(xx[j]-xx1[j]);
                 //System.out.print("xx["+j+"] = "+xx[j]);
             }
-            //System.out.println(" k = "+k+" delta = "+delta);
             //System.out.println(checkConverge(xx,f));
 
             if(delta< tol*1.0e-1) break;
@@ -40,6 +55,14 @@ public class MagneticMomentsSolve {
         return xx;
     }
 
+    /**
+     * Checks convergence according to the absolute criterion, not just diminishing of successive changes
+     * which could also signify a local minimum.
+     * @param x - solution vector
+     * @param f - the function which we want to test whether x is a root of.
+     * @return the distance from absolute convergence.
+     * @throws ConvergenceException
+     */
     public static double checkConverge(double[] x, fi_xi f) throws ConvergenceException{
         double converged = 0;
         double[] g = f.func(x);
@@ -53,22 +76,41 @@ public class MagneticMomentsSolve {
         return Math.abs(converged/x.length);
     }
 
+    /**
+     * Creates a vector of doubles.
+     * @param n - length of the vector
+     * @return a vector of zeros with length n
+     */
     public static double[] doub_vec(int n){
         return new double[n];
     }
 
+    /**
+     * Runs the Broyden method. Calculate the Jacobian matrix at the start and do not try
+     * to use the identity matrix, even on a second run.
+     * @see simulation.mmsolve.MagneticMomentsSolve#broyden(fi_xi, double[], double, boolean, boolean)
+     */
     public static double[] broyden(fi_xi vecFunc, final double[] x, final double tol) throws ConvergenceException {
         return broyden(vecFunc, x, tol, false, false);
     }
 
+    /**
+     * Given an initial guess x[0..n-1] for a root in n dimensions, find the root by Broyden’s
+     * method embedded in a globally convergent strategy. The vector of functions to be zeroed
+     * called fvec[0..n-1] in the routine below, is returned by the user-supplied function or functor
+     * vecfunc. On a successful run the x[0..n-1] which zeros fvec is returned.
+     * @param vecFunc - function from R^n to R^n whose roots are to be found
+     * @param x - initial guess
+     * @param tol - tolerance for convergence testing
+     * @param initialJacobianIdentity - whether to start with an identity matrix as the Jacobian
+     * @param changeJacobianIdentity - whether to change {@code initialJacobianIdentity} when reinitializing
+     *                               the Jacobian if stuck.
+     * @return the vector x[0..n-1] which is a root of the function f
+     * @throws ConvergenceException if the routine has converged to a local minimum of the function
+     * fmin or if Broyden’s method can make no further progress. In this case try restarting from a
+     * different initial guess.
+     */
     public static double[] broyden(fi_xi vecFunc, final double[] x, final double tol, boolean initialJacobianIdentity, boolean changeJacobianIdentity) throws ConvergenceException {
-        // Given an initial guess x[0..n-1] for a root in n dimensions, find the root by Broyden’s
-        // method embedded in a globally convergent strategy. The vector of functions to be zeroed
-        // called fvec[0..n-1] in the routine below, is returned by the user-supplied function or functor
-        // vecfunc. On a successful run the x[0..n-1] which zeros fvec is returned.
-        // ConvergenceException is thrown if the routine has converged to a local minimum of the function
-        // fmin or if Broyden’s method can make no further progress. In this case try restarting from a
-        // different initial guess.
         int MAXITS=250;
         double EPSILON = Math.ulp(1.0);
         double TOLF=tol, TOLX=EPSILON, STPMX=100.0, TOLMIN=Math.pow(tol,3/2);
@@ -249,20 +291,26 @@ public class MagneticMomentsSolve {
 
     }
 
+    /**
+     * Given an initial guess x[0..n-1] for a root in n dimensions, find the
+     * root by a globally convergent Newton’s method. The vector of functions
+     * to be zeroed, called fvec[0..n-1] in the routine below, is returned
+     * by the user-supplied function or functor vecfunc (see text). The
+     * output quantity check is false on a normal return and true if the
+     * routine has converged to a local minimum of the function fmin defined
+     * below. In this case try restarting from a different initial guess.
+     * @param vecfunc - function from R^n to R^n whose roots are to be found
+     * @param x - initial guess
+     * @param tol - tolerance for convergence testing
+     * @return the vector x[0..n-1] which is a root of the function f
+     * @throws ConvergenceException
+     */
     public static double[] newt(fi_xi vecfunc, final double[] x, final double tol)
             throws ConvergenceException {
-        // Given an initial guess x[0..n-1] for a root in n dimensions, find the
-        // root by a globally convergent Newton’s method. The vector of
-        // functions
-        // to be zeroed, called fvec[0..n-1] in the routine below, is returned
-        // by the user-supplied function or functor vecfunc (see text). The
-        // output quantity check is false on a normal return and true if the
-        // routine has converged to a local minimum of the function fmin defined
-        // below. In this case try restarting from a different initial guess.
         final double EPSILON=Math.ulp(1.0);
         final int MAXITS = 200;
         final double TOLF = tol, TOLMIN = Math.pow(tol,3/2), STPMX = 100.0;
-        final double TOLX = EPSILON; // numeric_limits<double>::epsilon();
+        final double TOLX = EPSILON;
         // Here MAXITS is the maximum number of iterations; TOLF sets the
         // convergence criterion on function values; TOLMIN sets the criterion
         // for deciding whether spurious convergence to a minimum of fmin has
@@ -380,22 +428,34 @@ public class MagneticMomentsSolve {
     }
 
 
-
+    /**
+     * Given an n-dimensional point xold[0..n-1], the value of the function
+     * and gradient there, fold and g[0..n-1], and a direction p[0..n-1],
+     * finds a new point x[0..n-1] along the direction p from xold where the
+     * function or functor func has decreased "sufficiently." The new
+     * function value is returned. stpmax is an input quantity that limits the
+     * length of the steps so that you do not try to evaluate the function
+     * in regions where it is undefined or subject to overflow. p is usually
+     * the Newton direction.
+     * If a proper step was taken then the value of f at the new x[0..n-1] is
+     * returned. The other option is that the expected step is smaller than EPSILON,
+     * and then we return null. In this case the calling function should check for
+     * convergence (delta_x convergence).
+     * @param xold - starting point from which we wish to move to optimally decrease fmin
+     * @param fold - the value of fmin at the point {@code xold}
+     * @param g - the gradient of f at the point {@code xold}
+     * @param p - vector which signifies the direction along which the step is to be taken
+     * @param x - vector which stores the optimal point along the direction {@code p}
+     * @param stpmax - limit the potential length of the step
+     * @param EPSILON - smaller possible step length
+     * @param func - the (scalar) function to be optimally minimized by the step
+     * @return the point x[0..n-1] of maximal decrease of the function {@code func}, or null
+     *          if the proposed step is smaller than {@code EPSILON}
+     * @throws ConvergenceException
+     */
     public static Double lnsrch(final double[] xold, final double fold,
                                 final double[] g, final double[] p, final double[] x, final double stpmax,
                                 final double EPSILON, final f_xi func)  throws ConvergenceException{
-        // Given an n-dimensional point xold[0..n-1], the value of the function
-        // and gradient there, fold and g[0..n-1], and a direction p[0..n-1],
-        // finds a new point x[0..n-1] along the direction p from xold where the
-        // function or functor func has decreased "sufficiently." The new
-        // function value is returned. stpmax is an input quantity that limits the
-        // length of the steps so that you do not try to evaluate the function
-        // in regions where it is undefined or subject to overflow. p is usually
-        // the Newton direction.
-        // If a proper step was taken then the value of f at the new x[0..n-1] is
-        // returned. The other option is that the expected step is smaller than EPSILON,
-        // and then we return null. In this case the calling function should check for
-        // convergence (delta_x convergence).
         final double ALF = 1.0e-4; final double TOLX = EPSILON;
         // ALF ensures sufficient decrease in function value; TOLX is the
         // convergence criterion on delta_x.
