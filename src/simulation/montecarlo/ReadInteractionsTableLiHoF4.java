@@ -16,7 +16,7 @@ public class ReadInteractionsTableLiHoF4 extends ReadInteractionsTable{
 
         boolean[][] nnArray_test = new boolean[Lx*Ly*Lz*Constants.num_in_cell][Lx*Ly*Lz*Constants.num_in_cell];	// for testing
 
-        // neighbor numbers are as follows, for the 0th and 2nd atoms in the base (with respect to ion positions_1.pdf):
+        // neighbor numbers are as follows, for the 0th and 2nd atoms in the base (with respect to ion_positions.pdf in docs):
         // neighbor1: up-right
         // neighbor2: up-left
         // neighbor3: down-outward

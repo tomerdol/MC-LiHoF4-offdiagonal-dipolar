@@ -195,8 +195,8 @@ public class Lattice implements Serializable {
         return found;
     }
 
-    @CreatesInconsistency
     // randomize the spin configurations
+    @CreatesInconsistency
     public void randomizeConfig(MersenneTwister rnd){
         for (int i=0; i<lattice.length;i++){
             if (lattice[i].getSpin()!=0){
