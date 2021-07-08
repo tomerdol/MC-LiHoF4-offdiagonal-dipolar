@@ -223,13 +223,10 @@ public class QRdcmp {
     /**
      * Starting from the stored QR decomposition A=Q*R, update
      * it to be the QR decomposition of the matrix Q*(R + u \otimes v).
-     * @param u
-     * @param v
+     * @param u - left vector in outer product that is added to R
+     * @param v - right vector in outer product that is added to R
      */
     public void update(final double[] u, final double[] v) {
-        // Starting from the stored QR decomposition A D QR, update
-        // it to be the QR decomposition of the matrix Q .RCu?v/.
-        // Input quantities are u[0..n-1], and v[0..n-1].
         int i, k;
         final double[] w = doub_vec(u);
         for (k = n - 1; k >= 0; k--)
@@ -257,16 +254,16 @@ public class QRdcmp {
                 sing = true;
     }
 
+    /**
+     * Utility used by {@link QRdcmp#update(double[], double[])}. Given matrices r[0..n-1][0..n-1]
+     * and qt[0..n-1][0..n-1], carry out a Jacobi rotation on rows
+     * i and i+1 of each matrix.
+     * the rotation: cos(\theta) = a/\sqrt{a^2 + b^2}, sin(\theta) = b/\sqrt{a^2 + b^2}
+     * @param i - row to rotate
+     * @param a - rotation parameter
+     * @param b - rotation parameter
+     */
     public void rotate(final int i, final double a, final double b) {
-        // Utility used by update. Given matrices r[0..n-1][0..n-1]
-        // and qt[0..n-1][0..n-1], carry out a Jacobi rotation on rows
-        // i and i C 1 of each matrix. a and b are the parameters of
-        // the rotation: cos  D a=
-        // p
-        // a2 Cb2, sin  D b=
-        // p
-        // a2 Cb2.
-
         int j;
         double c, fact, s, w, y;
         if (a == 0.0) { // Avoid unnecessary overflow or underflow.
