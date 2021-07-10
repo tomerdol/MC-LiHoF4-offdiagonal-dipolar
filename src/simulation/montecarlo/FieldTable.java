@@ -12,17 +12,27 @@ import java.util.Random;
  * Used to hold energy & magnetic moment of a Ho ion under different (Bx,By,Bz)
  */
 final public class FieldTable {
+    /** The data itself (magnetic moment or energy) */
     private final double[][][] table;
+    /** The applied magnetic field values */
     private final double[][] values;
+    /** Whether when getting a value for spin down, which requires transposing the table as in Bz->-Bz, should the result also have an additional minus sign (see comment in code)  */
     private final boolean transposedRequiresMinus;      // when calculating the magnetic moment of a down-spin, one can calculate the magnetic moment of an up-spin in with Bz->-Bz, but the
                                                         // result requires a minus sign. hence for FieldTable that contains magnetic moments, transposedRequiresMinus should be true.
+                                                        // this is in contrast to a FieldTable that holds energies, where there is no need for a minus sign
+    /** The name of the object, which is also the name of the file to read the data from */
     private final String name;
-    private final int[] dj;   // min distance to determine whether consecutive calls are correlated
-    //private final boolean[] cor;    // tracks whether consecutive calls are correlated (separately for x,y,z)
+    /** Holds the min distance to determine whether consecutive calls are sufficiently
+     * correlated such that it is more efficient to hunt for the next value close to the
+     * previous one. See section 3.1.1 Search with Correlated Values in Numerical Recipes, 3rd edition.
+     * @see #hunt(double, double[], int)
+     * @see #binarySearch(double, double[]) */
+    private final int[] dj;
 
     /**
      * Reads the energy_arr/magnetic_moment_arr file into a table of double and return a FieldTable object
      * @param fileName - name of table file to be read (without .txt extension)
+     * @param transposedRequiresMinus Whether when getting a value for spin down, which requires transposing the table as in Bz->-Bz, should the result also have an additional minus sign (see comment in code)
      * @return FieldTable object that has a table of average energy drop or magnetic moment due to different combinations of local fields (Bx,By,Bz) and also the Bx,By,Bz values themselves
      * @throws RuntimeException if the FieldTable was not read from file for any reason.
      */
@@ -82,6 +92,7 @@ final public class FieldTable {
 
     /**
      * Get the range covered by the table along some axis
+     * @param axis - the axis along which the range covered by the table is needed
      * @return a size-2 array of the {min,max} values covered by the table
      */
     public double[] getTableRange(int axis){
@@ -92,6 +103,8 @@ final public class FieldTable {
     /**
      * Turns an array of strings into an array of doubles
      * @param inArray - input array (strings)
+     * @param start - starting index in {@code inArray}
+     * @param end - ending index in {@code inArray}
      * @return an array of doubles represented by the strings
      */
     public static double[] toDouble(String[] inArray, int start, int end){
@@ -106,12 +119,12 @@ final public class FieldTable {
 
     /**
      * FieldTable constructor
-     * @param table 3D double array of the values (usually read from a file by {@link FieldTable#of(String, boolean)}
-     * @param values 2D double array (must be 3 by N) representing the B values (Bx,By,Bz)
+     * @param table - 3D double array of the values (usually read from a file by {@link FieldTable#of(String, boolean)}
+     * @param values - 2D double array (must be 3 by N) representing the B values (Bx,By,Bz)
      * @param transposedRequiresMinus0 when calculating the magnetic moment of a down-spin, one can calculate the magnetic moment of an up-spin in with Bz->-Bz, but the
      *                                 result requires a minus sign. Hence for a FieldTable that contains magnetic moments, transposedRequiresMinus should be true, and
- *                                     for a FieldTable that contains energies it should be false.
-     * @param name Name of this FieldTable. Options are "magnetic_moment_up_broyden" and "energy_up_broyden" to be consistent with the python script previously used.
+     *                                 for a FieldTable that contains energies it should be false.
+     * @param name Name of this FieldTable. Options are "magnetic_moment_up_arr" and "energy_up_arr" to be consistent with the python script previously used.
      */
     private FieldTable(double[][][] table, double[][] values, boolean transposedRequiresMinus0, String name) {
         boolean validInput=true;
@@ -128,11 +141,12 @@ final public class FieldTable {
         this.values = values;
         this.transposedRequiresMinus = transposedRequiresMinus0;
         this.name=name;
+        // values to differentiate between efficiency of hunt vs. binarySearch.
+        // see section 3.1.1 Search with Correlated Values in Numerical Recipes, 3rd edition.
         this.dj=new int[]{Math.max(1,(int)Math.pow(values[0].length,0.25)),
                 Math.max(1,(int)Math.pow(values[1].length,0.25)),
                 Math.max(1,(int)Math.pow(values[2].length,0.25))};
 
-        //this.cor = new boolean[3];
     }
 
     public boolean isTransposedRequiresMinus() {
@@ -162,6 +176,16 @@ final public class FieldTable {
 
     /**
      * Bilinear interpolation. see picture at http://supercomputingblog.com/graphics/coding-bilinear-interpolation/
+     * @param x1 - lower grid x value
+     * @param x2 - higher grid x value
+     * @param x - requested x value
+     * @param y1 - lower grid y value
+     * @param y2 - higher grid y value
+     * @param y - requested y value
+     * @param Q11 - function value at (x1,y1)
+     * @param Q12 - function value at (x1,y2)
+     * @param Q21 - function value at (x2,y1)
+     * @param Q22 - function value at (x2,y2)
      * @return Intermediate value withing square based on the values at the corners
      */
     public static double bilinearInterpolation(double x1, double x2, double x, double y1, double y2, double y, double Q11, double Q12, double Q21, double Q22) {
@@ -194,6 +218,11 @@ final public class FieldTable {
 
     /**
      * Trilinear interpolation. Simply performs linear interpolation between 2 values obtained with {@link FieldTable#bilinearInterpolation}
+     * @param x1,y1,z1 - lower grind values
+     * @param x2,y2,z3 - higher grid values
+     * @param x,y,z - requested values
+     * @param Q111,Q121,Q211,Q221,Q112,Q122,Q212,Q222 - function values at 8 corners of the grid box.
+     *                                                  Qijk is the function value at (xi,yj,zk).
      * @return Intermediate value withing cube based on the values at the corners
      */
     public static double trilinearInterpolation(double x1, double x2, double x, double y1, double y2, double y, double z1, double z2, double z, double Q111, double Q121, double Q211, double Q221, double Q112, double Q122, double Q212, double Q222){
@@ -231,9 +260,6 @@ final public class FieldTable {
         }
     }
 
-    // binary search. returns indices of the 2 closes values in a length-2 array: {lower,higher}
-    // if the value is outside the bounds of the table a, returns null
-
     /**
      * Binary search. Returns indices of the 2 closest values in a length-2 array: {lower,higher}
      * If the value is outside the bounds of the table a, returns null
@@ -269,7 +295,7 @@ final public class FieldTable {
 
     /**
      * Given a value, and an array, a, return an array int[]{high, low} such that value is between a[low] and a[high].
-     * Altervative to {@link #binarySearch(double, double[]) binarySearch} that looks near the received startIndex.
+     * Alternative to {@link #binarySearch(double, double[]) binarySearch} that looks near the received startIndex.
      * Useful when subsequent calls should have similar values.
      * @param value value to find
      * @param a array in which to find the value
@@ -382,6 +408,7 @@ final public class FieldTable {
      */
     public int[][] searchForIndices(double bx, double by, double bz, int[][] prevBIndices) {
         int[] closestBxIndices, closestByIndices, closestBzIndices;
+        // if for whatever reason we do not have the previous B indices, just use binary search
         if (prevBIndices==null) {
             // Bx
             closestBxIndices = binarySearch(bx, values[2]);    // look for bx in the Bx(2) values array
@@ -412,8 +439,10 @@ final public class FieldTable {
      * @param bx Bx value
      * @param by By value
      * @param bz Bz value
-     * @param prevBIndices Array of the (lower) indices where the previous field was found. Could be useful if the
-     *                    current search is expected to be close to that. Could be <code>null</code>, and then full binary-search is performed.
+     * @param prevBIndices - 2D Array.
+     *                      The first row contains the (lower) indices where the previous field was found. Could be useful if the
+     *                      current search is expected to be close to that. Could be <code>null</code>, and then full binary-search is performed.
+     *                      The second row contains {@code 1} if the last searches were deemed correlated and {@code 0} otherwise.
      * @return Interpolated value
      * @throws IndexOutOfBoundsException if the received bx, by or bz are outside the bounds of the table.
      */
@@ -423,18 +452,20 @@ final public class FieldTable {
         int[] closestBxIndices=closestBIndices[2], closestByIndices=closestBIndices[1], closestBzIndices=closestBIndices[0];
 
         if (closestBxIndices != null && closestByIndices != null && closestBzIndices != null) {
-            //table contains the energy drop due to the local transverse field
+            // table contains the energy drop due to the local transverse field
             // we interpolate according to the 8 nearest pre-calculated values
             ret = trilinearInterpolation(values[2][closestBxIndices[0]], values[2][closestBxIndices[1]], bx, values[1][closestByIndices[0]], values[1][closestByIndices[1]], by, values[0][closestBzIndices[0]], values[0][closestBzIndices[1]], bz,
                     table[closestBzIndices[0]][closestByIndices[0]][closestBxIndices[0]], table[closestBzIndices[0]][closestByIndices[1]][closestBxIndices[0]], table[closestBzIndices[0]][closestByIndices[0]][closestBxIndices[1]], table[closestBzIndices[0]][closestByIndices[1]][closestBxIndices[1]],
                     table[closestBzIndices[1]][closestByIndices[0]][closestBxIndices[0]], table[closestBzIndices[1]][closestByIndices[1]][closestBxIndices[0]], table[closestBzIndices[1]][closestByIndices[0]][closestBxIndices[1]], table[closestBzIndices[1]][closestByIndices[1]][closestBxIndices[1]]);
             if (prevBIndices!=null) {
+                // keep info on correlation
                 prevBIndices[1][0] = Math.abs(closestBzIndices[0] - prevBIndices[0][0]) < dj[0] ? 1 : 0;
                 prevBIndices[1][1] = Math.abs(closestByIndices[0] - prevBIndices[0][1]) < dj[1] ? 1 : 0;
                 prevBIndices[1][2] = Math.abs(closestBxIndices[0] - prevBIndices[0][2]) < dj[2] ? 1 : 0;
-                prevBIndices[0][0]=closestBzIndices[0];
-                prevBIndices[0][1]=closestByIndices[0];
-                prevBIndices[0][2]=closestBxIndices[0];
+                // keep indices of previous fields
+                prevBIndices[0][0] = closestBzIndices[0];
+                prevBIndices[0][1] = closestByIndices[0];
+                prevBIndices[0][2] = closestBxIndices[0];
             }
         } else {
             throw new IndexOutOfBoundsException("values out of bounds of the received table: " + bx + ", " + by + ", " + bz);
@@ -463,7 +494,7 @@ final public class FieldTable {
 
         int[][] closestBIndices = searchForIndices(b[2],b[1],b[0],prevBIndices);
         if (closestBIndices[0] != null && closestBIndices[1] != null && closestBIndices[2] != null) {
-
+            // keeps the axis indices that are constant in this partial differentiation
             int const1, const2;
             if (diff_by == 0) {
                 const1 = 1;
@@ -480,11 +511,13 @@ final public class FieldTable {
                 System.err.println("diff_by only accepts integer between 0 and 2");
                 System.exit(1);
             }
+            // perform bilinear interpolation along the plane perpendicular to the differentiation direction at the 2 closest grid values.
             double triy1 = bilinearInterpolation(values[const2][closestBIndices[const2][0]], values[const2][closestBIndices[const2][1]], b[const2], values[const1][closestBIndices[const1][0]], values[const1][closestBIndices[const1][1]], b[const1],
-                    table[closestBIndices[0][0]][closestBIndices[1][0]][closestBIndices[2][0]],table[closestBIndices[0][booleanToInt(const1==0)]][closestBIndices[1][booleanToInt(const1==1)]][closestBIndices[2][booleanToInt(const1==2)]], table[closestBIndices[0][booleanToInt(const2==0)]][closestBIndices[1][booleanToInt(const2==1)]][closestBIndices[2][booleanToInt(const2==2)]], table[closestBIndices[0][booleanToInt(const1==0 || const2==0)]][closestBIndices[1][booleanToInt(const1==1 || const2==1)]][closestBIndices[2][booleanToInt(const1==2 || const2==2)]]);
+                    table[closestBIndices[0][0]][closestBIndices[1][0]][closestBIndices[2][0]], table[closestBIndices[0][booleanToInt(const1==0)]][closestBIndices[1][booleanToInt(const1==1)]][closestBIndices[2][booleanToInt(const1==2)]], table[closestBIndices[0][booleanToInt(const2==0)]][closestBIndices[1][booleanToInt(const2==1)]][closestBIndices[2][booleanToInt(const2==2)]], table[closestBIndices[0][booleanToInt(const1==0 || const2==0)]][closestBIndices[1][booleanToInt(const1==1 || const2==1)]][closestBIndices[2][booleanToInt(const1==2 || const2==2)]]);
             double triy2 = bilinearInterpolation(values[const2][closestBIndices[const2][0]], values[const2][closestBIndices[const2][1]], b[const2], values[const1][closestBIndices[const1][0]], values[const1][closestBIndices[const1][1]], b[const1],
                     table[closestBIndices[0][booleanToInt(diff_by==0)]][closestBIndices[1][booleanToInt(diff_by==1)]][closestBIndices[2][booleanToInt(diff_by==2)]],table[closestBIndices[0][booleanToInt(const1==0 || diff_by==0)]][closestBIndices[1][booleanToInt(const1==1 || diff_by==1)]][closestBIndices[2][booleanToInt(const1==2 || diff_by==2)]], table[closestBIndices[0][booleanToInt(const2==0 || diff_by==0)]][closestBIndices[1][booleanToInt(const2==1 || diff_by==1)]][closestBIndices[2][booleanToInt(const2==2 || diff_by==2)]], table[closestBIndices[0][1]][closestBIndices[1][1]][closestBIndices[2][1]]);
 
+            // get the linear derivative
             ret = (triy2 - triy1) / (values[diff_by][closestBIndices[diff_by][1]] - values[diff_by][closestBIndices[diff_by][0]]);
         } else {
             throw new IndexOutOfBoundsException("value out of bounds of the received table: " + b_I[2] + ", " + b_I[1] + ", " + b_I[0]  + " . Cannot calculate derivative.");
@@ -527,13 +560,11 @@ final public class FieldTable {
         try{
             ret = findInTable(bx, by, bz, prevBIndices);
         } catch(IndexOutOfBoundsException e){
-            //bx, by or bz are outside the range of the table
+            // bx, by or bz are outside the range of the table
             // so the the value calculated directly
             // this takes a lot of time and is not recommended as a frequent solution
-//            System.out.println("(Bx, By, Bz) = (" + bx + "," + by + "," + bz + ")");
             ret = manualCalcValue(bx, by, bz, this.name.startsWith("magnetic_moment"));
             status=false;
-            //System.err.println("field was not in table. " + name.substring(0, name.length() - 20) + " had to be calculated manually using python. Bx=" + bx + " By=" + by + " Bz=" + bz + "|| the value calculated is: " + ret);
         }
 
         if (transposedRequiresMinus)    ret = Math.signum(s)*ret;
@@ -550,6 +581,17 @@ final public class FieldTable {
     }
 
     /**
+     * get value from this table (by interpolation) for some mix of up and down used
+     * for some of the self-consistent calculation methods.
+     * @param bx Bx field
+     * @param by By field
+     * @param bz Bz field
+     * @param s spin
+     * @param prevBIndices see {@link #findInTable(double, double, double, int[][])}
+     * @param frac at what fraction to mix the current spin state with the opposite spin state
+     * @param smoothHomotopy whether to mix the spin states in a smooth way, such that the
+     *                       magnetic moment of "up" becomes that of "down" with no singularities,
+     *                       or naively as a weighted average
      * @see #getValue(double, double, double, double, boolean, int[][])
      */
     public double getValue(double bx, double by, double bz, double s, int[][] prevBIndices, double frac, boolean smoothHomotopy) {
@@ -564,11 +606,14 @@ final public class FieldTable {
             } else if (frac==1){
                 return getValue(bx, by, bz, -1 * s, false, prevBIndices).getValue();
             } else {
+                // we convolve tanh with the magnetic moment function along Bz, so that "up" becomes "down" without
+                // being ill-defined at any point in the process.
+                // otherwise, when frac=0.5 and the applied field is in the middle of flipping, this function just returns 0
+                // regardless of its input and might lose the solution
                 return (0.5 * (1 + Math.tanh(bz - Bz0))) * getValue(bx, by, bz, s, false, prevBIndices).getValue()
                         + (0.5 * (1 - Math.tanh(bz - Bz0))) * getValue(bx, by, bz, -1 * s, false, prevBIndices).getValue();
             }
         }
-//        return getValue(bx,by,bz,s,false, prevBIndices).getValue();
     }
 
     /**

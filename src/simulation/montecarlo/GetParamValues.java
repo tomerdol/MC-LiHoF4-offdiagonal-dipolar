@@ -8,14 +8,14 @@ import java.util.Properties;
 import java.util.stream.Stream;
 
 /**
- * Get parameters and constants from the parameter file "parameters.properties".
+ * Get parameters and constants from the parameter file "parameters_{system_name}.properties".
  * @see Constants
  */
 public class GetParamValues {
 
 	/**
-	 * Creates a {@link Properties} object that enables reads from the "parameters.properties" file
-	 * @return Properties object to read from the "parameters.properties" file
+	 * Creates a {@link Properties} object that enables reads from the "parameters_{system_name}.properties" file
+	 * @return Properties object to read from the "parameters_{system_name}.properties" file
 	 */
 	public static Properties getParams() {
 
