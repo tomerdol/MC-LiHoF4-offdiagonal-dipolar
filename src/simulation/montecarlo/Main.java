@@ -97,6 +97,7 @@ public class Main {
      * @return array of temperatures to simulate
      */
     public static double[] receiveTemperatureSchedule(String fname){
+        // the temperature schedule file has a single line, which lists all of the temperatures separated with commas
         double[] temperatureSchedule = null;
         try (BufferedReader br = new BufferedReader(new FileReader(fname));){
             String line;
@@ -114,9 +115,13 @@ public class Main {
 
         if (temperatureSchedule!=null) return temperatureSchedule;
         else throw new RuntimeException("could not read temperature schedule");
-
     }
 
+    /**
+     * Makes a new directory if one does not already exist
+     * @param path in which to create the new directory with trailing separator char
+     * @param dirName name of the new directory
+     */
     public static void makeDir(String path, String dirName){
         dirName = path.concat(dirName);
         File directory = new File(dirName);
@@ -125,7 +130,16 @@ public class Main {
         }
     }
 
-
+    /**
+     * Creates a queue that can hold the last x bin averages and standard errors and be used to determine equilibration
+     * ("last 3 bins for all observables agree within error bars")
+     * @param numOfBins number of the last bins to keep in the queue
+     * @param numOfTemperatures number of temperatures to track
+     * @param numOfObservables number of observables to track
+     * @return a queue that can hold the averages and STEs from the last X bins for all temperatures and observables
+     * @deprecated since equilibration is no longer tracker in real time
+     */
+    @Deprecated
     public static ArrayList<ArrayList<CircularFifoQueue<Pair<Double,Double>>>> generateEquilibrationQueues(int numOfBins, int numOfTemperatures, int numOfObservables){
         ArrayList<ArrayList<CircularFifoQueue<Pair<Double,Double>>>> ret = new ArrayList<>(numOfTemperatures);
         for (int temperature=0;temperature<numOfTemperatures;temperature++){
@@ -138,10 +152,10 @@ public class Main {
         return ret;
     }
 
-
-
-
-
+    /**
+     * Runs the Monte Carlo simulation
+     * @param args arguments parsed using {@link ParseCommandLine}
+     */
     public static void main(String[] args){
         final String VERSION = "1.4.0b";
         int Lx=0;	// lattice x-y size
@@ -150,25 +164,26 @@ public class Main {
         double extBy=0;   // external By
         long maxSweeps=0;	// maximum steps for the metropolis algorithm
         int taskID=123;	// sge task ID (used for random number seed)
-        boolean suppressInternalTransFields=false;
-        boolean continueFromSave=false;
-        int maxIter=80;
-        int bufferSize=0;
-        String tempScheduleFileName = "temperature_schedule_t.txt";
-        long seed=0;	// should never happen;
-        boolean parallelTemperingOff = false;;
-        boolean printProgress = false, printOutput=true, saveState;
-        long obsPrintSweepNum=15;
-        String folderName="default";
-        double alpha=1.0;
-        boolean verboseOutput=false;
-        char tempParallelMode='t';
-        double tempJ_ex;
-        double spinSize;
-        double tol;
-        double[] T=null;    // temperature array
-        String interpolationTableFileNameExtension = "";
-        double x=1.0;   // Ho concentration, between 0 and 1
+        boolean suppressInternalTransFields=false; // whether to suppress internal transverse fields (exclude offdiagonal dipolar terms)
+        boolean continueFromSave=false; // whether to continue from a saved state or start a new simulation
+        int maxIter=80; // maximum number of iterations for the iterative solvers of the self-consistent calculation
+        int bufferSize=0;   // size of buffer for the output (results) of the simulation
+        String tempScheduleFileName = "temperature_schedule_t.txt"; // name of the temperature schedule file
+        long seed=0;	// seed for the random number generator, should not stay 0
+        boolean parallelTemperingOff = false;  // turn off parallel tempering
+        boolean printProgress = false, printOutput=true, saveState; // for interactive runs: print the progess, print the output to
+                                                                    // console and periodically save the simulation's state
+        long obsPrintSweepNum=15;   // number of MC sweeps between observables are printed (and the simulation's state saved if so defined)
+        String folderName="default";    // name of the project (the name of both the results directory and the checkpoints directory)
+        double alpha=1.0;               // relaxation parameter for the self-consistent iterative solver
+        boolean verboseOutput=true;    // whether results are printed verbosely or in bins
+        char tempParallelMode='s';      // mode of running multiple temperatures, whether serial or parallel
+        double tempJ_ex;                // value of exchange parameter (if not given, it is read from the parameters' file)
+        double spinSize;                // initial magnetic moment value for all spins
+        double tol;                     // tolerance for convergence of self-consistent calculation
+        double[] T=null;                // temperature array
+        String interpolationTableFileNameExtension = "";    // extension of the file name from which the magnetic moment and energy interpolation tables are read
+        double x=1.0;   // concentration of magnetic ions, between 0 and 1
 
 
         // get Properties object that reads parameters from file
@@ -193,7 +208,6 @@ public class Main {
 
         // then parse the interrogate the commandLine object
         try {
-
             if (commandLine.hasOption("mode")) tempParallelMode = commandLine.getOptionValue("mode").charAt(0);
             Lx = Integer.parseInt(commandLine.getOptionValues("L")[0]);
             Lz = Integer.parseInt(commandLine.getOptionValues("L")[1]);
@@ -218,7 +232,7 @@ public class Main {
             T=receiveTemperatureSchedule(tempScheduleFileName);
             if (tempParallelMode=='s'){
                 // if we are running in serial mode the simulation is slowed down by a factor of the number of temperatures.
-                // thus we print observables T.length times more often.
+                // thus we print observables (T.length) times more often.
                 // notice 'obsPrintSweepNum' given as command line argument overrides this behaviour
                 obsPrintSweepNum = obsPrintSweepNum/T.length;
             }
@@ -274,13 +288,13 @@ public class Main {
             }
         }
 
-        // first try and get spin size (initial guess) from manual calculation that diagonalizes the Ho C-F hamiltonian
+        // first try and get spin size (initial guess) from manual calculation that diagonalizes the crystal-field hamiltonian
         // using the external Bx, By.
         // pass parameters Bx=extBx, By=extBy, Bz=0.05, spin=1, and calc for "up"
         spinSize = CrystalField.getMagneticMoment(extBx, extBy, 0.05);
 
-        final double[][][] intTable = new double[3][N][N]; // create interaction table that holds all the dipolar interactions. will be full even though it's symmetric. 1st array is x,y,z term
-        final double[][] exchangeIntTable = new double[N][N];
+        final double[][][] intTable = new double[3][N][N];      // interaction table that holds all the dipolar interactions. will be full even though it's symmetric. 1st array is x,y,z term
+        final double[][] exchangeIntTable = new double[N][N];   // exchange interactions table (only exists between nearest neighbors)
 
         ReadInteractionsTable interactionsTableReceiver;
         if (System.getProperty("system").equals("LiHoF4")){
@@ -288,7 +302,7 @@ public class Main {
         } else if (System.getProperty("system").equals("Fe8")){
             interactionsTableReceiver = new ReadInteractionsTableFe8();
         } else {
-            throw new RuntimeException("Could not read interactions table. Illegal system name given.");
+            throw new RuntimeException("Could not read interactions table. Illegal system name given: " + System.getProperty("system"));
         }
         ReadInteractionsTable.receiveIntTable(intTable, Lx, Lz, dilution);	// get interaction table from file
 
@@ -305,18 +319,18 @@ public class Main {
         }
         int[][] nnArray = interactionsTableReceiver.exchangeInt(exchangeIntTable, Lx, Lx, Lz, J_ex);	// receive the nearest neighbor array and fill exchangeIntTable with the exchange interaction values
 
-        // add exchange to intTable
+        // add the exchange interaction to intTable which now holds both dipolar and exchange interactions
         for (int i=0;i<N;i++){
             for (int j=0;j<N;j++){
                 intTable[2][i][j] += -0.5*exchangeIntTable[i][j]*Constants.k_B/(Constants.mu_B*Constants.g_L);
             }
         }
 
-
+        // fill cos and sin tables for faster calculation of the k-space magnetization
         final double[][] k_cos_table, k_sin_table;
         {   // code block: tempLattice is discarded at the end
 
-            // temporary lattice objecct used to create k_tables
+            // temporary lattice object used to create k_tables
             Lattice tempLattice = new Lattice(Lx, Lz, x, extBx, extBy, suppressInternalTransFields, spinSize, dilution, null, null, null, null, null, null);
 
             // initialize sin, cos tables for mk^2 calculation (correlation length)
@@ -325,11 +339,16 @@ public class Main {
             create_cos_sin_tables(tempLattice.getArray(), Lz, Lx, k_cos_table, k_sin_table);
         }
 
+        // read the energy and magnetic moment tables from the respective files.
+        // the naming convention is that they include the extrnal Bx, around which the
+        // values in the tables are centered
         FieldTable energyTable = FieldTable.of(String.format("energy_up_arr_%1.2f"+interpolationTableFileNameExtension,extBx), false);
         FieldTable momentTable = FieldTable.of(String.format("magnetic_moment_up_arr_%1.2f"+interpolationTableFileNameExtension,extBx), true);
 
+        // initialize the measurement object that will be given to the Lattice object
         ObservableExtractor measure = new ObservableExtractor(k_cos_table, k_sin_table);
 
+        // initialize the checkpointer in charge of saving the simulation state periodically and reading the saved state
         SimulationCheckpointer checkpointer = new SimulationCheckpointer(folderName, Lx, Lz, extBx, suppressInternalTransFields, seed);
         boolean successReadFromFile = false;
         MonteCarloSimulation simulation = null;
@@ -338,24 +357,24 @@ public class Main {
             simulation = checkpointer.readCheckpoint();
             if (simulation!=null) {
                 successReadFromFile=true;
+                // verify that the read state agrees with the important given parameters
                 String inconsistencies = SimulationCheckpointer.verifyCheckpointCompatibility(T, parallelTemperingOff, parallelMode, spinSize, tol, J_ex, seed, dilution, simulation);
 
                 if (!inconsistencies.isEmpty()) {
                     System.err.println("There were some inconsistencies between the checkpoint parameters and the current parameters: " + inconsistencies);
                     System.err.println("Exiting.");
                     System.exit(1);
-
-                    successReadFromFile = false;  // maybe later the simulation can be run with the new parameters.
                 }
             }
-
         }
 
+        // create the results directory
         makeDir(System.getProperty("system") + File.separator + "data" + File.separator + "results" + File.separator, folderName);
-
+        // create the directory that will hold the configuration at the end of the simulation
         makeDir(System.getProperty("system") + File.separator + "data" + File.separator + "lattice_output" + File.separator, folderName);
 
         SingleTMonteCarloSimulation[] subSimulations = new SingleTMonteCarloSimulation[T.length];
+        // output stream that prints the configurations for which no self-consistent solution was found for later analysis
         BufferedWriter outProblematicConfigs=null;
         try {
             makeDir(System.getProperty("system") + File.separator + "data" + File.separator,"p_configs");
@@ -397,7 +416,7 @@ public class Main {
                     // print parameters and table headers (with preceding '#') to results output file
                     ((MultipleTMonteCarloSimulation)simulation).getIthSubSimulation(i).printRunParameters(VERSION, T, "# successfully read saved state"+System.lineSeparator()+'#'+outputWriter.makeTableHeader().substring(1), simulation.getSeed(), tempScheduleFileName, parallelTemperingOff);
                 }else{
-                    // initialize new simulation
+                    // initialize a new simulation
                     Lattice lattice = new Lattice(Lx, Lz, x, extBx, extBy, suppressInternalTransFields, spinSize, dilution, intTable, exchangeIntTable, nnArray, energyTable, momentTable, measure);
                     rnd[i] = new MersenneTwister(seeds[i]);
                     subSimulations[i] = new SingleTMonteCarloSimulation(T[i], i, T.length, lattice, 35, maxSweeps, seeds[i], rnd[i], continueFromSave,
@@ -405,10 +424,6 @@ public class Main {
                     // print parameters and table headers
                     subSimulations[i].printRunParameters(VERSION, T, "# unsuccessful reading checkpoint... Starting new state."+System.lineSeparator()+outputWriter.makeTableHeader(), seed, tempScheduleFileName, parallelTemperingOff);
                 }
-
-                //outputWriter.print(outputWriter.makeTableHeader(), true);
-
-
             }
 
             // initialization of the fields of MultipleTMonteCarloSimulation
@@ -425,7 +440,7 @@ public class Main {
             // Run simulation
             ((MultipleTMonteCarloSimulation) simulation).run(parallelMode);
 
-            // Write lattice states
+            // Write final lattice states
             if (suppressInternalTransFields) ReadInteractionsTable.receiveIntTable(intTable, Lx, Lz);	// get interaction table from file AGAIN, for off-diagonal interactions that where previously set to zero
             for (int i=0;i<T.length;i++){
                 // Create file to write full lattice configurations into
