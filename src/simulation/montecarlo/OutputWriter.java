@@ -83,11 +83,11 @@ public class OutputWriter implements Closeable {
     }
 
     public void writeObservablesVerbose(final long sweeps, final double m, final double currentEnergy, final double magField0, final double magField1, final double magField2,
-                                 final double magField3, final double magField4, final double magField5, final double magField6, final double magField7, final double magField8,
+                                 final double magField3, final double magField4, final double magField5, final double magField6, final double magField7,
                                  final double spinSizes0, final double spinSizes1, final double mk2x, final double mk2y, final double mk2z, final boolean lastSwapAccepted){
         if (outType == OutputType.VERBOSE) {
             Formatter formatter = new Formatter(outputBuffer);
-            formatter.format(makeTableRowFormat(new char[]{'d', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'c'}), sweeps, m, currentEnergy, magField0, magField1, magField2, magField3, magField4, magField5, magField6, magField7, magField8, spinSizes0, spinSizes1, mk2x, mk2y, mk2z, (lastSwapAccepted ? '1' : '0'));
+            formatter.format(makeTableRowFormat(new char[]{'d', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'g', 'c'}), sweeps, m, currentEnergy, magField0, magField1, magField2, magField3, magField4, magField5, magField6, magField7, spinSizes0, spinSizes1, mk2x, mk2y, mk2z, (lastSwapAccepted ? '1' : '0'));
             outputBuffer.append(System.lineSeparator());
         }
     }
@@ -228,12 +228,12 @@ public class OutputWriter implements Closeable {
             String[] colNames;
             switch (outType){
                 case VERBOSE:
-                    colNames = new String[]{"index", "Magnetization", "Energy", "meanBx", "stdBx", "meanBy", "stdBy", "meanBz", "stdBz", "maxBtrans", "maxBlong", "percBz", "meanSpinSize", "stdSpinSize", "mk2x", "mk2y", "mk2z", "swap"};
+                    colNames = new String[]{"index", "Magnetization", "Energy", "meanBx", "stdBx", "meanBy", "stdBy", "meanBz", "stdBz", "maxBtrans", "maxBlong", "meanSpinSize", "stdSpinSize", "mk2x", "mk2y", "mk2z", "swap"};
                     break;
                 case BIN:
                     colNames = new String[]{"binN", "<|M|>", "<|M|2>", "<M>", "<M2>", "<M2>", "<M22>", "<E>", "<E2>", "<meanBx>", "<meanBx2>",
                                             "<stdBx>", "<stdBx2>", "<meanBy>", "<meanBy2>","<stdBy>", "<stdBy2>", "<meanBz>", "<meanBz2>", "<stdBz>", "<stdBz2>", "<maxBtrans>",
-                                            "<maxBtrans2>", "<maxBlong>", "<maxBlong2>", "<percBz>", "<percBz2>", "<meanSpinSize>",  "<meanSpinSize2>", "<stdSpinSize>", "<stdSpinSize2>", "<mk2x>", "<mk2x2>", "<mk2y>", "<mk2y2>","<mk2z>", "<mk2z2>", "swap"};
+                                            "<maxBtrans2>", "<maxBlong>", "<maxBlong2>", "<meanSpinSize>",  "<meanSpinSize2>", "<stdSpinSize>", "<stdSpinSize2>", "<mk2x>", "<mk2x2>", "<mk2y>", "<mk2y2>","<mk2z>", "<mk2z2>", "swap"};
                     break;
                 case SPIN:
                     colNames = new String[]{"n", "spin", "spinSize", "localBx", "localBy", "localBz"};
@@ -249,10 +249,10 @@ public class OutputWriter implements Closeable {
             int[] colWidths;
             switch (outType){
                 case VERBOSE:
-                    colWidths = new int[]{10, 17, 19, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 5};
+                    colWidths = new int[]{10, 17, 19, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 5};
                     break;
                 case BIN:
-                    colWidths = new int[]{10, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 10};
+                    colWidths = new int[]{10, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 10};
                     break;
                 case SPIN:
                     colWidths = new int[]{6, 5, 17, 17, 17, 17};

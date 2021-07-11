@@ -297,7 +297,7 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
         double[] tempSpinSizes = lattice.getSpinSizes();
         double[] mk2 = lattice.getMK2();    // m(k)^2, used later for correlation length calculation
 
-        outWriter.writeObservablesVerbose(sweeps, m ,currentEnergy ,temp[0] ,temp[1] ,temp[2] ,temp[3] ,temp[4] ,temp[5] ,temp[6] ,temp[7] ,temp[8], tempSpinSizes[0] ,tempSpinSizes[1] ,mk2[0], mk2[1], mk2[2], lastSwapAccepted);
+        outWriter.writeObservablesVerbose(sweeps, m ,currentEnergy ,temp[0] ,temp[1] ,temp[2] ,temp[3] ,temp[4] ,temp[5] ,temp[6] ,temp[7] , tempSpinSizes[0] ,tempSpinSizes[1] ,mk2[0], mk2[1], mk2[2], lastSwapAccepted);
 
         if (sweeps>0) currentBinCount++;
         //System.out.println(sweeps+ " , " + sweeps/2 + " , " + currentBinCount + " , " + (sweeps&1));

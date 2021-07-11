@@ -419,7 +419,7 @@ public class Main {
                     // initialize a new simulation
                     Lattice lattice = new Lattice(Lx, Lz, x, extBx, extBy, suppressInternalTransFields, spinSize, dilution, intTable, exchangeIntTable, nnArray, energyTable, momentTable, measure);
                     rnd[i] = new MersenneTwister(seeds[i]);
-                    subSimulations[i] = new SingleTMonteCarloSimulation(T[i], i, T.length, lattice, 35, maxSweeps, seeds[i], rnd[i], continueFromSave,
+                    subSimulations[i] = new SingleTMonteCarloSimulation(T[i], i, T.length, lattice, 33, maxSweeps, seeds[i], rnd[i], continueFromSave,
                             outputWriter, saveState, maxIter, alpha, outProblematicConfigs, spinSize, tol, J_ex);
                     // print parameters and table headers
                     subSimulations[i].printRunParameters(VERSION, T, "# unsuccessful reading checkpoint... Starting new state."+System.lineSeparator()+outputWriter.makeTableHeader(), seed, tempScheduleFileName, parallelTemperingOff);
