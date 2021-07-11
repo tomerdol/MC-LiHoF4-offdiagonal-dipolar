@@ -10,25 +10,59 @@ import java.util.Arrays;
 import java.util.Properties;
 
 public class Lattice implements Serializable {
+    // for serialization. should not be changed
     private static final long serialVersionUID = -9119463380760410942L;
-    private final int N, Lx, Lz;
-    private final double extBx, extBy, x;
+    /** number of spins in the lattice */
+    private final int N;
+    /** linear system size in the x and z directions */
+    private final int Lx, Lz;
+    /** external field in the transverse (x and y) directions  */
+    private final double extBx, extBy;
+    /** concentration of Ho ions */
+    private final double x;
+    /** whether internal transverse fields are suppressed (offdiagonal dipolar terms excluded) */
     private final boolean suppressInternalTransFields;
+    /** the typical magnetic moment of the spins */
     private final double spinSize;
+
     // after deserialization these must be set:
+    /** table of pairwise interactions (dipolar and exchange) between spins */
     transient double[][][] intTable=null;
+    /** table of pairwise interactions (only exchange) between spins. not in use */
     transient double[][] exchangeIntTable=null;
+    /** Object used to obtain the magnetic moment of a single spin under a given applied magnetic field */
     transient FieldTable momentTable=null;
+    /** Object used to obtain the energy of a single spin under a given applied magnetic field */
     transient FieldTable energyTable=null;
+    /** table of the nearest neighbors of each spin */
     transient int[][] nnArray=null;
+    /** Object that performs measurements on the lattice */
     private transient ObservableExtractor measure;
+    /** Object that is used to solve the self-consistent calculation */
     private transient MagneticMomentsSolveIter iterativeSolver;
 
+    /** The array of {@link singleSpin} */
     private singleSpin[] lattice;
 
+    /**
+     * Constructs a new Lattice object
+     * @param Lx linear system size along the x direction
+     * @param Lz linear system size along the z direction
+     * @param x concentration of magnetic ions (x=1 means no dilution)
+     * @param extBx,extBy external transverse field (x and y directions)
+     * @param suppressInternalTransFields whether to suppress internal transverse fields (exclude offdiagonal dipolar terms)
+     * @param spinSize the typical magnetic moment of the spins
+     * @param dilution boolean array that indicates which spins exist (true) and which are diluted (false)
+     * @param intTable table of pairwise interactions (dipolar and exchange) between spins
+     * @param exchangeIntTable Object used to obtain the energy of a single spin under a given applied magnetic field
+     * @param nnArray table of the nearest neighbors of each spin
+     * @param energyTable Object used to obtain the energy of a single spin under a given applied magnetic field
+     * @param momentTable Object used to obtain the magnetic moment of a single spin under a given applied magnetic field
+     * @param measure Object that performs measurements on the lattice
+     */
     @CreatesInconsistency("If intTable, exchangeIntTable, energyTable, momentTable or measure are null")
     public Lattice(int Lx, int Lz, double x, double extBx, double extBy, boolean suppressInternalTransFields, double spinSize, boolean[] dilution, double[][][] intTable, double[][] exchangeIntTable, int[][] nnArray, FieldTable energyTable, FieldTable momentTable, final ObservableExtractor measure){
-        int numOfSpins=0;    // total number of spins in the (diluted) system
+        int numOfSpins=0;    // total number of spins in the (possibly diluted) system
         for (int i=0;i<dilution.length;i++){
                 if (dilution[i]) numOfSpins++;
         }
@@ -47,17 +81,26 @@ public class Lattice implements Serializable {
         this.nnArray=nnArray;
         this.measure=measure;
         this.iterativeSolver = new MagneticMomentsSolveIter();
+        // generate a new array of singleSpins, initially with all magnetic moments set to spinSize
         this.lattice=generateIsingLattice(Lx,Lz,spinSize, dilution);
         if (intTable!=null && exchangeIntTable!=null && energyTable!=null && momentTable!=null && measure!=null)
             this.updateAllLocalFields();
     }
 
+    /**
+     * Constructs a new {@code Lattice} object with no dilution (x=1)
+     * @see Lattice#Lattice(int, int, double, double, boolean, double, double[][][], double[][], int[][], FieldTable, FieldTable, ObservableExtractor)
+     */
     @CreatesInconsistency("If intTable, exchangeIntTable, energyTable, momentTable or measure are null")
     public Lattice(int Lx, int Lz, double extBx, double extBy, boolean suppressInternalTransFields, double spinSize, double[][][] intTable, double[][] exchangeIntTable, int[][] nnArray, FieldTable energyTable, FieldTable momentTable, final ObservableExtractor measure){
         // if no dilution array is given, create full lattice
         this(Lx, Lz, 1.0, extBx, extBy, suppressInternalTransFields, spinSize, trueArray(Lx*Lx*Lz*Constants.num_in_cell), intTable, exchangeIntTable, nnArray, energyTable, momentTable, measure);
     }
 
+    /**
+     * Deep copy {@code Lattice} object
+     * @param other lattice object to copy
+     */
     public Lattice(Lattice other){
         this.N=other.N;
         this.Lx=other.Lx;
@@ -112,6 +155,11 @@ public class Lattice implements Serializable {
         }
     }
 
+    /**
+     * Creates a {@code boolean} array of size N filled with {@code true}
+     * @param N size of array to create
+     * @return an array filled with {@code true}
+     */
     public static boolean[] trueArray(int N){
         boolean[] arr = new boolean[N];
         for (int i=0; i<arr.length; i++) arr[i]=true;
@@ -182,10 +230,19 @@ public class Lattice implements Serializable {
         return suppressInternalTransFields;
     }
 
+    /**
+     * Get a deep copy of the spin array
+     * @return a new {@code singleSpin} array
+     */
     public singleSpin[] getArray() {
         return copyLattice(this.lattice);
     }
 
+    /**
+     * Checks whether a given spin exists (or is diluted)
+     * @param n spin ordinal number to check
+     * @return whether the given spin exists in the lattice
+     */
     public boolean spinExists(int n){
         // not very efficient, so should be used only for compatibility validation
         boolean found=false;
@@ -195,7 +252,10 @@ public class Lattice implements Serializable {
         return found;
     }
 
-    // randomize the spin configurations
+    /**
+     * Randomize the spin configuration
+     * @param rnd a random number generator
+     */
     @CreatesInconsistency
     public void randomizeConfig(MersenneTwister rnd){
         for (int i=0; i<lattice.length;i++){
@@ -207,6 +267,9 @@ public class Lattice implements Serializable {
         }
     }
 
+    /**
+     * Creates "checker board" configuration, i.e. spins are set "up" and "down" alternately
+     */
     @CreatesInconsistency
     public void checkerBoard(){
         for (int i=0; i<lattice.length;i++){
@@ -229,12 +292,15 @@ public class Lattice implements Serializable {
         singleSpin[] tempLattice = Lattice.copyLattice(lattice);    // save original lattice. This is before the spin is actually flipped.
 
         boolean success=false;
+        // order of methods for self-consistent calculation to try
         int[] methodsToTry = new int[]{1, 8, 2, 18, 3, 5, 15, 4, 13, 7, 16, 17, 10, 14, 6, 11, 12, 9, 19};
 
+        // build error message to which we will append the errors as the accumulate
         String errorMessage="There was an error flipping spin " + flipSpin + ". The methods tried and the resulting errors are as follows:\n" +
                 Arrays.toString(methodsToTry) + "\n";
 
         int methodIndex;
+        // go over the list of methods and try them one by one in the given order
         for (methodIndex=0;!success && methodIndex<methodsToTry.length;methodIndex++){
             try {
                 lattice = solveSelfConsistentCalc(maxIter, tol, flipSpin, methodsToTry[methodIndex], nnArray, alpha, rnd);
@@ -246,17 +312,52 @@ public class Lattice implements Serializable {
         }
 
         // possible success
-
         if (!success) {
             throw new ConvergenceException(errorMessage, flipSpin);
         }
+        // return the last method, which is the one that succeeded
         return methodsToTry[methodIndex-1];
     }
 
+    /**
+     * Calls the simple iterative solver
+     * @param maxIter maximum number of iterations allowed
+     * @param tol tolerance for convergence
+     * @param alpha relaxation parameter of the update step
+     * @see MagneticMomentsSolveIter#updateAllMagneticMoments(int[], int, double, double, int, boolean, double, boolean, boolean)
+     */
     public void updateAllMagneticMoments(int maxIter, double tol, double alpha){
         iterativeSolver.updateAllMagneticMoments(maxIter, tol, alpha, true);
     }
+
+    /**
+     * Wrapper method that solves the self-consistent calculation following a spin-flip
+     * @param maxIter maximum number of iterations allowed
+     * @param tol tolerance for convergence testing
+     * @param flipSpin the flipped spin
+     * @param method method number to use
+     * @param nnArray array of nearest neighbors (used for determining the update order)
+     * @param alpha relaxation parameter of the update step
+     * @param rnd random number generator to create random initial guesses
+     * @return the lattice object with the solved self-consistent calculation
+     * @throws ConvergenceException if the given method failed to converge to a solution within the given tolerance
+     */
     private singleSpin[] solveSelfConsistentCalc(int maxIter, double tol, int flipSpin, int method, int[][] nnArray, double alpha, MersenneTwister rnd) throws ConvergenceException {
+        // method descriptions:
+        // 1 - regular iterative solver
+        // 2 - iterative solver with gradual flipping of the spin
+        // 3 - iterative solver with gradual flipping of the spin that decouples the spin from the environment
+        // for 4-8 we use the previous configuration as an initial guess
+        // 4 - Newton's method
+        // 5 - Broyden's method, Jacobian is identity and not changing
+        // 6 - Broyden's method, Jacobian is initialized and not changing
+        // 7 - Broyden's method, Jacobian is initialized and changed to identity upon failure
+        // 8 - Broyden's method, Jacobian is identity and initialized upon failure
+        // 9-13: same as 4-8 but with a random initial guess
+        // 14-18: same as 4-8 but with an initial guess that is the typical spinSize with the sign based on the spin orientation
+        // 19 - iterative solver with gradual flipping of the spin that makes sure the magnetic moment is always
+        // well-defined as a function of the applied field
+
         if ((method>=1 && method<=3) || method==19){
             int[] bfsOrder=null;
             if (nnArray!=null) {
@@ -298,14 +399,14 @@ public class Lattice implements Serializable {
 
             // initialize x:
             if (method <= 8) {
-                // method numbers in the range 3<=method<=7 use the given initial guess
+                // method numbers in the range 4<=method<=8 use the given initial guess
                 for (int j = 0; j < lattice.length; j++) x[j] = lattice[j].getSpinSize();
             } else if (method >= 9 && method <= 13) {
-                // method numbers in the range 8<=method<=12 use a random initial guess
+                // method numbers in the range 9<=method<=13 use a random initial guess
                 for (int j = 0; j < x.length; j++) x[j] = spinSize * rnd.nextDouble() * (rnd.nextBoolean() ? 1 : -1);
                 method -= 5;
             } else if (method >= 14 && method <= 18) {
-                // method numbers in the range 13<=method<=17 use a "good" initial guess
+                // method numbers in the range 14<=method<=18 use a "good" initial guess
                 for (int j = 0; j < x.length; j++) x[j] = spinSize * lattice[j].getSpin();
                 method -= 10;
             }
@@ -357,14 +458,17 @@ public class Lattice implements Serializable {
         return lattice;
     }
 
-
-
-    // returns new int array which has the BFS order with respect to the given spin index
-    // n is the maximum (arr.length)
+    /**
+     * Returns new int array which has the breadth-first order with respect to the given spin index
+     * @param n is the maximum (arr.length)
+     * @param root root of the tree, i.e. the flipped spin from which we start the breadth-first search
+     * @return array that contains the spin numbers in the BFS order
+     */
     protected int[] orderBFS(int n, int root) {
         int[] bfs = new int[n];
-        int head = 0, tail = 0; // head and tail of the queue
-        boolean[] visited = new boolean[n];
+        int head = 0, tail = 0;             // head and tail of the queue
+                                            // everything before head is already ordered
+        boolean[] visited = new boolean[n]; // holds which nodes were visited and queued
 
         // queue the root
         bfs[tail++] = root;
@@ -376,6 +480,7 @@ public class Lattice implements Serializable {
 
             //get v's neighbors
             for (int neighbor = 0; neighbor < nnArray[v].length; neighbor++) {
+                // if neighbor exists and was not already visited and not all spins were added
                 if (nnArray[v][neighbor] >= 0 && !visited[nnArray[v][neighbor]] && tail < n) {
                     bfs[tail++] = nnArray[v][neighbor];
                     visited[nnArray[v][neighbor]] = true;
@@ -383,7 +488,8 @@ public class Lattice implements Serializable {
             }
         }
 
-        if (head < n){ // not all spins were added to the queue
+        if (head < n){  // not all spins were added to the queue, which could happen if, due to dilution,
+                        // the graph is not fully connected. then we just add them at the end.
             for (int i=0; i<n; i++){
                 if (!visited[i]){
                     bfs[head++] = i;
@@ -407,8 +513,11 @@ public class Lattice implements Serializable {
         return bfs;
     }
 
-    // copies the contents of the given iterator to an array of size N
-    // used for saving a configuration
+    /**
+     * Deep copies the given {@code singleSpin} array
+     * @param arr array to deep copy
+     * @return copy of the given array
+     */
     private static singleSpin[] copyLattice(singleSpin[] arr){
         singleSpin[] newLatticeArr = new singleSpin[arr.length];
         for (int i=0;i<arr.length;i++){
@@ -417,17 +526,23 @@ public class Lattice implements Serializable {
         return newLatticeArr;
     }
 
+    /**
+     * Deep copies of this {@code Lattice} object
+     * @return a deep copy of this {@code Lattice} object
+     */
     public Lattice getCopy(){
         return new Lattice(this);
     }
 
-
+    /**
+     * Updates all of the local fields according to the current magnetic moments
+     */
     public void updateAllLocalFields(){
         int i;
 
         for (i=0;i<lattice.length;i++) {
             int j;
-            if (lattice[i].getSpin()!=0){
+            if (lattice[i].getSpin()!=0) {
                 double Bz=0, Bx = extBx, By = extBy;
                 for(j=0;j<lattice.length;j++){
                     if (lattice[j].getSpin()!=0){
@@ -443,12 +558,19 @@ public class Lattice implements Serializable {
                 lattice[i].setLocalBx(Bx);
                 lattice[i].setLocalBy(By);
             }
-
         }
-
-
     }
 
+    /**
+     * Calculates the distance from convergence. Parameters are used when using a method which mixes
+     * the flipped spin and therefore has a different target magnetic moment for that spin.
+     * @param flipSpin the spin that is being flipped
+     * @param frac at what fraction to mix the current spin state with the opposite spin state
+     * @param smoothHomotopy whether to mix the spin states in a smooth way, such that the
+     *                       magnetic moment of "up" becomes that of "down" with no singularities,
+     *                       or naively as a weighted average
+     * @return distance from convergence
+     */
     private double magneticMomentConvergence(int flipSpin, double frac, boolean smoothHomotopy){
         double converged = 0;
         double max = 0;
@@ -459,14 +581,11 @@ public class Lattice implements Serializable {
                 double is = lattice[i].getSpinSize();
 
                 converged += Math.abs(is - shouldBe);
-//                if (Math.abs(is - shouldBe)>max) max=Math.abs(is - shouldBe);
             }else{
-//                double shouldBe = (1-frac)*momentTable.getValue(lattice[i].getLocalBx(), lattice[i].getLocalBy(), lattice[i].getLocalBz(), lattice[i].getSpin(), lattice[i].getPrevBIndices())+frac*momentTable.getValue(lattice[i].getLocalBx(), lattice[i].getLocalBy(), lattice[i].getLocalBz(), -1*lattice[i].getSpin(), lattice[i].getPrevBIndices());
                 double shouldBe = momentTable.getValue(lattice[i].getLocalBx(), lattice[i].getLocalBy(), lattice[i].getLocalBz(), lattice[i].getSpin(), lattice[i].getPrevBIndices(), frac, smoothHomotopy);
                 double is = lattice[i].getSpinSize();
 
                 converged += Math.abs(is - shouldBe);
-//                if (Math.abs(is - shouldBe)>max) max=Math.abs(is - shouldBe);
             }
 
         }
@@ -474,21 +593,34 @@ public class Lattice implements Serializable {
         return Math.abs(converged/lattice.length);
     }
 
-    // standard call
+    /**
+     * Calculates the distance from convergence, with smoothHomotopy=false.
+     * @see #magneticMomentConvergence(int, double, boolean)
+     */
     private double magneticMomentConvergence(int flipSpin, double frac){ return magneticMomentConvergence(flipSpin, frac, false); }
 
-    // calculate the magnetic moment convergence without any frac spins.
-    // received array should have all spins in the correct state (flipSpin should have already been flipped)
+    /**
+     * Calculate the magnetic moment convergence without any fractional (mixed) spins.
+     * @see #magneticMomentConvergence(int, double, boolean)
+     */
     public double magneticMomentConvergence(){
         return magneticMomentConvergence(-1, 0);
     }
 
-    // calculate the magnetic moment convergence without any frac spins.
-    // flipSpin is ignored (required for homotopicSolve2)
+    /**
+     * Calculate the magnetic moment convergence without any fractional (mixed) spins.
+     * flipSpin is ignored (which is required for homotopicSolve2), i.e. stays in the starting orientation
+     * @see #magneticMomentConvergence(int, double, boolean)
+     */
     private double magneticMomentConvergence(int flipSpin){
         return magneticMomentConvergence(flipSpin, 0);
     }
 
+    /**
+     * Update all magnetic fields after a specific change of one magnetic moment
+     * @param i the index of the spin whose magnetic moment was just changed
+     * @param prevSpinSize the previous magnetic moment (before the change)
+     */
     private void updateFieldsAfterSpinSizeChange(int i, double prevSpinSize){
         int j;
         double deltaSpinSize = lattice[i].getSpinSize()-prevSpinSize;
@@ -510,12 +642,14 @@ public class Lattice implements Serializable {
         }
     }
 
+    /**
+     * Verifies that all local fields are in agreement with the current mgnetic moments (within 1.0e-10)
+     * @return whether or not the current local fields are consistent w/ the current magnetic moments
+     */
     public boolean verifyAllLocalFields(){
         boolean ret=true;
         double tol = 1.0e-10;
         int i;
-        //double max = 0;
-        //int maxIndex=0;
         for (i=0;i<lattice.length && ret;i++) {
             int j;
 
@@ -546,10 +680,8 @@ public class Lattice implements Serializable {
             //System.out.println("current Bz: " + arr[i].getLocalBz());
             //System.out.println("calc'd Bz: " + Bz);
             */
-            // check is Bx,By or Bz are not equal to the values stored in the i-th site up to a tolerance constant
+            // check if Bx,By or Bz are not equal to the values stored in the i-th site up to a tolerance constant
             ret &= (Math.abs(lattice[i].getLocalBx()-Bx)<tol) && (Math.abs(lattice[i].getLocalBy()-By)<tol) && (Math.abs(lattice[i].getLocalBz()-Bz)<tol);
-
-
         }
 
         if (!ret){
@@ -561,7 +693,7 @@ public class Lattice implements Serializable {
     }
 
     /**
-     * Reads an Ising lattice from file and creates initial random configuration
+     * Reads a lattice from file and creates initial random configuration
      * Only required when there is disorder, i.e. dilution<1.0.
      * @param fileNumber - as in "config_%Lx%_%Lz%_%x%_%h%_%fileNumber%.txt
      * @param dilution - dilution of Ising lattice
@@ -571,7 +703,10 @@ public class Lattice implements Serializable {
      * @param rnd - MersenneTwister PRNG. Used to make the random starting configuration
      * @return Received Ising lattice
      * @throws IOException
+     * @deprecated since the dilution profile is created at the beginning of the simulation and is received instead of created here.
+     *              Use {@link #generateIsingLattice(int, int, double, boolean[])} instead.
      */
+    @Deprecated
     static singleSpin[] receiveIsingLattice(int fileNumber, double dilution, int Lx, int Lz, double h, MersenneTwister rnd) throws IOException {
         final double spinSize = CrystalField.getMagneticMoment(0.0, 0.0, 0.05);
 
@@ -618,11 +753,13 @@ public class Lattice implements Serializable {
     }
 
     /**
-     * Generates a singleSpin array of LiHo_{x}F_4
-     * @param Lx - Number of unit cells in x and in y directions
-     * @param Lz - Number of unit cells in z direction
-     * @return An array of spins that represent a Lx*Lx*Lz lattice of LiHo_{x}F_4
-     * with all local fields set to zero and all spin sizes set to the (positive) default spin size (from parameter file).
+     * Generates a singleSpin array of the system
+     * @param Lx Number of unit cells in x and in y directions
+     * @param Lz Number of unit cells in z direction
+     * @param spinSize the typical magnetic moment to assign to each spin in the returned array
+     * @param dilution a {@code boolean} array that represents the dilution profile, i.e. which spins exist and which do not
+     * @return An array of spins that represent a Lx*Lx*Lz crystal
+     *          with all local fields set to zero and all spin sizes set to the given value.
      */
     public static singleSpin[] generateIsingLattice(int Lx, int Lz, final double spinSize, boolean[] dilution) {
         int i, j, k, l;
@@ -633,12 +770,10 @@ public class Lattice implements Serializable {
             if (dilution[s]) N++;
         }
 
-        // create the array that will hold the lattice. the array's cells correspond
-        // to the unit cells of the LiHo{x}Y{x-1}F4.
+        // create the array that will hold the lattice
         singleSpin[] arr = new singleSpin[N];
 
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        // get location matrix (3D coordinates for each of the 4 atoms)
         Properties params = GetParamValues.getParams();
         double[][] location = new double[Constants.num_in_cell][3];	// 3D coordinate location for each of the atoms in the basis
 
@@ -715,36 +850,82 @@ public class Lattice implements Serializable {
 
     // *****************************************************************************************************************
 
-    /*
-    All methods here should be considered as ruining the singleSpin[] lattice in case an exception is thrown,
-    hence a copy should be made before calling them.
+    /**
+     * Class of methods used to find a self-consistent solution for the magnetic moments
+     * All methods here should be considered as ruining the singleSpin[] lattice in case an exception is thrown,
+     * hence a copy should be made before calling them.
      */
     private class MagneticMomentsSolveIter {
-
+        /**
+         * Basic iterative solver, w/o homotopy features
+         * @see #updateAllMagneticMoments(int[], int, double, double, int, boolean, double, boolean, boolean)
+         */
         public void updateAllMagneticMoments(int[] sweepOrder, int maxIter, double tol, double alpha, boolean retryWithLowerAlpha) {
             updateAllMagneticMoments(sweepOrder, maxIter, tol, alpha, -1, false, 0, retryWithLowerAlpha, false);
         }
 
+        /**
+         * Basic iterative solver, w/o recursive call and w/ the flipped spin decoupled from the environment (stays at its initial state regardless of the field)
+         * @see #updateAllMagneticMoments(int[], int, double, double, int, boolean, double, boolean, boolean)
+         */
         public void updateAllMagneticMoments(int[] sweepOrder, int maxIter, double tol, double alpha, int flipSpin) {
             updateAllMagneticMoments(sweepOrder, maxIter, tol, alpha, flipSpin, false, 0, false, false);
         }
 
+        /**
+         * Basic iterative solver, w/o special ordering, w/o homotopy and w/o recursive call
+         * @see #updateAllMagneticMoments(int[], int, double, double, int, boolean, double, boolean, boolean)
+         */
         public void updateAllMagneticMoments(int maxIter, double tol, double alpha) {
             updateAllMagneticMoments(null, maxIter, tol, alpha, -1, false, 0, false, false);
         }
 
+        /**
+         * Basic iterative solver, w/o special ordering
+         * @see #updateAllMagneticMoments(int[], int, double, double, int, boolean, double, boolean, boolean)
+         */
         public void updateAllMagneticMoments(int maxIter, double tol, double alpha, int flipSpin, double frac) {
             updateAllMagneticMoments(null, maxIter, tol, alpha, flipSpin, false, frac, false, false);
         }
 
+        /**
+         * Basic iterative solver, w/o special ordering and w/o homotopy features
+         * @see #updateAllMagneticMoments(int[], int, double, double, int, boolean, double, boolean, boolean)
+         */
         public void updateAllMagneticMoments(int maxIter, double tol, double alpha, boolean retryWithLowerAlpha) {
             updateAllMagneticMoments(null, maxIter, tol, alpha, -1, false, 0, retryWithLowerAlpha, false);
         }
 
+        /**
+         * Basic iterative solver, w/o smooth homotopy
+         * @see #updateAllMagneticMoments(int[], int, double, double, int, boolean, double, boolean, boolean)
+         */
         public void updateAllMagneticMoments(int[] sweepOrder, int maxIter, double tol, double alpha, int flipSpin, boolean print, double frac) {
             updateAllMagneticMoments(sweepOrder, maxIter, tol, alpha, flipSpin, print, frac, false, false);
         }
 
+        /**
+         * Basic iterative solver, performs a (nonlinear) Gauss-Seidel scheme, i.e.,
+         * 1. update a spin's magnetic moment based on the applied local field
+         * 2. update the fields at all other sites based on the previous change
+         * 3. go to the next spin
+         * 4. loop through all spins in this way
+         * 5. repeat until convergence is achieved
+         * *** Important ***
+         * This method does not verify convergence in the same way as other methods.
+         * It stops when successive changes become small, which might indicate convergece,
+         * but convergence must be checked in the traditional way after it is called.
+         * @param sweepOrder the order in which we loop through the spins
+         * @param maxIter maximum number of iterations over the entire system
+         * @param tol tolerance for convergence
+         * @param alpha relaxation parameter for the update in #1 (for values less than 1, we update the magnetic moment
+         *              to a weighted average of the previous magnetic moment and the new magnetic moment
+         * @param flipSpin the spin that is being flipped (used in the various homotopic solvers: {@link #homotopicSolve(int[], int, double, int, double)}, {@link #homotopicSolve2(int[], int, double, int, double)}, {@link #homotopicSolve3(int[], int, double, int, double)} )
+         * @param print whether to print the progress. useful for debugging
+         * @param frac the fraction by which to mix the previous spin with the new spin (used in the various homotopic methods)
+         * @param retryWithLowerAlpha whether to try again with a lower (half) value of {@code alpha} and higher (double) number of {@code maxIter} in case convergence is not achieved after the given number of iterations
+         * @param smoothHomotopy whether to change the magnetic moment's target function in a manner that does not make it ill-defined at any stage
+         */
         public void updateAllMagneticMoments(int[] sweepOrder, int maxIter, double tol, double alpha, int flipSpin, boolean print, double frac, boolean retryWithLowerAlpha, boolean smoothHomotopy) {
             boolean converged = false;
             int iter;
@@ -765,18 +946,14 @@ public class Lattice implements Serializable {
                     if (index != flipSpin) {
                         prevSpinSize = lattice[index].getSpinSize();
                         newSpinSize = momentTable.getValue(lattice[index].getLocalBx(), lattice[index].getLocalBy(), lattice[index].getLocalBz(), lattice[index].getSpin(), lattice[index].getPrevBIndices());
-                        //if (iter==0 || Math.abs(prevSpinSize-newSpinSize)>1.0e-7) { // some significant change was actually made
                         lattice[index].setSpinSize(prevSpinSize * (1 - alpha) + alpha * newSpinSize);
                         updateFieldsAfterSpinSizeChange(index, prevSpinSize);
                         sum += Math.abs(prevSpinSize - lattice[index].getSpinSize());
-                        //}
                     } else {
                         prevSpinSize = lattice[index].getSpinSize();
-//                        newSpinSize = (1 - frac) * momentTable.getValue(lattice[index].getLocalBx(), lattice[index].getLocalBy(), lattice[index].getLocalBz(), lattice[index].getSpin(), lattice[i].getPrevBIndices()) + frac * momentTable.getValue(lattice[index].getLocalBx(), lattice[index].getLocalBy(), lattice[index].getLocalBz(), -1 * lattice[index].getSpin(), lattice[i].getPrevBIndices());
                         newSpinSize = momentTable.getValue(lattice[index].getLocalBx(), lattice[index].getLocalBy(), lattice[index].getLocalBz(), lattice[index].getSpin(), lattice[i].getPrevBIndices(), frac, smoothHomotopy);
                         lattice[index].setSpinSize(prevSpinSize * (1 - alpha) + alpha * newSpinSize);
                         updateFieldsAfterSpinSizeChange(index, prevSpinSize);
-
                         sum += Math.abs(prevSpinSize - lattice[index].getSpinSize());
                     }
 
@@ -793,20 +970,18 @@ public class Lattice implements Serializable {
 
             }
             if (print) {
-                //for (int i = 0; i < maxIter - iter; i++) System.out.print(tol+" ");
                 System.out.println();
             }
             if (!converged && retryWithLowerAlpha) {
-                //System.out.println(sum/lattice.length);
-                //System.out.println("initiating underrelaxed gauss-seidel");
-                //System.out.println();
                 updateAllMagneticMoments(sweepOrder, 2 * maxIter, tol, 0.5 * alpha, flipSpin, print, frac, false, smoothHomotopy);
-            } else {
-                //System.out.print(iter + "/" + maxIter + "," + momentTable.getValue(lattice[flipSpin].getLocalBx(), lattice[flipSpin].getLocalBy(), lattice[flipSpin].getLocalBz(), lattice[flipSpin].getSpin()) + "," + momentTable.getValue(lattice[flipSpin].getLocalBx(), lattice[flipSpin].getLocalBy(), lattice[flipSpin].getLocalBz(), -1 * lattice[flipSpin].getSpin()) + ",");
             }
         }
 
-
+        /**
+         * Removes the contribution of a specific spin to the fields at all other sites
+         * @param spinToRemove the index of the spin whose contribution is to be removed
+         * @param magneticMomentToRemove the magnetic moment to remove from the other spins (that of {@code spinToRemove})
+         */
         public void removeSpecificSpinConstibution(int spinToRemove, double magneticMomentToRemove) {
             int j;
             if (lattice[spinToRemove].getSpin() != 0) {
@@ -814,18 +989,22 @@ public class Lattice implements Serializable {
                 // removing the contribution of i there
                 for (j = 0; j < lattice.length; j++) {
                     if (lattice[j].getSpin() != 0) {
-                        // remove interaction with prevSpinSize and add interaction with current spinSize
+                        // remove interaction with magneticMomentToRemove
                         if (!suppressInternalTransFields) {
                             lattice[j].setLocalBx(lattice[j].getLocalBx() - magneticMomentToRemove * intTable[0][spinToRemove][j]);
                             lattice[j].setLocalBy(lattice[j].getLocalBy() - magneticMomentToRemove * intTable[1][spinToRemove][j]);
                         }
                         lattice[j].setLocalBz(lattice[j].getLocalBz() - magneticMomentToRemove * intTable[2][spinToRemove][j]);
-
                     }
                 }
             }
         }
 
+        /**
+         * Add to the field at all sites a contribution of some spin with a given magnetic moment
+         * @param flipSpin the spin whose contribution is to be added to all other sites
+         * @param magneticMoment the assumed magnetic moment of {@code flipSpin}. usually a some mixture of the previous and new spin orientation
+         */
         public void addMixedSpinField(int flipSpin, double magneticMoment) {
             int i;
 
@@ -840,34 +1019,43 @@ public class Lattice implements Serializable {
             }
         }
 
-        public void homotopicSolve(Lattice latticeObj, int maxIter, double tol, int flipSpin, int[][] nnArray, double alpha) throws ConvergenceException {
-            int[] bfsOrder = null;
-            if (nnArray != null) {
-                bfsOrder = orderBFS(latticeObj.getN(), flipSpin);
-            }
-            homotopicSolve(bfsOrder, maxIter, tol, flipSpin, alpha);
-        }
-
+        /**
+         * Solves the self-consistent calculation by gradually flipping the given spin
+         * @param bfsOrder the order in which we loop through the spins
+         * @param maxIter maximum number of iterations over the entire system
+         * @param tol tolerance for convergence
+         * @param flipSpin the spin that is being flipped
+         * @param alpha relaxation parameter for the update in #1 (for values less than 1, we update the magnetic moment
+         *              to a weighted average of the previous magnetic moment and the new magnetic moment
+         * @throws ConvergenceException
+         */
         public void homotopicSolve(int[] bfsOrder, int maxIter, double tol, int flipSpin, double alpha) throws ConvergenceException {
-            int numOfStepsLeft = 0;
-            double perc = 1.0, prevPerc = 0.0;
+            // this method tries to gradually change the target magnetic moment of the spin given as flipSpin.
+            // we start by trying the full change, meaning going directly to the opposite spin orientation,
+            // and only if the self-consistent calculation does not converge, then we try going half-way.
+            // if there is still no convergence, we try half of that, etc.
+
+            int numOfStepsLeft = 0; // number of steps left until the given spin is in its required state
+            double perc = 1.0;      // percentage in the process of flipping (1.0 = final state, 0.0 = initial state)
+            double prevPerc = 0.0;  // we keep it so we can fall back to it and try a smaller step in case of failure
             int i = 0;
 
             while (numOfStepsLeft >= 0) {
                 i++;
-                //System.out.print(" homotopy step: " + i++ + "(" + perc+"%) ("+numOfStepsLeft+")");
-
-                singleSpin[] tempLattice = Lattice.copyLattice(lattice);
-                removeSpecificSpinConstibution(flipSpin, lattice[flipSpin].getSpinSize());
+                singleSpin[] tempLattice = Lattice.copyLattice(lattice);    // save the lattice in case we need to fall back to this step
+                removeSpecificSpinConstibution(flipSpin, lattice[flipSpin].getSpinSize());  // remove the contribution of flipSpin from all other sites
+                // create a magnetic moment value that is a mixture of the current and next orientations of the spin
                 double magneticMoment = (1 - perc) * momentTable.getValue(lattice[flipSpin].getLocalBx(), lattice[flipSpin].getLocalBy(), lattice[flipSpin].getLocalBz(),
                         lattice[flipSpin].getSpin(), lattice[flipSpin].getPrevBIndices()) + perc * momentTable.getValue(lattice[flipSpin].getLocalBx(), lattice[flipSpin].getLocalBy(), lattice[flipSpin].getLocalBz(), -1 * lattice[flipSpin].getSpin(), lattice[flipSpin].getPrevBIndices());
+                // add this mixed value to other sites
                 addMixedSpinField(flipSpin, magneticMoment);
+                // set this value as the magnetic moment of flipSpin
                 lattice[flipSpin].setSpinSize(magneticMoment);
+                // at this point the field should be consistent with the magnetic moments (though the magnetic moment of flipSpin is not a consistent with the applied field)
                 updateAllMagneticMoments(bfsOrder, maxIter, tol, alpha, flipSpin, false, perc);
 
-                //System.out.print(" - "+(magneticMomentConvergence(lattice, momentTable, extBx, flipSpin,perc)<tol ? "success ("+magneticMomentConvergence(lattice, momentTable, extBx, flipSpin,perc)+"), " : "failure ("+magneticMomentConvergence(lattice, momentTable, extBx, flipSpin,perc)+"), "));
                 if (magneticMomentConvergence(flipSpin, perc) > tol) {
-                    //System.err.print("backtracking: " + perc);
+                    // if this step did not converge, backtrack to the previous state and try half of the previous step
                     numOfStepsLeft = (numOfStepsLeft + 1) * 2;
                     maxIter = (int) (1.1 * maxIter);
                     lattice = tempLattice;
@@ -877,7 +1065,6 @@ public class Lattice implements Serializable {
                 if (numOfStepsLeft > 0) perc = perc + (1.0 - perc) / numOfStepsLeft;
                 numOfStepsLeft--;
 
-
                 if (numOfStepsLeft < 0) { // last step
                     lattice[flipSpin].flipSpin();
                 }
@@ -885,7 +1072,7 @@ public class Lattice implements Serializable {
                 // too many iterations, so this is not going anywhere (unless this was the last step):
                 if ((i > 100 || numOfStepsLeft > Math.pow(2, 5)) && numOfStepsLeft >= 0) {
                     lattice[flipSpin].flipSpin();   // this does nothing. it is only so that magneticMomentConvergence that is called
-                    // for the error information is run correctly.
+                                                    // for the error information is run correctly.
                     ConvergenceException e = new ConvergenceException.Builder("Too many homotopic step taken without convergence. numOfStepsLeft=" + numOfStepsLeft +
                     ", i=" + i, "homotopic")
                             .setIndex(i)
@@ -898,50 +1085,55 @@ public class Lattice implements Serializable {
             }
         }
 
-        public void homotopicSolve2(int maxIter, double tol, int flipSpin, int[][] nnArray, double alpha) throws ConvergenceException {
-            int[] bfsOrder = null;
-            if (nnArray != null) {
-                bfsOrder = orderBFS(lattice.length, flipSpin);
-            }
-            homotopicSolve2(bfsOrder, maxIter, tol, flipSpin, alpha);
-        }
-
+        /**
+         * Solves the self-consistent calculation by gradually flipping the given spin in a more sophisticated way than {@link #homotopicSolve(int[], int, double, int, double)}
+         * @param bfsOrder the order in which we loop through the spins
+         * @param maxIter maximum number of iterations over the entire system
+         * @param tol tolerance for convergence
+         * @param flipSpin the spin that is being flipped
+         * @param alpha relaxation parameter for the update in #1 (for values less than 1, we update the magnetic moment
+         *              to a weighted average of the previous magnetic moment and the new magnetic moment
+         * @throws ConvergenceException
+         */
         public void homotopicSolve2(int[] bfsOrder, int maxIter, double tol, int flipSpin, double alpha) throws ConvergenceException {
+            // this method gradually flips the given spin but also "decouples" it from its environment in the process
 
+            // remove the contribution of flipSpin from all other sites
             removeSpecificSpinConstibution(flipSpin, lattice[flipSpin].getSpinSize());
 
-            int numOfStepsLeft = 0;
-            double perc = 1.0, prevPerc = 0.0;
+            int numOfStepsLeft = 0; // number of steps left until the given spin is in its required state
+            double perc = 1.0;      // percentage in the process of flipping (1.0 = final state, 0.0 = initial state)
+            double prevPerc = 0.0;  // we keep it so we can fall back to it and try a smaller step in case of failure
             int i = 0;
 
             while (numOfStepsLeft >= 0) {
                 i++;
-                //System.out.print(" homotopy step: " + i++ + "(" + perc+"%) ");
-
                 double prevStateMoment = momentTable.getValue(lattice[flipSpin].getLocalBx(), lattice[flipSpin].getLocalBy(), lattice[flipSpin].getLocalBz(), lattice[flipSpin].getSpin(), lattice[flipSpin].getPrevBIndices());
                 double nextStateMoment = momentTable.getValue(lattice[flipSpin].getLocalBx(), lattice[flipSpin].getLocalBy(), lattice[flipSpin].getLocalBz(), (-1) * lattice[flipSpin].getSpin(), lattice[flipSpin].getPrevBIndices());
+                // create a magnetic moment value that is a mixture of the current and next orientations of the spin
                 double magneticMoment = perc * nextStateMoment + (1.0 - perc) * prevStateMoment;
 
+                // save the lattice in case we need to fall back to this step
                 singleSpin[] tempLattice = Lattice.copyLattice(lattice);
-
-                //updateAllLocalFields(lattice, intTable[2], flipSpin);
-                //updateAllLocalTransFields(lattice, intTable, extBx, suppressInternalTransFields, flipSpin);
-
+                // add this mixed value to other sites
                 addMixedSpinField(flipSpin, magneticMoment);
 
                 if (numOfStepsLeft > 0) {
+                    // this is the basic solver, but the flipped spin is kept at its initial orientation.
+                    // this way initially its magnetic moment is consistent with its local field, and should
+                    // not change.
+                    // as for the others, they are updated to conform to the local fields that now include a
+                    // contribution from a mixture at flipSpin.
+                    // one should not assume that the self-consistent calculation is solved after this call
                     updateAllMagneticMoments(bfsOrder, maxIter, tol, alpha, flipSpin);
-                    //System.out.print(" - "+(magneticMomentConvergence(lattice, momentTable, extBx, flipSpin)<tol ? "success ("+magneticMomentConvergence(lattice, momentTable, extBx, flipSpin)+"), " : "failure ("+magneticMomentConvergence(lattice, momentTable, extBx, flipSpin)+"), "));
+                    // the following checks if the current state is valid, with the flipped spin at its
+                    // initial state
                     if (magneticMomentConvergence(flipSpin) > tol) {
-                        // backtrack
-                        //maxIter *= 2;
+                        // if this step did not converge, backtrack to the previous state and try half of the previous step
                         maxIter = (int) (1.1 * maxIter);
                         numOfStepsLeft = (numOfStepsLeft + 1) * 2;
                         lattice = tempLattice;
-                        //magneticMoment = lattice[flipSpin].getSpinSize();
                         perc = prevPerc;
-                        //System.err.print("backtracking: " + perc);
-
                     } else {
                         removeSpecificSpinConstibution(flipSpin, magneticMoment);
                     }
@@ -951,27 +1143,19 @@ public class Lattice implements Serializable {
                     lattice[flipSpin].setSpinSize(magneticMoment);
                     updateAllMagneticMoments(bfsOrder, maxIter, tol, alpha, false);
 
-                    //System.out.print(" (last step) - "+(MonteCarloMetropolis.updateFieldsAndCheckMagneticMomentConvergence(lattice, intTable, momentTable, extBx, suppressInternalTransFields)<tol ? "success ("+MonteCarloMetropolis.updateFieldsAndCheckMagneticMomentConvergence(lattice, intTable, momentTable, extBx, suppressInternalTransFields)+"), " : "failure ("+MonteCarloMetropolis.updateFieldsAndCheckMagneticMomentConvergence(lattice, intTable, momentTable, extBx, suppressInternalTransFields)+"), "));
-
                     if (magneticMomentConvergence() > tol) {
                         // backtrack
                         lattice[flipSpin].flipSpin();   // flip back
-
-                        //maxIter *= 2;
                         maxIter = (int) (1.1 * maxIter);
                         numOfStepsLeft = (numOfStepsLeft + 1) * 2;
                         lattice = tempLattice;
-                        //magneticMoment = prevMagneticMoment;
                         perc = prevPerc;
-                        //System.err.print("backtracking: " + perc);
-
                     }
                 }
 
                 prevPerc = perc;
                 if (numOfStepsLeft > 0) perc = perc + (1.0 - perc) / numOfStepsLeft;
                 numOfStepsLeft--;
-
 
                 // too many iterations, so this is not going anywhere (unless this was the last step):
                 if ((i > 150 || numOfStepsLeft > 100) && numOfStepsLeft >= 0) {
@@ -989,30 +1173,32 @@ public class Lattice implements Serializable {
             }
         }
 
-
+        /**
+         * Solves the self-consistent calculation by gradually flipping the given spin in a manner that does not make the
+         * target function for the magnetic moment ill-defined at any step.
+         * @param bfsOrder the order in which we loop through the spins
+         * @param maxIter maximum number of iterations over the entire system
+         * @param tol tolerance for convergence
+         * @param flipSpin the spin that is being flipped
+         * @param alpha relaxation parameter for the update in #1 (for values less than 1, we update the magnetic moment
+         *              to a weighted average of the previous magnetic moment and the new magnetic moment
+         * @throws ConvergenceException
+         * @see FieldTable#getValue(double, double, double, double, int[][], double, boolean)
+         */
         public void homotopicSolve3(int[] bfsOrder, int maxIter, double tol, int flipSpin, double alpha) throws ConvergenceException {
             // This function smoothly changes the magnetic moment target function of the flipped spin while keeping it injective
             int numOfStepsLeft = 0;
             double perc = 1.0, prevPerc = 0.0;
             int i = 0;
-            double BzRange=5.0; // the smooth change of the target function goes from -BzRange to +BzRange
 
             while (numOfStepsLeft >= 0) {
                 i++;
-                //System.out.print(" homotopy step: " + i++ + "(" + perc+"%) ("+numOfStepsLeft+")");
-
                 singleSpin[] tempLattice = Lattice.copyLattice(lattice);
-//                removeSpecificSpinConstibution(flipSpin, lattice[flipSpin].getSpinSize());
-//                double magneticMoment = (1 - perc) * momentTable.getValue(lattice[flipSpin].getLocalBx(), lattice[flipSpin].getLocalBy(), lattice[flipSpin].getLocalBz(),
-//                        lattice[flipSpin].getSpin(), lattice[flipSpin].getPrevBIndices()) + perc * momentTable.getValue(lattice[flipSpin].getLocalBx(), lattice[flipSpin].getLocalBy(), lattice[flipSpin].getLocalBz(), -1 * lattice[flipSpin].getSpin(), lattice[flipSpin].getPrevBIndices());
-
-//                addMixedSpinField(flipSpin, magneticMoment);
-//                lattice[flipSpin].setSpinSize(magneticMoment);
+                // the mixing of the previous and next spin orientations is built into the target function, which is called by passing smoothHOmotopy=true below
                 updateAllMagneticMoments(bfsOrder, maxIter, tol, alpha, flipSpin, false, perc, false, true);
 
-                //System.out.print(" - "+(magneticMomentConvergence(lattice, momentTable, extBx, flipSpin,perc)<tol ? "success ("+magneticMomentConvergence(lattice, momentTable, extBx, flipSpin,perc)+"), " : "failure ("+magneticMomentConvergence(lattice, momentTable, extBx, flipSpin,perc)+"), "));
                 if (magneticMomentConvergence(flipSpin, perc, true) > tol) {
-                    //System.err.print("backtracking: " + perc);
+                    // if this step did not converge, backtrack to the previous state and try half of the previous step
                     numOfStepsLeft = (numOfStepsLeft + 1) * 2;
                     maxIter = (int) (1.1 * maxIter);
                     lattice = tempLattice;
@@ -1021,7 +1207,6 @@ public class Lattice implements Serializable {
                 prevPerc = perc;
                 if (numOfStepsLeft > 0) perc = perc + (1.0 - perc) / numOfStepsLeft;
                 numOfStepsLeft--;
-
 
                 if (numOfStepsLeft < 0) { // last step
                     lattice[flipSpin].flipSpin();
