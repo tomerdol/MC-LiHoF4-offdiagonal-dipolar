@@ -16,7 +16,14 @@ import java.util.Properties;
 
 public class Main {
 
-    // fills the sin and cos tables for mk^2
+    /**
+     * Fills the sin and cos tables for mk^2
+     * @param arr the array of single spins of the system
+     * @param Lz # of unit cells in the z direction
+     * @param Lx # of unit cells in the x and y directions
+     * @param k_cos_table table to be filled with cos(k.R) for each site R in each direction k (k_x,k_y,k_z)
+     * @param k_sin_table table to be filled with sin(k.R) for each site R in each direction k (k_x,k_y,k_z)
+     */
     public static void create_cos_sin_tables(singleSpin[] arr, int Lz, int Lx, double[][] k_cos_table, double[][] k_sin_table){
         // for correlation length along x
         double actual_length = Lx*Constants.a;
@@ -43,6 +50,15 @@ public class Main {
         }
     }
 
+    /**
+     * Initializes an array of {@code MersenneTwister} random number generators
+     * @param rndArr array of RNGs to initialize
+     * @param taskID to use as part of the seed for RNGs
+     * @return the seeds used to initialize the RNGs
+     * @deprecated RNGs are initialized in {@link #main(String[])}
+     * @see GenerateSeeds#generateSeeds(RandomGenerator, int)
+     */
+    @Deprecated
     public static long[] initializeMultipleRNG(MersenneTwister[] rndArr, int taskID){
         long[] seeds = new long[rndArr.length];
         for (int i=0;i<rndArr.length;i++){
@@ -51,6 +67,15 @@ public class Main {
         return seeds;
     }
 
+    /**
+     * Initializes a single {@code MersenneTwister} random number generator
+     * @param rnd RNG to initialize
+     * @param taskID to use as part of the seed
+     * @return the used seeds
+     * @deprecated RNGs are initialized in {@link #main(String[])}
+     * @see GenerateSeeds#generateSeeds(RandomGenerator, int)
+     */
+    @Deprecated
     public static long initializeRNG(MersenneTwister rnd, int taskID){
         long seed;
 
@@ -61,18 +86,19 @@ public class Main {
         RandomGenerator rndMT19937 = new MersenneTwister(tmpRnd.nextLong());
 
         seed = Math.abs(rnd.nextLong());    // save seed
-        //seed=1402684116000210553L;
         rnd.setSeed(seed);    // reset the seed
 
         return seed;
     }
 
-
+    /**
+     * Read a temperature schedule from the given file
+     * @param fname name of the file from which the temperature schedule should be read
+     * @return array of temperatures to simulate
+     */
     public static double[] receiveTemperatureSchedule(String fname){
         double[] temperatureSchedule = null;
-        try {
-            @SuppressWarnings("resource")
-            BufferedReader br = new BufferedReader(new FileReader(fname));
+        try (BufferedReader br = new BufferedReader(new FileReader(fname));){
             String line;
 
             if ((line = br.readLine()) != null){
