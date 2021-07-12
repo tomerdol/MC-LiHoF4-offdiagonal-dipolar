@@ -63,7 +63,7 @@ public class ConvergenceException extends Exception {
         }
 
         /**
-         * Setss the iteration index at the time of the failed convergence.
+         * Sets the iteration index at the time of the failed convergence.
          * @param index - the iteration index
          * @return a reference to this Builder
          */
@@ -73,7 +73,7 @@ public class ConvergenceException extends Exception {
         }
 
         /**
-         * Setss number of times a manual diagonalization (as opposed to an interpolation) was performed until the convergence error.
+         * Sets number of times a manual diagonalization (as opposed to an interpolation) was performed until the convergence error.
          * @param numManualCalc - number of manual diagonalization calculations
          * @return a reference to this Builder
          */
@@ -83,7 +83,7 @@ public class ConvergenceException extends Exception {
         }
 
         /**
-         * Setss the distance (sum of absolute value of difference between the magnetic moment value and its required value, divided by the number of spins) from convergence at the time of the error.
+         * Sets the distance (sum of absolute value of difference between the magnetic moment value and its required value, divided by the number of spins) from convergence at the time of the error.
          * @param convergenceDistance - sum of absolute value of difference between the magnetic moment value and its required value, divided by the number of spins
          * @return a reference to this Builder
          */
@@ -93,7 +93,7 @@ public class ConvergenceException extends Exception {
         }
 
         /**
-         * Setss the cause of the convergence error.
+         * Sets the cause of the convergence error.
          * @param cause - cause for convergence failure, given by the Broyden of Newton methods (singular Jacobian or something of that sort)
          * @return a reference to this Builder
          */
@@ -103,7 +103,7 @@ public class ConvergenceException extends Exception {
         }
 
         /**
-         * Setss the spin that was flipped leading to the convergence error.
+         * Sets the spin that was flipped leading to the convergence error.
          * @param flippedSpin - ordinal number of the flipped spin
          * @return a reference to this Builder
          */

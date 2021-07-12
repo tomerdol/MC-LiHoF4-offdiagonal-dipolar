@@ -185,11 +185,6 @@ public class ParseCommandLine {
                 .desc("Initial spin size. If not provided the value will be read from parameters.properties")
                 .build();
 
-        // taskID and seed are mutually exclusive
-        //final OptionGroup seed_task = new OptionGroup();
-        //seed_task.addOption(taskID);
-        //seed_task.addOption(seed);
-
         // output and progress are mutually exclusive
         final OptionGroup prog_output = new OptionGroup();
         prog_output.addOption(printOutput);
@@ -210,7 +205,6 @@ public class ParseCommandLine {
         options.addOption(tempSchedule);
         options.addOption(parallelTemperingOff);
         options.addOption(obsPrintSweepNum);
-        //options.addOptionGroup(seed_task);
         options.addOption(seed);
         options.addOptionGroup(prog_output);
         options.addOption(folderName);
@@ -222,7 +216,6 @@ public class ParseCommandLine {
         options.addOption(temperature);
         options.addOption(spinSize);
         options.addOption(Jex);
-
 
         return options;
     }
@@ -236,19 +229,15 @@ public class ParseCommandLine {
      *    command line arguments; may be {@code null} if there is an exception
      *    encountered while attempting to parse the command line options.
      */
-    public static CommandLine generateCommandLine(
-            final Options options, final String[] commandLineArguments)
+    public static CommandLine generateCommandLine(final Options options, final String[] commandLineArguments)
     {
         final CommandLineParser cmdLineParser = new DefaultParser();
         CommandLine commandLine = null;
-        try
-        {
+        try {
             commandLine = cmdLineParser.parse(options, commandLineArguments);
         }
-        catch (ParseException parseException)
-        {
-            System.out.println(
-                    "ERROR: Unable to parse command-line arguments "
+        catch (ParseException parseException) {
+            System.out.println("ERROR: Unable to parse command-line arguments "
                             + Arrays.toString(commandLineArguments) + " due to: "
                             + parseException + "\n" + "For help run with -h");
         }
@@ -256,7 +245,7 @@ public class ParseCommandLine {
     }
 
     /**
-     * Generate usage information with Apache Commons CLI.
+     * Generates usage information with Apache Commons CLI.
      *
      * @param options Instance of Options to be used to prepare
      *    usage formatter.
@@ -274,7 +263,7 @@ public class ParseCommandLine {
     }
 
     /**
-     * Generate help information with Apache Commons CLI.
+     * Generates help information with Apache Commons CLI.
      *
      * @param options Instance of Options to be used to prepare
      *    help formatter.
@@ -291,6 +280,11 @@ public class ParseCommandLine {
         formatter.printHelp(syntax, usageHeader, options, usageFooter);
     }
 
+    /**
+     * Prints the error in case there was an incorrect usage of the command line arguments
+     * @param args the given command line arguments
+     * @param p the parse exception that occurred
+     */
     public static void err(String[] args, ParseException p){
         System.err.println(
                 "ERROR: Unable to parse command-line arguments "

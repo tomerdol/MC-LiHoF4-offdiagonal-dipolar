@@ -30,3 +30,7 @@ The following is a minimal working example for running the Java simulation itsel
 ```
 java -Dsystem=LiHoF4 -classpath "./bin/production/LiHoF4_transverse_field_MC/:./lib/*" simulation.montecarlo.Main -max_iter 80 -L 4,4 -d 1.0 -extBx 0.0 -continue_from_save no -max_sweeps 4096 -name default -temp_schedule ./LiHoF4/temperature_schedules/temp_schedule_1_1_exact_test_const_0.0_false.txt -alpha 0.95 -mode s -seed 123456789 -Jex 1.16e-3 -interpolation_table_name _const -p -print_sweep_num 1 -tol 5.0e-4
 ```
+For more information on command line arguments run
+```
+java -classpath "./bin/production/LiHoF4_transverse_field_MC/:./lib/*" simulation.montecarlo.Main --help
+```

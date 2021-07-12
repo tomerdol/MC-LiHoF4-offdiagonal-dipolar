@@ -203,6 +203,11 @@ public class Main {
                 System.exit(0);
             }
         }
+        // if no command line arguments were given at all, print USAGE
+        if (args.length == 0){
+            ParseCommandLine.printUsage(options);
+            System.exit(1);
+        }
         // then, parse command line arguments
         CommandLine commandLine = ParseCommandLine.generateCommandLine(options, args);
 

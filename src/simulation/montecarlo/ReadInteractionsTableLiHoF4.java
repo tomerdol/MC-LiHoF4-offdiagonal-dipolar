@@ -6,7 +6,7 @@ public class ReadInteractionsTableLiHoF4 extends ReadInteractionsTable{
         setCorrespondenceArray(dilution);
     }
 
-    //calculates exchange interaction with nearest neighbors
+    // calculates exchange interaction with nearest neighbors
     // also returns an array of nearest neighbors
     public int[][] exchangeInt(double[][] intTable, int Lx, int Ly, int Lz, double J_ex){
         final int numOfNeighbors = (Lx==1 && Ly==1 && Lz==1) ? 2 : 4;    // number of nearest neighbors for each spin.
@@ -14,7 +14,7 @@ public class ReadInteractionsTableLiHoF4 extends ReadInteractionsTable{
         // distinct neighbors
         int[][] nnArray = new int[N][4];;	// nearest neighbor array
 
-        boolean[][] nnArray_test = new boolean[Lx*Ly*Lz*Constants.num_in_cell][Lx*Ly*Lz*Constants.num_in_cell];	// for testing
+        boolean[][] nnArray_test = new boolean[N][N];	// for testing
 
         // neighbor numbers are as follows, for the 0th and 2nd atoms in the base (with respect to ion_positions.pdf in docs):
         // neighbor1: up-right
