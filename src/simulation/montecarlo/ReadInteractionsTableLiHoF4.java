@@ -8,15 +8,26 @@ public class ReadInteractionsTableLiHoF4 extends ReadInteractionsTable{
 
     // calculates exchange interaction with nearest neighbors
     // also returns an array of nearest neighbors
+
+    /**
+     * Calculates zz exchange interaction with nearest neighbors for LiHoF4
+     * and also returns an array of nearest neighbors.
+     * @param intTable exchange interaction array to fill
+     * @param Lx number of unit cells in the x directions
+     * @param Ly number of unit cells in the y directions
+     * @param Lz number of unit cells in the z directions
+     * @param J_ex strength of the exchange interaction
+     * @return array of nearest neighbors: cell [i,j] hold the index (in the compact array) of the j-th neighbor of spin i
+     */
     public int[][] exchangeInt(double[][] intTable, int Lx, int Ly, int Lz, double J_ex){
-        final int numOfNeighbors = (Lx==1 && Ly==1 && Lz==1) ? 2 : 4;    // number of nearest neighbors for each spin.
-        // Lx=Ly=Lz=1 is a unique case where each spin has only 2
-        // distinct neighbors
-        int[][] nnArray = new int[N][4];;	// nearest neighbor array
+        final int numOfNeighbors = (Lx==1 && Ly==1 && Lz==1) ? 2 : 4;   // number of nearest neighbors for each spin.
+                                                                        // Lx=Ly=Lz=1 is a unique case where each spin has only 2
+                                                                        // distinct neighbors
+        int[][] nnArray = new int[N][numOfNeighbors];;	// nearest neighbor array
 
-        boolean[][] nnArray_test = new boolean[N][N];	// for testing
+        boolean[][] nnArray_test = new boolean[N][N];	// for testing the validity of the returned nnArray
 
-        // neighbor numbers are as follows, for the 0th and 2nd atoms in the base (with respect to ion_positions.pdf in docs):
+        // neighbor numbers are as follows, for the 0th and 2nd atoms in the base (see numbering in ion_positions.pdf in docs):
         // neighbor1: up-right
         // neighbor2: up-left
         // neighbor3: down-outward

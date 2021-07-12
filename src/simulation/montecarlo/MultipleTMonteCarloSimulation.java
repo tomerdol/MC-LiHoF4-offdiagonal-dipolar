@@ -20,7 +20,7 @@ public class MultipleTMonteCarloSimulation extends MonteCarloSimulation implemen
     // for serialization. should not be changed
     private static final long serialVersionUID = -7500236380863421871L;
     /** whether to turn off parallel tempering (never swap temperatures) */
-    private final boolean parallelTempetingOff;
+    private final boolean parallelTemperingOff;
     /** Array of temperatures that are being simulated */
     protected final double[] T;
     /** Array of single temperature simulations */
@@ -74,7 +74,7 @@ public class MultipleTMonteCarloSimulation extends MonteCarloSimulation implemen
     public void trySwitch(int t){
         // try and swap adjacent temperatures.
         // see Hukushima et al. (1996) JPSJ: https://doi.org/10.1143/JPSJ.65.1604
-        if (!parallelTempetingOff) {
+        if (!parallelTemperingOff) {
             double thisEnergy = simulations[t].getCurrentEnergy();
             double nextEnergy = simulations[t+1].getCurrentEnergy();
             double delta = (1/T[t] - 1/T[t + 1])*(thisEnergy - nextEnergy);
@@ -181,7 +181,7 @@ public class MultipleTMonteCarloSimulation extends MonteCarloSimulation implemen
      * @param seed random number generator seed
      * @param rnd random number generator object
      * @param continueFromSave whether to continue from a previously saved simulation
-     * @param parallelTempetingOff whether to turn off parallel tempering (never swap temperatures)
+     * @param parallelTemperingOff whether to turn off parallel tempering (never swap temperatures)
      * @param checkpoint whether to periodically create a checkpoint from which the simulation can be restarted
      * @param checkpointer Checkpointer object used for saving and reading the simulation checkpoints
      * @param spinSize Typical magnetic moment based on the external transverse field
@@ -189,9 +189,9 @@ public class MultipleTMonteCarloSimulation extends MonteCarloSimulation implemen
      * @param J_ex Exchange interaction parameter
      */
     public MultipleTMonteCarloSimulation(final double[] T, final SingleTMonteCarloSimulation[] subSimulations, final long maxSweeps, final long seed, final MersenneTwister rnd,
-                                         final boolean continueFromSave, final boolean parallelTempetingOff, final boolean checkpoint,
+                                         final boolean continueFromSave, final boolean parallelTemperingOff, final boolean checkpoint,
                                          final SimulationCheckpointer checkpointer, final double spinSize, final double tol, final double J_ex){
-        this.parallelTempetingOff=parallelTempetingOff;
+        this.parallelTemperingOff=parallelTemperingOff;
         this.maxSweeps=maxSweeps;
         this.seed=seed;
         this.rnd=rnd;
@@ -206,8 +206,8 @@ public class MultipleTMonteCarloSimulation extends MonteCarloSimulation implemen
         this.J_ex=J_ex;
     }
 
-    public boolean isParallelTempetingOff() {
-        return parallelTempetingOff;
+    public boolean isParallelTemperingOff() {
+        return parallelTemperingOff;
     }
 
     /**

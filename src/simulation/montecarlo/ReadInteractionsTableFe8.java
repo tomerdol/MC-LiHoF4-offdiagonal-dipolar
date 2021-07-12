@@ -1,20 +1,35 @@
 package simulation.montecarlo;
 
+/**
+ * Reads the interaction between pairs of spins from a file for the Fe8 system.
+ * Does not support dilution at this stage.
+ */
 public class ReadInteractionsTableFe8 extends ReadInteractionsTable{
 
-    //calculates exchange interaction with nearest neighbors
-    // also returns an array of nearest neighbors
+    /**
+     * Calculates zz exchange interaction with nearest neighbors for Fe8
+     * and also returns an array of nearest neighbors.
+     * Since the exchange interactions in the Fe8 system are negligible, {@code J_ex} should be
+     * zero, and the main use of this is to get the returned nearest-neighbor array
+     * @param intTable exchange interaction array to fill
+     * @param Lx number of unit cells in the x directions
+     * @param Ly number of unit cells in the y directions
+     * @param Lz number of unit cells in the z directions
+     * @param J_ex strength of the exchange interaction
+     * @return array of nearest neighbors: cell [i,j] hold the index (in the compact array) of the j-th neighbor of spin i
+     */
     public int[][] exchangeInt(double[][] intTable, int Lx, int Ly, int Lz, double J_ex){
         final int N = Lx*Ly*Lz*Constants.num_in_cell;
         final int numOfNeighbors;
+        // for a single unit cell system, there are no neighbors (a spin cannot be its own neighbor)
         if (Lx==1 && Ly==1 && Lz==1) numOfNeighbors = 0;
+        // similarly, if the system has only one unit cell in any direction, there are no neighbors in that direction
         else if ((Lx==1 && Ly==1 && Lz==2) || (Lx==1 && Ly==2 && Lz==1) || (Lx==2 && Ly==1 && Lz==1)) numOfNeighbors = 1;
         else if ((Lx==1 && Ly==2 && Lz==2) || (Lx==2 && Ly==2 && Lz==1) || (Lx==2 && Ly==1 && Lz==2)) numOfNeighbors = 2;
         else numOfNeighbors = 6;    // number of nearest neighbors for each spin.
-        // there are unique cases where each spin has less than 4 distinct neighbors
         int[][] nnArray = new int[N][numOfNeighbors];;	// nearest neighbor array
 
-        boolean[][] nnArray_test = new boolean[N][N];	// for testing
+        boolean[][] nnArray_test = new boolean[N][N];	// for testing the validity of the returned nnArray
 
         // neighbor numbers are as follows
         // neighbor1: along +x
@@ -43,6 +58,7 @@ public class ReadInteractionsTableFe8 extends ReadInteractionsTable{
             }
         }
 
+        // verify that all nearest neighbor pairs are accounted for in nnArray
         boolean validNNArray=true;
         for (int i=0;i<nnArray_test.length && validNNArray;i++){
             int countNearestNeighbors=0;
