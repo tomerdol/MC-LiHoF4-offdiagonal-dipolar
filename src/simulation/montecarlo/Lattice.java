@@ -308,6 +308,9 @@ public class Lattice implements Serializable {
             } catch (ConvergenceException e){
                 errorMessage += e.toString() + "\n";
                 lattice=Lattice.copyLattice(tempLattice);
+            } catch (IndexOutOfBoundsException e){  // the method was unsuccessful because of an IndexOutOfBoundsException, probably because
+                                                    // a derivative was attempted in FieldTable outside the bounds of the table
+
             }
         }
 

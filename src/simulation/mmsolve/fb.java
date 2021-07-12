@@ -79,23 +79,31 @@ class fb extends fij_xi {
             for (int j=0;j<n;j++){
                 ret[i][j]=0;
                 if (i==j) ret[i][j]=1;
-
-                if (!homotopy || i!=flipSpin) {
-                    // the derivative of the required magnetic moment at site i is a function of the 3 component field, which is a function of the other spins.
-                    // therefore, we use the chain rule here
-                    ret[i][j] = ret[i][j] - (E[0][i][j] * momentTable.getDerivative(2, getField(x, i, E, extBx, extBy, suppressInternalTransFields), arr[i].getSpin(), arr[i].getPrevBIndices())
-                            + E[1][i][j] * momentTable.getDerivative(1, getField(x, i, E, extBx, extBy, suppressInternalTransFields), arr[i].getSpin(), arr[i].getPrevBIndices())
-                            + E[2][i][j] * momentTable.getDerivative(0, getField(x, i, E, extBx, extBy, suppressInternalTransFields), arr[i].getSpin(), arr[i].getPrevBIndices()));
-                } else{
-                    // this should work, but was not thoroughly tested and is currently unused.
-                    // it is the same as above, with the flipped spin having a mixed magnetic moment.
-                    System.err.println("problem! func for homotopy seems to be used");
-                    ret[i][j] = ret[i][j] - (1-frac)*(E[0][i][j] * momentTable.getDerivative(2, getField(x, i, E, extBx, extBy, suppressInternalTransFields), arr[i].getSpin(), arr[i].getPrevBIndices())
-                            + E[1][i][j] * momentTable.getDerivative(1, getField(x, i, E, extBx, extBy, suppressInternalTransFields), arr[i].getSpin(), arr[i].getPrevBIndices())
-                            + E[2][i][j] * momentTable.getDerivative(0, getField(x, i, E, extBx, extBy, suppressInternalTransFields), arr[i].getSpin(), arr[i].getPrevBIndices()))
-                            - (frac)*(E[0][i][j] * momentTable.getDerivative(2, getField(x, i, E, extBx, extBy, suppressInternalTransFields), -1*arr[i].getSpin(), arr[i].getPrevBIndices())
-                            + E[1][i][j] * momentTable.getDerivative(1, getField(x, i, E, extBx, extBy, suppressInternalTransFields), -1*arr[i].getSpin(), arr[i].getPrevBIndices())
-                            + E[2][i][j] * momentTable.getDerivative(0, getField(x, i, E, extBx, extBy, suppressInternalTransFields), -1*arr[i].getSpin(), arr[i].getPrevBIndices()));
+                try {
+                    if (!homotopy || i != flipSpin) {
+                        // the derivative of the required magnetic moment at site i is a function of the 3 component field, which is a function of the other spins.
+                        // therefore, we use the chain rule here
+                        ret[i][j] = ret[i][j] - (E[0][i][j] * momentTable.getDerivative(2, getField(x, i, E, extBx, extBy, suppressInternalTransFields), arr[i].getSpin(), arr[i].getPrevBIndices())
+                                + E[1][i][j] * momentTable.getDerivative(1, getField(x, i, E, extBx, extBy, suppressInternalTransFields), arr[i].getSpin(), arr[i].getPrevBIndices())
+                                + E[2][i][j] * momentTable.getDerivative(0, getField(x, i, E, extBx, extBy, suppressInternalTransFields), arr[i].getSpin(), arr[i].getPrevBIndices()));
+                    } else {
+                        // this should work, but was not thoroughly tested and is currently unused.
+                        // it is the same as above, with the flipped spin having a mixed magnetic moment.
+                        System.err.println("problem! func for homotopy seems to be used");
+                        ret[i][j] = ret[i][j] - (1 - frac) * (E[0][i][j] * momentTable.getDerivative(2, getField(x, i, E, extBx, extBy, suppressInternalTransFields), arr[i].getSpin(), arr[i].getPrevBIndices())
+                                + E[1][i][j] * momentTable.getDerivative(1, getField(x, i, E, extBx, extBy, suppressInternalTransFields), arr[i].getSpin(), arr[i].getPrevBIndices())
+                                + E[2][i][j] * momentTable.getDerivative(0, getField(x, i, E, extBx, extBy, suppressInternalTransFields), arr[i].getSpin(), arr[i].getPrevBIndices()))
+                                - (frac) * (E[0][i][j] * momentTable.getDerivative(2, getField(x, i, E, extBx, extBy, suppressInternalTransFields), -1 * arr[i].getSpin(), arr[i].getPrevBIndices())
+                                + E[1][i][j] * momentTable.getDerivative(1, getField(x, i, E, extBx, extBy, suppressInternalTransFields), -1 * arr[i].getSpin(), arr[i].getPrevBIndices())
+                                + E[2][i][j] * momentTable.getDerivative(0, getField(x, i, E, extBx, extBy, suppressInternalTransFields), -1 * arr[i].getSpin(), arr[i].getPrevBIndices()));
+                    }
+                } catch (IndexOutOfBoundsException outOfBoundsE){
+                    outOfBoundsE.printStackTrace();
+                    ConvergenceException e = new ConvergenceException.Builder("A derivative was attempted outside the bounds of the the FieldTable. Stack trace was printed.",
+                            "Function evaluation")
+                            .setNumManualCalc(((func)f).numManualCalc)
+                            .build();
+                    throw e;
                 }
                 // there is really no reason for this to happen here, but just in case.
                 if (((func)f).numManualCalc >=20){

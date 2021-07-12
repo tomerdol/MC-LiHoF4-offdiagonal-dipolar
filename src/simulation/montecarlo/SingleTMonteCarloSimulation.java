@@ -15,28 +15,72 @@ import java.util.Arrays;
 
 
 public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements Serializable, Closeable, Runnable {
+    // for serialization. should not be changed
     private static final long serialVersionUID = -7085068052197341667L;
+    /** temperature */
     private final double T;
+    /** index of this simulation within a {@link MultipleTMonteCarloSimulation} */
     private final int temperatureIndex;  // should be -1 if not part of multiple T simulation
+    /** total number of simulated temperatures within the containing {@link MultipleTMonteCarloSimulation} */
     private final int totalNumOfTemperatures;
+    /** current number of sweeps (index) */
     private long sweeps;
+    /** current number of samples in current bin */
     private long currentBinCount;
+    /** accumulated samples of all observables in the current bin (at even indices) and their squares (at odd indices) */
     private double[] binAvg;
+    /** the {@link Lattice} object being simulated */
     private Lattice lattice;
+    /** random number generator */
     private final MersenneTwister rnd;
+    /** writer object used to output the results */
     private transient OutputWriter outWriter;
+    /** current energy of the system */
     private double currentEnergy;
+    /** total number of attempted parallel tempering swaps within the current bin */
     private int acceptanceRateCount;
+    /** number of accepted parallel tempering swaps within the current bin */
     private int acceptanceRateSum;
+    /** whether the last PT swap was accepted */
     private boolean lastSwapAccepted;
+    /** array that counts how many times each method for solving the self-consistent calculation was successfully used */
     private int[] methodsUsed;
+    /** the typical magnetic moment of the spins */
+    public final double spinSize;
+    /** tolerance for convergence of the self-consistent calculation */
+    public final double tol;
+    /** exchange interaction parameter */
+    public final double J_ex;
 
-    public final double spinSize, tol, J_ex;
     // parameters for the iterative solvers
+    /** Maximum iterations for iterative solver (Gauss-Seidel) */
     private transient int maxIter;
+    /** Relaxation parameter for iterative solver */
     private transient double alpha;
+    /** Writer to output configurations that were not successfully solved self-consistently by any of the available methods */
     private transient BufferedWriter outProblematicConfigs;
 
+    /**
+     * Constructs a new single-temperature Monte Carlo simulation
+     * @param T temperature
+     * @param temperatureIndex index of this simulation within a {@link MultipleTMonteCarloSimulation}
+     * @param totalNumOfTemperatures total number of simulated temperatures within the containing {@link MultipleTMonteCarloSimulation}
+     * @param lattice the {@link Lattice} object to be simulated
+     * @param numOfObservables total number of observables to be measured and saved
+     * @param maxSweeps total number of MC sweeps to perform
+     * @param seed random number generator seed
+     * @param rnd random number generator object
+     * @param continueFromSave whether to continue the simulation from a saved checkpoint if exists
+     * @param out writer object used to output the results
+     * @param checkpoint whether to periodically create a checkpoint from which the simulation can be restarted
+     * @param maxIter Maximum iterations for iterative solvers
+     * @param alpha Relaxation parameter for iterative solver
+     * @param outProblematicConfigs Writer to output configurations that were not successfully solved self-consistently by any of the available methods
+     * @param spinSize the typical magnetic moment of the spins
+     * @param tol tolerance for convergence of the self-consistent calculation
+     * @param J_ex exchange interaction parameter
+     * @throws NullPointerException if one of the tables in given lattice (intTable, nnArray, exchangeIntTable, momentTable or energyTable) are {@code null}
+     */
     public SingleTMonteCarloSimulation(final double T, final int temperatureIndex, final int totalNumOfTemperatures, final Lattice lattice, final int numOfObservables, final long maxSweeps,
                                        final long seed, final MersenneTwister rnd, final boolean continueFromSave, final OutputWriter out, final boolean checkpoint,
                                        final int maxIter, final double alpha, final BufferedWriter outProblematicConfigs,
@@ -70,6 +114,11 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
         }
     }
 
+    /**
+     * Adds new observables to the ones that are currently being measured (extend the binAvg array)
+     * put {@code Double.NaN} as the values that will remain there until the end of the current bin
+     * @param numOfObservables new number of observables
+     */
     public void addObservableToBinAvg(int numOfObservables){
         if (binAvg.length < numOfObservables) {
             double[] newBinAvg = new double[numOfObservables]; // Add column (and its sd) to the end
@@ -85,6 +134,10 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
         // else, do nothing
     }
 
+    /**
+     * Swap the lattice and energy of this simulation with that of another
+     * @param other simulation with which to replace the systems
+     */
     public void swap(SingleTMonteCarloSimulation other){
         // ****************swap energies****************
         double tempEnergy = this.currentEnergy;
@@ -100,20 +153,38 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
 
     }
 
+    /**
+     * increments the number of accepted swaps for the current bin
+     */
     public void incAcceptanceRateSum() {
         this.acceptanceRateSum++;
     }
 
+    /**
+     * increments the total number of attempted swaps for the current bin
+     */
     public void incAcceptanceRateCount() {
         this.acceptanceRateCount++;
     }
 
+    /**
+     * Returns the current energy of the system
+     * @return current energy
+     */
     public double getCurrentEnergy() {
         return currentEnergy;
     }
 
+    /**
+     * Indicates whether the last PT swap attempt was accepted
+     * @return
+     */
     public boolean wasLastSwapAccepted() { return lastSwapAccepted; }
 
+    /**
+     * Sets whether the last PT swap attempt was accepted
+     * @param swapAccepted acceptance status of the last swap attempt
+     */
     public void setLastSwapAcceptance(final boolean swapAccepted) {
         this.lastSwapAccepted=swapAccepted;
         if (swapAccepted){
@@ -122,16 +193,30 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
         this.incAcceptanceRateCount();
     }
 
+    /**
+     * initializes the {@code usedMethods} array. must be done after deserializing the simulation from a checkpoint
+     */
     public void initMethodsUsedArr(){
         if (this.methodsUsed == null){
             this.methodsUsed=new int[20];
         }
     }
 
+    /**
+     * Sets the {@code BufferedWriter} that is used to output configurations not solved self-consistently
+     * @param outProblematicConfigs the writer that is to be used to output problematic configurations
+     */
     public void setOutProblematicConfigs(final BufferedWriter outProblematicConfigs) {
         this.outProblematicConfigs = outProblematicConfigs;
     }
 
+    /**
+     * Gets the number of time a given method was successfully used to solve the self-consistent calcualtion
+     * @param methodIndex index of the method to check
+     * @return the total number of times the given method was successfully used.
+     *          can be -1 in case previous data is missing due to starting an old simulation from
+     *          checkpoint from before this data was collected.
+     */
     public int getNumOfTimesMethodWasUsed(final int methodIndex) {
         if (methodsUsed != null) {
             return methodsUsed[methodIndex];
@@ -143,10 +228,13 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
 
     /**
      * Performs a Monte Carlo metropolis step
-     * @param lattice - spin lattice
-     * @param T - Temperature
-     * @param rnd - PRNG
-     * @return Array containing the (new) energy due to local transversal fields and the energy difference in the longitudinal energy compared to the previous configuration
+     * @param lattice spin lattice
+     * @param T Temperature
+     * @param rnd random number generator
+     * @return object that holds the energy difference due to the MC step, the new lattice object after the step and the method that was used to solve the
+     * self-consistent calculation during the step. the returned {@code Lattice} will be {@code null} if the change is rejected, in which case the simulation
+     * should return to the {@code Lattice} state that was saved before the call to this method.
+     * @throws ConvergenceException when the self-consistent calculation does not converge with any of the available methods
      */
     public static deltaEnergyAndLattice metropolisStep(Lattice lattice, double T, MersenneTwister rnd, int maxIter, double alpha, final double tol) throws ConvergenceException
     {
@@ -171,29 +259,22 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
         double r = rnd.nextDouble();
 
         if (r > prob) {   // change is denied
-			/*
-            flippedSpin.flipSpin();  // the change is reversed. no need to update other longitudinal fields
-
-            updateLocalFieldsAfterFlip(lattice, flippedSpin, intTable[2]);
-            updateLocalTransFieldsAfterFlip(lattice, flippedSpin, intTable);
-
-            updateAllMagneticMoments(lattice, intTable, momentTable, maxIter, extBx);
-			*/
-
-			/*
-			for (int i=0;i<lattice.length;i++) {
-				lattice[i]=tempLattice[i];
-			}
-			*/
-
             return new deltaEnergyAndLattice(null, deltaEnergy, methodUsed);
-
         } else {    // change is accepted
-            // updateLocalFieldsAfterFlip(lattice, flippedSpin, intTable[2]);    // update other *longitudinal* (that's the reason for the [2]) fields
             return new deltaEnergyAndLattice(lattice, deltaEnergy, methodUsed);
         }
     }
 
+    /**
+     * Print out a problematic configuration (one that was not solved self-consistently by any of the available methods)
+     * using the given writer.
+     * This method is synchronized on the given {@code out} since all parallel simulation use the same writer.
+     * This method should not be called very often anyway, if it is being called often there are probably other issues
+     * the need to be fixed besides possible concurrency related inefficiencies
+     * @param lattice the lattice from before the spin flip
+     * @param flippedSpin the spin that was flipped which caused the configuration to become 'problematic'
+     * @param out the output writer that will be used to write this configuration
+     */
     public static void printProblematicConfig(Lattice lattice, int flippedSpin, BufferedWriter out){
         synchronized (out) {
             try {
@@ -209,12 +290,15 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
         }
     }
 
-
+    /**
+     * Performs a Monte Carlo sweep (N MC steps with N being the total number of spins)
+     */
     public void monteCarloSweep() {
-        // a monte carlo sweep consists of ~N steps
+        // a monte carlo sweep consists of N steps
         for (int step = 0; step < lattice.getN(); step++) {
 
             if (outWriter.isPrintProgress()) {
+                // create a progress bar that indicates progress within the current MC sweep
                 int perc = (int) 10.0 * step /  lattice.getN();
                 char[] full = new char[perc];
                 char[] empty = new char[10 - perc];
@@ -226,40 +310,27 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
                         "[" + strFull + strEmpty + "]" + step + "/" +  lattice.getN() + "     \r");
             }
 
+            // save the current lattice
             Lattice tempLattice = new Lattice(lattice);
             Double deltaEnergy;
             deltaEnergyAndLattice energyAndLattice=null;
             try {
+                // perform a MC step
                 energyAndLattice = metropolisStep(lattice, T, rnd, maxIter, alpha, tol);
 
-                if (energyAndLattice.getLattice()!=null){
+                if (energyAndLattice.getLattice()!=null){   // the change is accepted
                     deltaEnergy=energyAndLattice.getDeltaEnergy();
                     lattice=energyAndLattice.getLattice();
                     methodsUsed[energyAndLattice.getMethodUsed()]++;    // count methods used
-                }else{
+                }else{                                      // the change is rejected
                     deltaEnergy=null;
                     methodsUsed[energyAndLattice.getMethodUsed()]++;    // count methods used
                 }
-//                successfulSteps++;
-
-                //System.out.println("step " + step + " successful");
-            } catch (ConvergenceException e){
+            } catch (ConvergenceException e){   // the change was unsuccessful due to a ConvergenceException
                 printProblematicConfig(tempLattice, e.getFlippedSpin(), outProblematicConfigs);
                 deltaEnergy=null;
-//                failedSteps++;
-                methodsUsed[0]++;    // this signifies all methods failed
+                methodsUsed[0]++;    // this signifies all available methods failed
                 System.err.println("There was an error converging, had to abort metropolis step ("+step+ ", sweep="+sweeps+" T="+T+") and try another one. \n" + e.getMessage());
-            } catch (IndexOutOfBoundsException e){
-                deltaEnergy=null;
-                methodsUsed[0]++;    // this signifies all methods failed
-//                failedSteps++;
-                if (energyAndLattice != null && (energyAndLattice.getMethodUsed() >= methodsUsed.length || energyAndLattice.getMethodUsed() < 0)){
-                    System.err.println("Method used is out of bounds, had to abort metropolis step (" + step + ", sweep=" + sweeps + " T=" + T + ") and try another one.\n" + e.toString());
-                    e.printStackTrace();
-                }else {
-                    System.err.println("There was an error while calculating the derivative, had to abort metropolis step (" + step + ", sweep=" + sweeps + " T=" + T + ") and try another one.\n" + e.toString());
-                    e.printStackTrace();
-                }
             }
 
             if (deltaEnergy == null) {
@@ -269,7 +340,6 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
                 tempLattice=null;
                 currentEnergy += deltaEnergy.doubleValue();
             }
-
         }
     }
 
@@ -280,7 +350,8 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
                 // copy lattice to a new object that does not suppress internal fields
                 Lattice tempLatticeWithAllFields = new Lattice(lattice, false);
                 tempLatticeWithAllFields.updateAllLocalFields();
-                arr = tempLatticeWithAllFields.getArray();  // this is not very efficient since all the spins are copied twice (once on this line and once two lines back), but it is not part of the regular run so not that terrible
+                arr = tempLatticeWithAllFields.getArray();  // this is not very efficient since all the spins are copied twice (once on this line and once two lines back),
+                                                            // but it is not part of the regular run so not that terrible
             } else {
                 arr = lattice.getArray(); // deep copy
             }
@@ -291,41 +362,46 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
         }
     }
 
+    /**
+     * Performs measurements and saves them, either to the current bin or to the output buffer
+     */
     public void writeObservables(){
+        // get all measurements
         double m = lattice.getMagnetization();
         double[] temp = lattice.getMagneticFields();
         double[] tempSpinSizes = lattice.getSpinSizes();
         double[] mk2 = lattice.getMK2();    // m(k)^2, used later for correlation length calculation
 
+        // Write all of the observables at this point (following a MC sweep). this is performed only if the output type is VERBOSE in outWriter
         outWriter.writeObservablesVerbose(sweeps, m ,currentEnergy ,temp[0] ,temp[1] ,temp[2] ,temp[3] ,temp[4] ,temp[5] ,temp[6] ,temp[7] , tempSpinSizes[0] ,tempSpinSizes[1] ,mk2[0], mk2[1], mk2[2], lastSwapAccepted);
 
+        // count how many samples are in the current bin
         if (sweeps>0) currentBinCount++;
-        //System.out.println(sweeps+ " , " + sweeps/2 + " , " + currentBinCount + " , " + (sweeps&1));
 
         if (currentBinCount==sweeps/2 + 1 && (sweeps&1)==1){	// last step of current bin
             // restart sums and counters for next bin
             double acceptanceRateForBin;	// acceptance rate for this bin & temperature
 
-            if (acceptanceRateCount==0) {
+            if (acceptanceRateCount==0) {   // probably some error
                 acceptanceRateForBin = -1;
             }else {
+                // average acceptance rate for this bin
                 acceptanceRateForBin = ((double) acceptanceRateSum) / acceptanceRateCount;
             }
 
-            // print data from previous bin and
+            // print data from previous bin. this is performed only if the output type is BIN in outWriter
             outWriter.writeObservablesBin(currentBinCount, binAvg, acceptanceRateForBin);
 
-            //System.out.println(sweeps + ") printed average of bin size "+currentBinCount + " starting from " + binStart);
-            for (int avgIndex=0;avgIndex<binAvg.length;avgIndex++) binAvg[avgIndex]=0;
+            // restart sums and counters
+            Arrays.fill(binAvg, 0);
 
             acceptanceRateCount=0;
             acceptanceRateSum=0;
 
-            //binStart=sweeps;
-
             currentBinCount=0;
         }
 
+        // add the current measurement of all of the observables to the bins
         addToAvg(binAvg,new double[]{Math.abs(m), m , m*m, currentEnergy , temp[0] , temp[1] , temp[2] , temp[3] , temp[4] , temp[5] , temp[6] , temp[7] , tempSpinSizes[0] , tempSpinSizes[1] , mk2[0], mk2[1], mk2[2]});
 
 
@@ -352,19 +428,28 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
         this.alpha=alpha;
     }
 
+    /**
+     * Adds an array of current measurement to the binned measurements array with their squares
+     * @param avgArr array of binned measurements
+     * @param currentValueArray array of current measurements
+     */
     public static void addToAvg(double[] avgArr, double[] currentValueArray){
+        // the length of avgArr should be twice that of currentValueArray since it holds all
+        // of the measurements and also their squares
         if (avgArr.length>>1 != currentValueArray.length){
-            throw new RuntimeException("error adding observable values to bin average. array lenth mismatch. ");
+            throw new RuntimeException("error adding observable values to bin average. array length mismatch. ");
         }else{
             for (int i=0;i<currentValueArray.length;i++){
+                // sum the measurements in the even cells
                 avgArr[2*i]+=currentValueArray[i];
+                // and their squares in the odd cells
                 avgArr[2*i+1]+=currentValueArray[i]*currentValueArray[i];
             }
         }
     }
 
     /**
-     * Calculate the standard error given the sum, sum^2 and the number of samples, N.
+     * Calculates the standard error given the sum, sum^2 and the number of samples, N.
      * @param sum sum of samples
      * @param sum2 sum of squared samples
      * @param N number of samples
@@ -374,7 +459,11 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
         return Math.sqrt((sum2/N - (sum/N)*(sum/N))/N);
     }
 
-    // check whether the given array of averages and standard deviations agree within error bars
+    /**
+     * Checks whether the given array of averages and standard errors of different observables each agree within error bars
+     * @param arr Array of bin measurement averages and standard errors of different observables
+     * @return whether the bin averages of each observable all agree (have overlapping error ranges)
+     */
     public static boolean checkEquilibration(ArrayList<CircularFifoQueue<Pair<Double,Double>>> arr){
         if (arr.size()==0)
             return false;
@@ -383,23 +472,31 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
         for (CircularFifoQueue<Pair<Double, Double>> binsOfObservable : arr) {
             equilibrated &= checkEquilibration(binsOfObservable);
         }
-
         return equilibrated;
     }
 
-    // check whether the given queue of a single observable's averages and standard deviations agree within error bars
+    /**
+     * Checks whether the given queue of a single observable's averages and standard deviations agree within error bars
+     * @param binsOfObservable queue of the last x (usually 3) bin averages and standard errors
+     * @return whether all bins agree (have overlapping error ranges)
+     */
     public static boolean checkEquilibration(CircularFifoQueue<Pair<Double, Double>> binsOfObservable){
         boolean equilibrated=true;
         if (!binsOfObservable.isAtFullCapacity()){
             // queue has less than 3 bins
             equilibrated=false;
         } else {
-            double upperBound = binsOfObservable.get(0).getLeft() + binsOfObservable.get(0).getRight(), lowerBound = binsOfObservable.get(0).getLeft() - binsOfObservable.get(0).getRight();
+            // get the highest lower bound and the lowest upper bound
+            double upperBound = binsOfObservable.get(0).getLeft() + binsOfObservable.get(0).getRight();
+            double lowerBound = binsOfObservable.get(0).getLeft() - binsOfObservable.get(0).getRight();
             for (Pair<Double, Double> bin : binsOfObservable) {
                 upperBound = Math.min(upperBound, bin.getLeft() + bin.getRight());
                 lowerBound = Math.max(lowerBound, bin.getLeft() - bin.getRight());
             }
+            // if the lowest upper bound is higher that the highest lower bound, then all bins have some overlap
             equilibrated = upperBound > lowerBound;
+            // also verify that there is no monotonicity, either increasing or decreasing
+            // this is no longer a used condition, but this method is not used anyhow
             if (equilibrated && binsOfObservable.maxSize()>2) {
                 boolean monotonicallyInc = binsOfObservable.get(0).getLeft() < binsOfObservable.get(1).getLeft();
                 boolean monotonicallyDec = binsOfObservable.get(0).getLeft() > binsOfObservable.get(1).getLeft();
@@ -415,12 +512,20 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
         return equilibrated;
     }
 
+    /**
+     * Checks whether a given {@code boolean} array contains all {@code true} entries.
+     * @param array input array to check if all entries are {@code true}
+     * @return whether all entries in {@code array} are {@code true}
+     */
     public static boolean isAllTrue(boolean... array)
     {
         for(boolean b : array) if(!b) return false;
         return true;
     }
 
+    /**
+     * Run the simulation for one MC sweep and perform all necessary outputs
+     */
     public void run() {
         monteCarloSweep();
         writeObservables();
@@ -432,6 +537,16 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
         }
     }
 
+    /**
+     * Generates a string with all of the parameters and their values used in this run
+     * @param version software version
+     * @param T temperature array for the containing {@link MultipleTMonteCarloSimulation}
+     * @param extraMessage an extra text message to append to the list of parameters
+     * @param mutualSeed the seed used by the containing {@link MultipleTMonteCarloSimulation}
+     * @param tempScheduleFileName name of the temperature schedule file used to set the temperatures in the containing {@link MultipleTMonteCarloSimulation}
+     * @param parallelTemperingOff whether to turn off parallel tempering (never swap temperatures)
+     * @return a string containing all info about the parameters used in this run
+     */
     public String runParameters(String version, double[] T, String extraMessage, long mutualSeed, String tempScheduleFileName, boolean parallelTemperingOff){
         return  "# VERSION: " + version + System.lineSeparator() +
                 "#" + LocalDateTime.now() + System.lineSeparator() +
@@ -449,21 +564,38 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
                 extraMessage;
     }
 
+    /**
+     * Prints the parameters used in this run
+     * @param version software version
+     * @param T temperature array for the containing {@link MultipleTMonteCarloSimulation}
+     * @param extraMessage an extra text message to append to the list of parameters
+     * @param mutualSeed the seed used by the containing {@link MultipleTMonteCarloSimulation}
+     * @param tempScheduleFileName name of the temperature schedule file used to set the temperatures in the containing {@link MultipleTMonteCarloSimulation}
+     * @param parallelTemperingOff whether to turn off parallel tempering (never swap temperatures)
+     * @throws IOException
+     * @see #runParameters(String, double[], String, long, String, boolean)
+     */
     public void printRunParameters(String version, double[] T, String extraMessage, long mutualSeed, String tempScheduleFileName, boolean parallelTemperingOff) throws IOException{
         // print some information to the beginning of the results file (or console):
         outWriter.print(runParameters(version, T, extraMessage, mutualSeed, tempScheduleFileName, parallelTemperingOff), true);
         outWriter.flush();
     }
 
+    /**
+     * Initializes this simulation
+     */
     public void initSimulation(){
         boolean convergedConfig=false;
         int index=0;
         while (!convergedConfig) {
             lattice.randomizeConfig(rnd); // randomizes the spins and sets initial spin sizes as spinSize in the corresponding direction
 
+            // initialize all the fields and then find all of the magnetic moment self-consistently
             lattice.updateAllLocalFields();
             lattice.updateAllMagneticMoments(2*maxIter, tol, alpha);
 
+            // if the self-consistent calculation does not succeed, try again with a new random configuration until it does
+            // if this happens too often there might be a problem
             if (lattice.magneticMomentConvergence() > tol){
                 convergedConfig=false;
             }else{
@@ -476,6 +608,12 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
         currentEnergy = lattice.getEnergy();
     }
 
+    /**
+     * Creates queues used to save the last x (usually 3) bin averages to track equilibration
+     * @param numOfBins number of bins to keep averages from
+     * @param numOfObservables number of observables to track the equilibration of
+     * @return
+     */
     public static ArrayList<CircularFifoQueue<Pair<Double,Double>>> generateEquilibrationQueues(int numOfBins, int numOfObservables){
         ArrayList<CircularFifoQueue<Pair<Double,Double>>> obsArr = new ArrayList<>(numOfObservables);
         for (int observable=0;observable<numOfObservables;observable++){
