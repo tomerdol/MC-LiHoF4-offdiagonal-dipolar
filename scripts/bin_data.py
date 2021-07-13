@@ -420,8 +420,7 @@ def main():
     #     folderName = sys.argv[3]
     #     mech = sys.argv[4]
     simulations = analysis_tools.get_simulations(L, folderName, h_ex, mech)
-    # main_bin(simulations)
-    main_bin_txt(simulations)
+    main_bin(simulations)
     # for testing:
     # print(read_binned_data(list(simulations.itertuples())[3]))
        

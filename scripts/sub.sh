@@ -2,7 +2,7 @@
 
 name="dilution_0.46"
 arrayMech=( "false" )
-arrayL=( 5 6 7 )
+arrayL=( 7 )
 arrayH=( 0.0 )
 #name="exact_test_const"
 #arrayMech=( "false" )

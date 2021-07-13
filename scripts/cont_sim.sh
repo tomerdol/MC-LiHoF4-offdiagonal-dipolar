@@ -1,7 +1,7 @@
 #!/bin/bash
 unset module
-name="temp_dilution_0.83"
-arrayMech=( "true" )
+name="temp_dilution_0.46"
+arrayMech=( "false" )
 arrayL=( 7 )
 arrayH=( 0.0 )
 nT=20
@@ -16,7 +16,7 @@ fi
 
 max_sweeps=$1
 extra=$2
-x=0.83
+x=0.46
 i=0
 
 for H in "${arrayH[@]}"
