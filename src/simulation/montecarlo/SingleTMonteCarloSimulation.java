@@ -437,7 +437,8 @@ public class SingleTMonteCarloSimulation extends MonteCarloSimulation implements
         // the length of avgArr should be twice that of currentValueArray since it holds all
         // of the measurements and also their squares
         if (avgArr.length>>1 != currentValueArray.length){
-            throw new RuntimeException("error adding observable values to bin average. array length mismatch. ");
+            throw new RuntimeException("error adding observable values to bin average. array length mismatch: bin averages array length:" + avgArr.length +
+                    ", measurement array length: " + currentValueArray.length);
         }else{
             for (int i=0;i<currentValueArray.length;i++){
                 // sum the measurements in the even cells

@@ -169,7 +169,7 @@ public class OutputWriter implements Closeable {
         if (outType == OutputType.BIN){
             Formatter formatter = new Formatter(outputBuffer);
             // the first and last columns are treated separately, all the rest is just pasted in the middle by the "%s"
-            formatter.format("% "+colWidths[0]+"d %s % "+(colWidths[colWidths.length-1]-2)+".2f%n", currentBinCount, avgArrToString(binAvg, currentBinCount, 1) , acceptanceRateForBin);
+            formatter.format(" % "+colWidths[0]+"d%s % "+(colWidths[colWidths.length-1])+".2f%n", currentBinCount, avgArrToString(binAvg, currentBinCount, 1) , acceptanceRateForBin);
         }
     }
 
@@ -227,11 +227,9 @@ public class OutputWriter implements Closeable {
         StringBuilder str = new StringBuilder(totalChrsForRow);
         Formatter formatter = new Formatter(str);
         int i;
-        // the last column is the acceptance rate and it treated separately in writeObservablesBin()
-        for (i=0;i<avgArr.length-1;i++){
-            formatter.format(" % "+(colWidths[startIndex+i]-1)+'.'+(colWidths[startIndex+i]-8)+"g",(avgArr[i]/N));
+        for (i=0;i<avgArr.length;i++){
+            formatter.format(" % "+(colWidths[startIndex+i])+'.'+(colWidths[startIndex+i]-8)+"g",(avgArr[i]/N));
         }
-        formatter.format(" % "+(colWidths[startIndex+i]-1)+'.'+(colWidths[startIndex+i]-8)+"g",(avgArr[i]/N));
         if (str.length()>totalChrsForRow)
             System.err.println("avg arr row builder not allocated enough space: " + str.length() + "/" + (totalChrsForRow));
         return str.toString();

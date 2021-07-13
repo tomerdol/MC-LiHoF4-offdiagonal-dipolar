@@ -9,8 +9,7 @@ import config
 from collections import namedtuple
 
 def is_list_type(x):
-    """check whether the input is a type or list (list, tuple or set)
-    """
+    """check whether the input is a type or list (list, tuple or set)"""
     return isinstance(x,tuple) or isinstance(x,list) or isinstance(x,set)
 
 

@@ -19,7 +19,12 @@
       </library>
     </orderEntry>
   </component>
+  <component name="PackageRequirementsSettings">
+    <option name="requirementsPath" value="" />
+  </component>
   <component name="PyDocumentationSettings">
+    <option name="format" value="GOOGLE" />
+    <option name="myDocStringFormat" value="Google" />
     <option name="renderExternalDocumentation" value="true" />
   </component>
 </module>

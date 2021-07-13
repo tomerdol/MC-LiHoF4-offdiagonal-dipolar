@@ -338,6 +338,7 @@ def main_bin_txt(simulations):
             # if no project name is given, the existence of a corresponding binned_data folder must be verified for each file
             if sim.folderName == '*': mkdir(os.path.dirname(fname) + '/binned_data')
 
+            fname = fname.replace('\\','/')
             tmp_fname_bin = fname.split('/')
             tmp_fname_bin.insert(5,'binned_data')
             fname_bin='/'.join(tmp_fname_bin)
@@ -419,7 +420,8 @@ def main():
     #     folderName = sys.argv[3]
     #     mech = sys.argv[4]
     simulations = analysis_tools.get_simulations(L, folderName, h_ex, mech)
-    main_bin(simulations)
+    # main_bin(simulations)
+    main_bin_txt(simulations)
     # for testing:
     # print(read_binned_data(list(simulations.itertuples())[3]))
        
