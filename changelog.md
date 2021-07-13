@@ -15,6 +15,8 @@
 * Changed nnArray_test in ReadInteractionsTableLiHoF4.java to compact indices
 * Moved handling of IndexOutOfBoundsException when calculating a derivative to the calling function so that it causes the method to fail and tries the next method instead of immediately aborting the MC step
 * Fixed table formatting for BIN output type
+* Ewald obtains its singleSpin array from lattice
+* deprecated GenerateLattice
 
 ## v1.4.0b - 05/07/2021
 * Add script to plot multiple histograms
