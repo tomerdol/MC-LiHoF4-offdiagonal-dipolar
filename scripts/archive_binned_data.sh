@@ -1,4 +1,6 @@
 #!/bin/bash
+# Archive raw results and checkpoints in the given directory after
+# verifying that all of their data exists in the respective /binned_data
 
 if [ $# -ne 1 ]
 then
@@ -6,18 +8,21 @@ echo Usage $0 [directory]
 exit
 fi
 
-# first bin (hopefully) all data in the project
+# first bin (hopefully) all data in the project (no output is needed)
 python3 bin_data.py --system_name "$SYS_NAME" -h_ex 0.0 0.3 0.6 1.0 1.5 2.0 --folder_list "$1" --mech false true -L 4 5 6 7 8 > /dev/null
 
+# results directory
 dir="../${SYS_NAME}/data/results/""$1"
-
+# temp file to hold the names of all result files that can safely be archived
 tmp_data_file="$dir""/files_to_archive.tmp"
 if [ -f $tmp_data_file ]
 then
 rm $tmp_data_file
 fi
 
+# checkpoint directory
 checkpoint_dir="../${SYS_NAME}/checkpoints/""$1"
+# temp file to hold the names of all checkpoint files that can safely be archived
 tmp_checkpoints_file="$checkpoint_dir""/files_to_archive.tmp"
 if [ -f $tmp_checkpoints_file ]
 then
@@ -39,7 +44,7 @@ if [ ! -d "$file" ]; then
     T=$(echo ${name_no_ext} | awk -F_ '{print $5}' | tr . _)
     mech=$(echo ${name_no_ext} | awk -F_ '{print $6}')
     seed=$(echo ${name_no_ext} | awk -F_ '{print $7}')
-    # remove tamperature and seed to get the .h5 file name
+    # remove temperature and seed to get the .h5 file name
     binned_file="${dir}/binned_data/table_${Lx}_${Lz}_${H}_${mech}.h5"
     if [ -f "$binned_file" ]; then
         # first try to find the last sample in the last 100 lines
@@ -63,6 +68,7 @@ if [ ! -d "$file" ]; then
                 echo " binned."
                 checkpoint_file="save_state_${Lx}_${Lz}_${H}_${mech}_${seed}.txt"
                 if [ -f "$checkpoint_dir"/"$checkpoint_file" ]; then
+                    # if it was not already added (since there are multiple temperatures for each seed), add it to the temporary file
                     grep -qxF "$checkpoint_file" "$tmp_checkpoints_file" || echo "$checkpoint_file" >> $tmp_checkpoints_file
                     #echo "$checkpoint_file" >> "$tmp_data_file"
                 else

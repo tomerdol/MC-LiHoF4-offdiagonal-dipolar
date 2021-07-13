@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="PublishConfigData" serverName="dev" overwriteAll="false" exclude=".svn;.cvs;.idea;.DS_Store;.git;.hg;*.hprof;*.pyc;*.o0*;*.o1*;*.o2*;*.o3*;*.o4*;*.o5*;*.o6*;*.o7*;*.o8*;*.o9*;*.e0*;*.e1*;*.e2*;*.e3*;*.e4*;*.e5*;*.e6*;*.e7*;*.e8*;*.e9*" showNewOnSourceInSync="false">
+  <component name="PublishConfigData" serverName="dev" overwriteAll="false" createEmptyFolders="true" exclude=".svn;.cvs;.idea;.DS_Store;.git;.hg;*.hprof;*.pyc;*.o0*;*.o1*;*.o2*;*.o3*;*.o4*;*.o5*;*.o6*;*.o7*;*.o8*;*.o9*;*.e0*;*.e1*;*.e2*;*.e3*;*.e4*;*.e5*;*.e6*;*.e7*;*.e8*;*.e9*" showNewOnSourceInSync="false">
     <serverData>
       <paths name="beta">
         <serverdata>
@@ -53,14 +53,15 @@
             <mapping deploy="/LiHoF4_transverse_field_MC/stable" local="$PROJECT_DIR$" web="/" />
           </mappings>
           <excludedPaths>
-            <excludedPath local="true" path="$PROJECT_DIR$/data/p_configs" />
-            <excludedPath local="true" path="$PROJECT_DIR$/checkpoints" />
-            <excludedPath path="/LiHoF4_transverse_field_MC/stable/data/analysis" />
-            <excludedPath path="/LiHoF4_transverse_field_MC/stable/data" />
-            <excludedPath path="/LiHoF4_transverse_field_MC/stable/checkpoints" />
-            <excludedPath path="/LiHoF4_transverse_field_MC/stable/temperature_schedules" />
-            <excludedPath path="/LiHoF4_transverse_field_MC/stable/output" />
+            <excludedPath local="true" path="$PROJECT_DIR$/LiHoF4/data/p_configs" />
+            <excludedPath local="true" path="$PROJECT_DIR$/LiHoF4/checkpoints" />
+            <excludedPath path="/LiHoF4_transverse_field_MC/stable/LiHoF4/data/analysis" />
+            <excludedPath path="/LiHoF4_transverse_field_MC/stable/LiHoF4/data" />
+            <excludedPath path="/LiHoF4_transverse_field_MC/stable/LiHoF4/checkpoints" />
+            <excludedPath path="/LiHoF4_transverse_field_MC/stable/LiHoF4/temperature_schedules" />
+            <excludedPath path="/LiHoF4_transverse_field_MC/stable/LiHoF4/output" />
             <excludedPath local="true" path="$PROJECT_DIR$/.gitignore" />
+            <excludedPath local="true" path="$PROJECT_DIR$/Fe8/data/interactions/" />
           </excludedPaths>
         </serverdata>
       </paths>
