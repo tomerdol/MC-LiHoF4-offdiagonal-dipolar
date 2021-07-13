@@ -26,7 +26,7 @@ public class singleSpin implements Serializable{
 	/** local applied magnetic field in the y direction (transverse) */
 	private double localBy;
 	/**
-	 * first array contains the last indices of the local field (x,y,z)<->(2,1,0) in the FieldTable
+	 * first array contains the last indices of the local field (x,y,z) == (2,1,0) in the FieldTable
 	 * second array is used to track whether consecutive calls (to find magneticMoment or energy) are correlated (separately for x,y,z)
 	 * with 1 indicating correlation and 0 indicating otherwise.
 	 */

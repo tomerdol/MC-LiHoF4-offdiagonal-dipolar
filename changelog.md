@@ -1,5 +1,21 @@
 # Change log
 
+## v1.5.0 - 13/07/2021
+* Removed tMaxConfig column
+* Added junit4.jar to lib
+* Extended README.md
+* Fixes to method statistics for self-consistent calculation
+* Added summary of useful commands in /docs
+* removed tMAxConfigs column from BIN output
+* Extended documentation and Javadoc
+* Added Ion_positions.pdf
+* Switched to try-with-resources in receiveTemperatureSchedule
+* Removed printing of percentage of longitudinal fields below some threshold (0.029) - no longer relevant with constant moment
+* Added usage message in case no arguments are given
+* Changed nnArray_test in ReadInteractionsTableLiHoF4.java to compact indices
+* Moved handling of IndexOutOfBoundsException when calculating a derivative to the calling function so that it causes the method to fail and tries the next method instead of immediately aborting the MC step
+* Fixed table formatting for BIN output type
+
 ## v1.4.0b - 05/07/2021
 * Add script to plot multiple histograms
 * Changed crystal+field+hamiltonian-transversal+field+const.py plateau location back to 1.1

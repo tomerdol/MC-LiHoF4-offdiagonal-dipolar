@@ -12,38 +12,41 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Properties;
 
-
+/**
+ * Generates an array of {@code spinSpin} objects that represents a crystal system
+ * @deprecated because the creation of the system has been moved to {@link simulation.montecarlo.Lattice}
+ */
+@Deprecated
 public class GenerateLattice {
 
 	/**
-	 * Generates a singleSpin array of LiHo_{x}Y_{1-x}F_4
+	 * Generates a {@code singleSpin} array
 	 * @param Lx - Number of unit cells in x and in y directions
 	 * @param Lz - Number of unit cells in z direction
-	 * @param dilution - Dilution of Holmium atoms (x)
+	 * @param dilution - Dilution of magnetic ions -- spins (x)
 	 * @param h - Random field parameter
 	 * @param rnd_spin - PRNG for random dilution. If null is given then an empty lattice will be returned (all spin 0) which still can be useful for Ewald summation.
-	 * @return An array of spins that represent a Lx*Lx*Lz lattice of LiHo_{x}Y_{1-x}F_4
+	 * @return An array of spins that represent a Lx*Lx*Lz system
 	 */
 	public static singleSpin[] generate_ising_lattice(int Lx, int Lz, double dilution, double h, MersenneTwister rnd_spin) {
 		return generate_ising_lattice(Lx, Lx, Lz, dilution, h, rnd_spin);
 	}
 
 	/**
-	 * Generates a singleSpin array of LiHo_{x}Y_{1-x}F_4
-	 * @param Lx - Number of unit cells in x direction
-	 * @param Ly - Number of unit cells in y direction
-	 * @param Lz - Number of unit cells in z direction
-	 * @param dilution - Dilution of Holmium atoms (x)
-	 * @param h - Random field parameter
-	 * @param rnd_spin - PRNG for random dilution. If null is given then an empty lattice will be returned (all spin 0) which still can be useful for Ewald summation.
-	 * @return An array of spins that represent a Lx*Lx*Lz lattice of LiHo_{x}Y_{1-x}F_4
+	 * Generates a {@code singleSpin} array
+	 * @param Lx Number of unit cells in x direction
+	 * @param Ly Number of unit cells in y direction
+	 * @param Lz Number of unit cells in z direction
+	 * @param dilution Dilution of magnetic ions -- spins (x)
+	 * @param h Random field parameter
+	 * @param rnd_spin PRNG for random dilution. If null is given then an empty lattice will be returned (all spin 0) which still can be useful for Ewald summation.
+	 * @return An array of spins that represent a Lx*Lx*Lz system
 	 */
 	public static singleSpin[] generate_ising_lattice(int Lx, int Ly, int Lz, double dilution, double h, MersenneTwister rnd_spin) {
 		final double spinSize = CrystalField.getMagneticMoment(0.0, 0.0, 0.05);
 
         int i, j, k, l;
-        // create the array that will hold the lattice. the array's cells correspond
-        // to the unit cells of the LiHo{x}Y{x-1}F4.
+        // create the array that will hold the lattice.
         singleSpin[] arr = new singleSpin[Constants.num_in_cell*Lx*Ly*Lz];
         
         //~~~~~~~~~~~~~~~~~~~~~~~~~~~~

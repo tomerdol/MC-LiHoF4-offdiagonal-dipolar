@@ -697,7 +697,7 @@ public class Lattice implements Serializable {
 
     /**
      * Reads a lattice from file and creates initial random configuration
-     * Only required when there is disorder, i.e. dilution<1.0.
+     * Only required when there is disorder, i.e. dilution is less than 1.0.
      * @param fileNumber - as in "config_%Lx%_%Lz%_%x%_%h%_%fileNumber%.txt
      * @param dilution - dilution of Ising lattice
      * @param Lx - number of unit cells in x direction of the lattice

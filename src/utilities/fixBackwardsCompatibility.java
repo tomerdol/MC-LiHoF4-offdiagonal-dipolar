@@ -8,8 +8,15 @@ import simulation.montecarlo.MultipleTMonteCarloSimulation;
 import simulation.montecarlo.ParseCommandLine;
 import simulation.montecarlo.SimulationCheckpointer;
 
+/**
+ * Fixes old checkpoints when adding column to the simulation's output
+ */
 public class fixBackwardsCompatibility {
 
+    /**
+     * Fixes old checkpoints when adding column to the simulation's output
+     * @param args
+     */
     public static void main(String[] args){
         int Lx=0;	// lattice x-y size
         int Lz=0;	// lattice z size
@@ -37,7 +44,7 @@ public class fixBackwardsCompatibility {
         // then, parse command line arguments
         CommandLine commandLine = ParseCommandLine.generateCommandLine(options, args);
 
-        // then parse the interrogate the commandLine object
+        // then parse and interrogate the commandLine object
         try {
             Lx = Integer.parseInt(commandLine.getOptionValues("L")[0]);
             Lz = Integer.parseInt(commandLine.getOptionValues("L")[1]);
@@ -71,7 +78,7 @@ public class fixBackwardsCompatibility {
     }
 
     /**
-     * Add a column to an old saved simulation to make it compatible with newer simulation object.
+     * Adds a column to an old saved simulation to make it compatible with newer simulation object.
      * Reads the checkpoint, modifies the object and saves it.
      * @param folderName - project name
      * @param Lx - Number of unit cells in x and in y directions

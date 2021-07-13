@@ -9,7 +9,7 @@ import java.util.Random;
 
 /**
  * Holds a table of precalculated values and performs interpolation to get requested values.
- * Used to hold energy & magnetic moment of a Ho ion under different (Bx,By,Bz)
+ * Used to hold energy and magnetic moment of a Ho ion under different (Bx,By,Bz)
  */
 final public class FieldTable {
     /** The data itself (magnetic moment or energy) */
@@ -395,7 +395,7 @@ final public class FieldTable {
     }
 
     /**
-     * Looks for the indices of the received Bx, By & Bz. Uses either {@link #hunt} or {@link #binarySearch(double, double[])} depending on the
+     * Looks for the indices of the received Bx, By and Bz. Uses either {@link #hunt} or {@link #binarySearch(double, double[])} depending on the
      * received indicator.
      * @param bx Bx field
      * @param by By field
@@ -434,7 +434,7 @@ final public class FieldTable {
 
     /**
      * The main function that retrieves values from the table.
-     * Given Bx, By & Bz, returns the interpolated value.
+     * Given Bx, By and Bz, returns the interpolated value.
      * Also if prevBIndices is received, updates its elements to the closest indices of this search.
      * @param bx Bx value
      * @param by By value

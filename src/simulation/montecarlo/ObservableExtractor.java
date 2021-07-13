@@ -19,7 +19,7 @@ public class ObservableExtractor {
     /**
      * Calculates the mean (over the lattice) magnetic fields and their standard deviations
      * @param arr the lattice array
-     * @return an array of means and standard deviations of Bx, By and Bz in the format: [<Bx>,std(Bx),<By>,std(By),<Bz>,std(Bz),maxB_transverse,maxB_long]
+     * @return an array of means and standard deviations of Bx, By and Bz in the format: [E[Bx>],std(Bx),E[By],std(By),E[Bz],std(Bz),maxB_transverse,maxB_long]
      */
     public static double[] meanField(singleSpin[] arr){
 
