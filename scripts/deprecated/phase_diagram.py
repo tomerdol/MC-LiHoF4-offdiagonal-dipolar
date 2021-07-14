@@ -1,3 +1,8 @@
+"""
+Creates a phase diagram from the results of a MC simulation.
+Uses results from a single long MC run.
+Deprecated since independent runs are now used -- use phase_diagram_bin.py instead.
+"""
 import numpy as np
 import matplotlib
 matplotlib.use('Agg')
@@ -119,7 +124,7 @@ def create_temp_all_L(all_L, L_exists_dict, overwrite_tmp_dict):
     return new_all_L
 
 def overwrite_to_dict(overwrite_tmp,folderName_dict,all_L,h_ex):
-    table = np.genfromtxt('simulation_plan',comments='$',dtype=str,encoding=None)
+    table = np.genfromtxt('../simulation_plan', comments='$', dtype=str, encoding=None)
     overwrite_tmp_dict={}
     for l in all_L:
         overwrite_tmp_dict[l] = overwrite_tmp and table[(table[:,6] == folderName_dict[l]) & (table[:,1] == str(l)) & (table[:,2] == str(h_ex))][0][0] != 'done' 

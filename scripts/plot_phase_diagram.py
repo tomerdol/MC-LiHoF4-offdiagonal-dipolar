@@ -3,7 +3,8 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import sys
-import phase_diagram
+from deprecated import phase_diagram
+
 
 def main():
     file_name_list = sys.argv[1:]

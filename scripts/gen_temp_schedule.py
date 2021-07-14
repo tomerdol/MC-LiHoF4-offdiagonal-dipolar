@@ -1,3 +1,7 @@
+"""
+Generate a temperature schedule using a geometric sequence.
+Usage: python3 gen_temp_schedule.py [low T] [high T] [# of T]
+"""
 import numpy as np
 import sys
 import os
@@ -10,6 +14,8 @@ num = sys.argv[3]
 xdata = np.geomspace(float(start),float(end),num=int(num))
 
 print(','.join(map(str,xdata)))
+
+# after the result has been printed, there is an option to save it in a (few) temperature schedule file(s)
 ans=input("Overwrite current temperature_schedule file [y/n]? ")
 if (ans=='y'):
     script_dir = os.path.dirname(os.path.abspath(__file__)) #<-- absolute dir the script is in
@@ -23,5 +29,3 @@ if (ans=='y'):
         abs_file_path = script_dir + rel_path
         with open(abs_file_path, 'w') as outfile:
             outfile.write(','.join(map(str,xdata)))
-
-

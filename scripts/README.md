@@ -29,4 +29,12 @@ From the root path:
     qsub -cwd -q smoshe.q,lublin.q -V -S /bin/bash scripts/create_all_tables.sh
     ```
    
-### df
+### python3 path
+Some scripts use a specific python path:
+```
+/gpfs0/smoshe/projects/Python-3.8_old/bin/python3
+```
+This is done since python compiled on newer machines does not work on the older 
+machines (sge190), so this way we ensure it will run wherever.  
+If all machines have the same OS version, these references can just be changed to `python3`
+that is in the path.
