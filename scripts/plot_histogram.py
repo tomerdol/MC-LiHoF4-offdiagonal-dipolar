@@ -28,7 +28,7 @@ def parse_arguments():
 
 
 def main_hist2(simulations, to_plot, flip=False, seed='*'):
-    from fit6 import str_with_err
+    from fit import str_with_err
     from plot_bin import format_label
     fig, ax = plt.subplots(figsize=(10,10))
     prop_iter = iter(plt.rcParams['axes.prop_cycle'])

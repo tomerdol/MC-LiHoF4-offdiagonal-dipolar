@@ -1,3 +1,11 @@
+"""
+Checks equilibration of a MC simulation output according to the logarithmic binning method.
+Additionally checks that the bins are not monotonically increasing or decreasing.
+Was used when a single long MC simulation was run instead of many independent simulations.
+plot_equilibration_pdf_bin.py is not used instead.
+See H. G. Katzgraber, M. Körner, and A. P. Young, Universality in Three-Dimensional Ising Spin Glasses: A Monte Carlo Study, Phys. Rev. B 73, 224432 (2006):
+https://link.aps.org/doi/10.1103/PhysRevB.73.224432
+"""
 import numpy as np
 import pandas as pd
 import sys
@@ -5,19 +13,20 @@ import math
 import csv
 import scipy.stats as stats
 import warnings
-
-# return how many bins from the end are within the error bars of one another
-# (>=3 is considered equilibrated)
-# --------
-# a: is the array in which we check equilibration
-# min_bin: is the minimum bin from which to start checking (e.g. the first 3 bins being equilibrated does
-# not means real equilibration)
-# consec_bins_for_equilib: the minimum number of consecutive bins that agree within error bars for
-# equilibration
 import config
 
 
 def check(a, min_bin, consec_bins_for_equilib):
+    """
+    return how many bins from the end are within the error bars of one another
+    (>=3 is considered equilibrated).
+    :param a: the array in which we check equilibration
+    :param min_bin: the minimum bin from which to start checking (e.g. the first 3 bins being equilibrated does
+    :param consec_bins_for_equilib: the minimum number of consecutive
+    bins that agree within error bars for equilibration
+    :return:
+    """
+
     max_num_of_bins=0
     num_of_bins = int(math.log2(a.size+1))
     

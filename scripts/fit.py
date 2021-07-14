@@ -1,3 +1,7 @@
+"""
+Performs a least-squares fit of multiple curves (for multiple linear system sizes)
+to find the critical temperature and critical exponents.
+"""
 import matplotlib
 matplotlib.use('Agg')
 import numpy as np
@@ -7,16 +11,21 @@ import matplotlib.offsetbox as offsetbox
 import sys
 import pandas as pd
 import math
-import csv
-import os
 import warnings
 import analysis_tools
 import bin_data
 from itertools import cycle
 import config
-#print('imports successful')
+
 
 def f(x, L, par):
+    """
+    Third-order polynomial function used to represent the scaling function for fitting
+    :param x: NumPy aray
+    :param L:
+    :param par:
+    :return:
+    """
     x_c, p0, p1, p2, p3, v = par
     try:
         return p0 + p1*((L**(1/v))*(x-x_c)) + p2*((L**(1/v))*(x-x_c))**2 + p3*((L**(1/v))*(x-x_c))**3
@@ -26,6 +35,7 @@ def f(x, L, par):
 
 def err(p, L, x, y):
     return f(x,L,p) - y
+
 
 def err_global(p, all_L, all_x, all_y):
     err0=[]

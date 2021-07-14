@@ -3,11 +3,11 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import pandas as pd
-import csv, sys, os
-import plot, plot_equilibration_pdf, check_equilibration, fit6, test_autocorrelation
+import csv, os
+import plot, fit, test_autocorrelation
+from deprecated import check_equilibration
 import itertools
 import config
-from shutil import copyfile
 
 
 def check_exists_and_not_empty(T, L, Bex, folderName, mech):
@@ -169,7 +169,7 @@ def main():
         print('Starting equilibration tests...')
         temp_all_L=create_temp_all_L(all_L, check_exists_and_not_empty(xdata, all_L, h_ex, folderName_dict, mech), overwrite_tmp_dict)
         print('L=%s already exist in /tmp'%[item for item in all_L if item not in temp_all_L])
-        L_equilibrated_min_value=check_equilibration.check_equilib(xdata, to_check, temp_all_L, h_ex, folderName_dict, mech, folder='../'+config.system_name+'/data/results')
+        L_equilibrated_min_value= check_equilibration.check_equilib(xdata, to_check, temp_all_L, h_ex, folderName_dict, mech, folder='../' + config.system_name + '/data/results')
         print('Finished equilibration tests.')
         print('Starting autocorrelation tests...')
         test_autocorrelation.save_uncorrelated_timeseries(xdata, to_check, temp_all_L, L_equilibrated_min_value, h_ex,
@@ -201,8 +201,8 @@ def main():
             min_x = initial_xc-delta
             max_x = initial_xc+delta
             print('Starting fitting...')
-            x_c, x_c_err, v, v_err, r_squared, all_y_curves = ( fit6.fit_main(all_L, L_equilibrated_min_value, tau_dict, boot_num, h_ex, 
-                                                    mech, folderName_dict, xdata, min_x, max_x, initial_xc, folder='/tmp') )
+            x_c, x_c_err, v, v_err, r_squared, all_y_curves = (fit.fit_main(all_L, L_equilibrated_min_value, tau_dict, boot_num, h_ex,
+                                                                            mech, folderName_dict, xdata, min_x, max_x, initial_xc, folder='/tmp'))
             #print('x_c=%s, x_c_err=%s, v=%s, v_err=%s, r_squared=%s'%(x_c, x_c_err, v, v_err, r_squared))
             #print('y_curves:')
             #print(all_y_curves)

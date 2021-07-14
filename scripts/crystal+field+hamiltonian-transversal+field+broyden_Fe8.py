@@ -1,13 +1,32 @@
+"""
+Create a magnetic moment and energy interpolation table, i.e. calculates the
+energy and magnetic moment of the "up" and "down" states of a Fe8 molecule under the
+Fe8 crystal field potential and an applied magnetic field on a grid
+of such applied field: (Bx,By,Bz) and saves the results so that they can be read
+and used by interpolating within the grid during the MC simulation.
+See further details in the documentation of the Java class simulation.montecarlo.CrystalField.
+This one allows for magnetic moments that might be positive or negative
+for both "up" and "down", given a large enough applied magnetic field.
+It was originally introduced when using the Broyden method for the self-
+consistent calculation of the magnetic moments since that required large
+(possibly unphysical) fields be tested on the way to the solution.
+"""
 import numpy as np
 from numpy import linalg as LA
-import matplotlib.pyplot as plt
-from scipy import optimize
 import math
-import pandas as pd
 import sys
 import os
 
 def write_to_file(name, data, Bx, By, Bz):
+	"""
+	Writes the calculated table to a txt file in /Fe8/data/interactions/.
+	:param name: name of the txt file
+	:param data: data (3D NumPy array) to save in the file
+	:param Bx: grid Bx values
+	:param By: grid By values
+	:param Bz: grid Bz values
+	:return:
+	"""
 	script_dir = os.path.dirname(os.path.abspath(__file__)) #<-- absolute dir the script is in
 	rel_path = "/../Fe8/data/interactions/" + name + '.txt'
 	print(script_dir)
@@ -31,12 +50,12 @@ def write_to_file(name, data, Bx, By, Bz):
 			# Writing out a break to indicate different slices...
 			outfile.write('# New Bz slice\n')
 
-#constants
+# constants
 hbar=1
 D=0.294
 E=0.046
-u_B=0.6717# Bohr magneton [K/T]
-g_L=2# Lande g-factor
+u_B=0.6717 # Bohr magneton [K/T]
+g_L=2 # Lande g-factor
 J=10
 deg_J = 2 * J + 1
 
@@ -51,27 +70,23 @@ I_J = np.diag(np.ones(int(round(deg_J))))
 # "crystal field" Hamiltonian
 H_cf = -D*LA.matrix_power(jz,2) + E*(LA.matrix_power(jx,2)-LA.matrix_power(jy,2))
 
-
 # Magnetic field Zeeman term
+# we use a geometric sequence so that the grid is
+# denser closer to zero where we want better resolution.
 meanBx = float(sys.argv[1])
 meanBy = float(sys.argv[2])
 maxBx=3.0       # the real max is one less than this
 maxBz=1.2       # the real max is one less than this
 number=40       # the real number is twice this
+
 min_bz=0.0014
-# next:
-#min_bz=0.00967
 Bx = np.geomspace(1,maxBx,num=number) - 1 + np.geomspace(1,maxBx,num=number)[1]- np.geomspace(1,maxBx,num=number)[0]
-# Bx = np.concatenate((np.flip(-1*Bx),[0.0],Bx),axis=0)
 Bx = np.concatenate((np.flip(-1*Bx),Bx),axis=0)
 Bx += meanBx
 By = np.geomspace(1,maxBx,num=number) - 1 + np.geomspace(1,maxBx,num=number)[1] - np.geomspace(1,maxBx,num=number)[0]
-# By = np.concatenate((np.flip(-1*By),[0.0],By),axis=0)
 By = np.concatenate((np.flip(-1*By),By),axis=0)
 By += meanBy
-# Bz = np.geomspace(1,maxBz,num=number) - 1 + np.geomspace(1,maxBz,num=number)[1] - np.geomspace(1,maxBz,num=number)[0]
 Bz = np.geomspace(1,maxBz,num=number) - 1 + min_bz
-# Bz = np.concatenate((np.flip(-1*Bz),[0.0],Bz),axis=0)
 Bz = np.concatenate((np.flip(-1*Bz),Bz),axis=0)
 
 # Create full standard table
@@ -101,7 +116,7 @@ for i, bz in enumerate(Bz):
 			magnetic_moment_down = np.real(np.diagonal(np.conj(v.T)@jz@v)[1])
 			j=0
 			if np.allclose(w[j],w[j:j+2],atol=10**-15):
-				# rotate
+				# for degenerate pairs of states, lift the degeneracy by diagonalizing the J_z block
 				change_of_basis_matrix_inverse=np.transpose(v.T)
 				change_of_basis_matrix=LA.inv(change_of_basis_matrix_inverse)
 				new_jz=change_of_basis_matrix @ jz @ change_of_basis_matrix_inverse
@@ -148,17 +163,18 @@ energy_down_arr = energy_down_arr_full
 magnetic_moment_up_arr = magnetic_moment_up_arr_full
 magnetic_moment_down_arr = magnetic_moment_down_arr_full
 
-if (np.allclose((-1)*(np.flip(magnetic_moment_down_arr, 0)), magnetic_moment_up_arr, atol=1e-15)):
+# we should need only the magnetic moment and energy for one of the state and we choose to save only "up"
+# to be sure, we check that the data for down exists in up by transposing Bz -> -Bz
+# (and for the magnetic moment, also multiplying the results by -1)
+if np.allclose((-1)*(np.flip(magnetic_moment_down_arr, 0)), magnetic_moment_up_arr, atol=1e-15):
 	write_to_file('magnetic_moment_up_arr_%1.2f_0.014'%meanBx,magnetic_moment_up_arr, Bx, By, Bz)
 	print('Wrote magnetic moment file: magnetic_moment_up_arr_%1.2f_0.014'%meanBx)
- 	#pass
 else:
-    print('magnetic moment table not transposable!')
-if (np.allclose(np.flip(energy_down_arr, 0), energy_up_arr, atol=1e-15)):
+	print('magnetic moment table not transposable!')
+if np.allclose(np.flip(energy_down_arr, 0), energy_up_arr, atol=1e-15):
 	write_to_file('energy_up_arr_%1.2f_0.014'%meanBx,energy_up_arr, Bx, By, Bz)
 	print('Wrote energy file: energy_up_arr_%1.2f_0.014'%meanBx)
- 	#pass
 else:
-    print('energy table not transposable!')
+	print('energy table not transposable!')
 
 

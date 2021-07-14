@@ -126,9 +126,9 @@ def main():
 
     # option packages for plotting and fitting: either binder ratio or finite-size correlation length/L
     if args.scaling_func=='binder':
-        plot_options = {'Name':'g', 'axis_yscale':'linear', 'func':fit6.get_binder, 'corr_length_axis':args.corr_length_axis, 'unit_cell_length':unit_cell_length_by_axis[args.corr_length_axis]}
+        plot_options = {'Name':'g', 'axis_yscale':'linear', 'func':fit.get_binder, 'corr_length_axis':args.corr_length_axis, 'unit_cell_length':unit_cell_length_by_axis[args.corr_length_axis]}
     elif args.scaling_func=='corr_length':
-        plot_options = {'Name':r'$\xi^{(%s)}_{L} / L$'%args.corr_length_axis, 'axis_yscale':'log', 'func':fit6.get_correlation_length, 'corr_length_axis':args.corr_length_axis, 'unit_cell_length':unit_cell_length_by_axis[args.corr_length_axis]}
+        plot_options = {'Name':r'$\xi^{(%s)}_{L} / L$'%args.corr_length_axis, 'axis_yscale':'log', 'func':fit.get_correlation_length, 'corr_length_axis':args.corr_length_axis, 'unit_cell_length':unit_cell_length_by_axis[args.corr_length_axis]}
     else:
         raise Exception('Invalid scaling function given! Either \'binder\' or \'corr_length\' are allowed.') 
 
@@ -193,7 +193,7 @@ def main():
                     min_x = initial_xc-delta
                     max_x = initial_xc+delta
                     print('Starting fitting...')
-                    x_c, x_c_err, v, v_err, r_squared, all_y_curves = fit6.fit_bin(simulations_mech_folderName_Bex, boot_num, min_x, max_x, initial_xc, plot_options)
+                    x_c, x_c_err, v, v_err, r_squared, all_y_curves = fit.fit_bin(simulations_mech_folderName_Bex, boot_num, min_x, max_x, initial_xc, plot_options)
 
                     #print('x_c=%s, x_c_err=%s, v=%s, v_err=%s, r_squared=%s'%(x_c, x_c_err, v, v_err, r_squared))
                     #print('y_curves:')
@@ -242,9 +242,8 @@ if __name__ == "__main__":
     import matplotlib
     matplotlib.use('Agg')
     import matplotlib.pyplot as plt
-    import pandas as pd
-    import csv, sys, os
-    import plot, plot_bin, plot_equilibration_pdf_bin, check_equilibration, fit6, test_autocorrelation, bin_data, analysis_tools
+    import os
+    import plot_bin, plot_equilibration_pdf_bin, fit, bin_data, analysis_tools
     import config
-    from shutil import copyfile
+
     main()

@@ -1,7 +1,10 @@
 #!/bin/bash
-#parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
-
-#cd "$parent_path"
+# Check the progress of all jobs currently running under user tomerdol.
+# Reads the last index from each job's results file and compares to the total
+# number of sweeps it was given as a parameter.
+# The output is formatted like the output of qstat with an additional column "progress"
+# Uses the check_prog.sh script.
+# Run from the root project directory as bash ./scripts/check_overall_prog.sh
 
 total=0
 count=0

@@ -217,7 +217,7 @@ def main():
     if to_plot == 'swap':
         simulations = remove_max_temperature(simulations)
 
-    from fit6 import get_binder, get_correlation_length
+    from fit import get_binder, get_correlation_length
 
     if to_plot == 'corr_length':
         if config.system_name == 'Fe8':

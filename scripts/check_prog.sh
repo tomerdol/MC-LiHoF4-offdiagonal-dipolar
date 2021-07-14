@@ -1,9 +1,17 @@
 #!/bin/bash
+# Check the progress of a currently running job.
+# Reads the last index from the job's results file and compares to the total
+# number of sweeps it was given as a parameter.
+# Run from the root project directory as bash ./scripts/check_prog.sh
 
-#parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
+# Check input
+if [ $# -ne 1 ]
+then
+echo "Usage $0 [jobid | job name]"
+exit
+fi
 
-#cd "$parent_path"
-
+# check is a job id was given or a job name, and the the other
 if [[ $1 =~ ^[[:digit:]] ]]; then
     jobid=$1
     jobname=$(qstat -j $1 | grep job_name | awk '{print $2}')
@@ -11,11 +19,15 @@ else
     jobid=$(qstat -u tomerdol | tail -n +3 | awk '$3==name {print $1; exit}' name="$1")
     jobname=$1
 fi
+
+# get the args the job was run with
 args=$(qstat -j ${jobid} | grep job_args | awk '{print $2}')
 IFS=',' read -r -a args_array <<< "$args"
+
+# find the job's results file
 # array: $0=Lx $1=Lz $2=max_sweeps $3=extBx $4=mech $5=name $6=seed
 files="./${SYS_NAME}/data/results/${args_array[5]}/table_${args_array[0]}_${args_array[1]}_${args_array[3]}_*_${args_array[4]}_${args_array[6]}.txt"
-#echo $files
+
 for f in ${files}; do
 
     ## Check if the glob gets expanded to existing files.
@@ -24,8 +36,8 @@ for f in ${files}; do
     if [ -e "$f" ]; then
     :
     else
+    # if no files exist, it's the same as them being empty
     echo "0/${args_array[2]}"
-    #echo "could not find files"
     exit 0
     fi
 
@@ -45,6 +57,7 @@ while IFS= read -r line; do
     last_step_array+=( 0 )
     fi
 done < <( tail -n 1 ${files} | awk '$1=="==>" {split(substr($0, 5, length-8),a,"_"); next} $1!="" {print a[5]":"$1}' )
+
 # check if all temperature are at the same last step
 if [ "${#last_step_array[@]}" -gt 0 ] && [ $(printf "%s\000" "${last_step_array[@]}" |
        LC_ALL=C sort -z -u |
