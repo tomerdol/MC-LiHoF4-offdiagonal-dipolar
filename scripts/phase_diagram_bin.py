@@ -7,6 +7,7 @@ import numpy as np
 
 
 def parse_arguments():
+    """Parse command line arguments. Uses the common parser from config.parse_arguments."""
     from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
     import config
 
@@ -30,9 +31,14 @@ def parse_arguments():
 
 
 def find_initial_xc(all_y_curves):
+    """Given a pandas DataFrame with scaling function data for various L's,
+    find the approximate crossing of the different L curves.
+    The data column can be named either 'y_to_plot' or 'scaling_func'.
+    This is a wrapper for find_initial_xc_from_arr()."""
     arr_x=[]
     arr_y=[]
     y_column = 'y_to_plot' if 'y_to_plot' in all_y_curves.columns else 'scaling_func'
+    # turn the data in the DataFrame into NumPy arrays for find_initial_xc_from_arr()
     for L, L_group in all_y_curves.groupby('L'):
         arr_x.append(L_group['T'].to_numpy())
         arr_y.append(L_group[y_column].to_numpy())
@@ -41,45 +47,82 @@ def find_initial_xc(all_y_curves):
 
 
 def find_initial_xc_from_arr(arr_x,arr_y):
-    # find average x_c from crossing of all possible pairs of L's 
+    """
+    find average x_c from crossing of all possible pairs of L's
+    :param arr_x: list of numpy arrays for x values of the scaling function (each array is for a different L)
+    :param arr_y: list of numpy arrays for y values of the scaling function (each array is for a different L)
+    :return: approximate crossing of the different curves defined by the input
+    """
     import itertools
     
     n=len(arr_y)
     num_of_pairs=int(0.5*n*(n-1))
     sum=0
+    # inspect the given curves in pairs
     for pair in itertools.combinations(range(0,n), 2):
+        # for each pair, find the approximate crossing point
         sum += find_initial_xc_from_pair(np.array([arr_x[int(pair[0])],arr_y[int(pair[0])]]),np.array([arr_x[int(pair[1])],arr_y[int(pair[1])]]))
+
+    # average the results of the different curves
     initial_xc = sum/num_of_pairs
-    
     return initial_xc
 
+
 def find_initial_xc_from_pair(arr1,arr2):
-    # arr 1&2 are the curves for which a approximate crossing is found
-    # the format is arr[0,:]= xvalues and arr[1,:] = yvalues
-    # works only with 2 curves
+    """
+    find the crossing of two curves defined by the given numpy arrays.
+    the format for both curves is arr[0,:]= xvalues and arr[1,:] = yvalues
+    :param arr1: numpy array that defines the first curve.
+    :param arr2: numpy array that defines the second curve.
+    :return: approximate crossing point of the curves
+    """
+    # first, find the x value indices of the overlap area between the 2 curves
     idx_x_arr1=np.argwhere((arr1[0,:]>=arr2[0,:].min()) & (arr1[0,:]<=arr2[0,:].max())).flatten()
     idx_x_start = idx_x_arr1[0] # leftmost mutual x
+    # interpolate to find values of the second curve for the x values of the first curve
     yinterp = np.interp(arr1[0,idx_x_arr1], arr2[0,:], arr2[1,:])
+    # find the index (or indices if there is more than one crossing)
+    # where the difference in y values of the two curves switches sign
     idx = np.argwhere(np.diff(np.sign(arr1[1,idx_x_arr1] - yinterp))).flatten() + idx_x_start
 
-    #idx = np.argwhere(np.diff(np.sign(arr1 - arr2))).flatten()
     if idx.size > 1:
+        # more than one crossing. this is acceptable in some cases so return the intermediate value
         return arr1[0,idx[int(idx.size/2)]]
-        #raise Exception("did not find unique crossing point between the given curves")
     elif idx.size==0:
+        # no crossing
         if arr1[1,idx_x_start]>yinterp[0]:
+            # if the first curve is always higher than the second,
+            # then the crossing can happen to the left, so return
+            # the leftmost x value of the overlap area
             return arr1[0,idx_x_start]
         else:
+            # if the second curve is always higher than the first,
+            # then return the rightmost x value of the overlap area
             return arr1[0,idx_x_arr1[-1]]
     else:
+        # single clean crossing, return the average of the x values before and after the
+        # curves switch places
         return 0.5*(arr1[0,idx[0]]+arr1[0,idx[0]+1])
-    
+
+
 def plot_previous_data(ax):
+    """
+    Plot previous data from experiments and numerical works.
+    :param ax: axes object in which to plot
+    :return: the axes object
+    """
     # experimental data
+    # P. Babkevich, N. Nikseresht, I. Kovacevic, J. O. Piatek, B. Dalla Piazza, C. Kraemer, K. W. Krämer,
+    # K. Prokeš, S. Mat’aš, J. Jensen, and H. M. Rønnow, Phase Diagram of Diluted Ising Ferromagnet
+    # LiHo_{x}Y_{1−x}F_4, Phys. Rev. B 94, 174443 (2016).
+    # https://link.aps.org/doi/10.1103/PhysRevB.94.174443
     Tc_exp=np.array([1.529253677,1.531944444,1.530647491,1.52935218,1.525398936,1.525430129,1.524136459,1.521524494,1.503278601])
     Bx_exp=np.array([-0.002469136,0.091358025,0.190123457,0.29382716,0.402469136,0.496296296,0.604938272,0.748148148,0.994158712])
     
-    #previous simulations
+    # previous simulations
+    # S. M. A. Tabei, M. J. P. Gingras, Y.-J. Kao, and T. Yavors’kii,
+    # Perturbative Quantum Monte Carlo Study of LiHoF_4 in a Transverse Magnetic Field, Phys. Rev. B 78, 184408 (2008).
+    # https://link.aps.org/doi/10.1103/PhysRevB.78.184408
     Tc_sim=np.array([1.531890332,1.495526696,1.470707071])
     Bx_sim=np.array([0.006624937,0.663602684,0.942186845])
     
@@ -87,8 +130,15 @@ def plot_previous_data(ax):
     ax.plot(Tc_sim,Bx_sim,'y<',label='Previous simulations')
     
     return ax
-    
+
+
 def add_overwrite_col(overwrite_tmp, simulations):
+    """
+    Add an 'overwrite'
+    :param overwrite_tmp:
+    :param simulations:
+    :return:
+    """
     table = np.genfromtxt('simulation_plan',comments='$',dtype=str,encoding=None)
     overwrite_tmp_dict={}
     
