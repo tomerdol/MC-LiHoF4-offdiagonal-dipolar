@@ -3,7 +3,7 @@ Performs a least-squares fit of multiple curves (for multiple linear system size
 to find the critical temperature and critical exponents.
 Method names end with _bin since they work on data read from the binned_data directory.
 A previous version of these methods that used the raw data from a single long MC simulation
-can be found in commit
+can be found in revision 4009f266ea7f5fd18567f334b1181ece2c356947
 """
 import matplotlib
 matplotlib.use('Agg')

@@ -1,3 +1,8 @@
+"""
+Plot various observables vs. T.
+Uses results from a single long MC run.
+Deprecated since independent runs are now used -- use plot_bin.py instead.
+"""
 import matplotlib
 matplotlib.use('Agg')
 import numpy as np

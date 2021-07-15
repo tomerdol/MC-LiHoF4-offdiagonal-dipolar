@@ -9,8 +9,8 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import pandas as pd
 import csv, os
-import plot, fit, test_autocorrelation
-from deprecated import check_equilibration
+import fit, test_autocorrelation
+from deprecated import check_equilibration, plot
 import itertools
 import config
 
@@ -190,7 +190,7 @@ def main():
         try:
             #tau_dict = {k:1 for k in all_L}
             print('Plotting finite size scaling graphs to find initial T_c guess...')
-            all_y_curves=plot.main_plot(all_L, L_equilibrated_min_value, tau_dict, boot_num, h_ex, mech, folderName_dict, xdata, folder='/tmp')
+            all_y_curves= plot.main_plot(all_L, L_equilibrated_min_value, tau_dict, boot_num, h_ex, mech, folderName_dict, xdata, folder='/tmp')
             #print(all_y_curves)
             initial_xc_idx = find_initial_xc_idx([xdata[l] for l in sorted(xdata.keys())],all_y_curves)
             initial_xc=0.5*(xdata[all_L[0]][initial_xc_idx] + xdata[all_L[0]][initial_xc_idx+1])

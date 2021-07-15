@@ -134,34 +134,62 @@ def plot_previous_data(ax):
 
 def add_overwrite_col(overwrite_tmp, simulations):
     """
-    Add an 'overwrite'
-    :param overwrite_tmp:
-    :param simulations:
-    :return:
+    Add an 'overwrite' column to the given simulations DataFrame where simulations
+    that need to be binned and checked for equilibration again are marked as such (True)
+    :param overwrite_tmp: whether the 'overwrite' argument was passed to the script.
+    if True, all simulations except those marked 'Done' in the 'simulation_plan' file
+    will be marked to overwrite.
+    :param simulations: pandas DataFrame containing all simulations for the analysis
+    :return: the simulations DataFrame with an additional 'overwrite' column
     """
+    # read the table of simulations from the 'simulation_plan' file
+    # this table allows the user to mark some simulations are 'Done'
+    # so that they are not re-binned and re-checked for equilibration
+    # regardless of whether the 'overwrite' arg was passed
     table = np.genfromtxt('simulation_plan',comments='$',dtype=str,encoding=None)
+    # dict with simulation group (which groups all temperatures of the same run)
+    #  as key and whether to mark as 'overwrite' as the value
     overwrite_tmp_dict={}
-    
+
+    # loop through the simulations, group so that all T's are treated together
     for group, _ in simulations.groupby(['Bex','L','folderName','mech']):
-        #group[0]=Bex; group[1]=L; group[2]=folderName; group[3]=mech
+        # group[0]=Bex; group[1]=L; group[2]=folderName; group[3]=mech
+        # matching row in the table read from 'simulation_plan'
         matching_row = table[(table[:,6] == group[2]) & (table[:,1] == str(group[1])) & (table[:,2] == str(group[0])) & (table[:,3] == str(group[3]))]
-        
-        path_to_saved_equilib_file='../' + config.system_name + '/data/results/'+str(group[2])+'/binned_data/equilib_data_'+str(group[1])+'_'+str(group[1])+'_'+str(group[0])+'_'+str(group[3])+'.txt'
+
+        # the 'equilib_data' file in binned data holds the equilibrated bin of
+        # each simulation group if the analysis was performed before. if it doesn't
+        # exist, we need to do the analysis now (so mark as 'overwrite')
+        path_to_saved_equilib_file = '../' + config.system_name + '/data/results/'+str(group[2])+'/binned_data/equilib_data_'+str(group[1])+'_'+str(group[1])+'_'+str(group[0])+'_'+str(group[3])+'.txt'
         file_exists = os.path.exists(path_to_saved_equilib_file) and os.path.getsize(path_to_saved_equilib_file) > 0
-        
+
+        # reasons to have 'overwrite'=True:
+        # 1. the 'equilib_data' file does not exist
+        # 2. 'overwrite_tmp' was passed as True, and this simulation
+        # is not marked as 'Done' in the 'simulation_plan' file
         overwrite_tmp_dict[group] = not file_exists or (overwrite_tmp and not (len(matching_row)>0 and matching_row[0][0] == 'done'))
     
+    # apply the data collected in the dict to the relevant rows in the simulations DataFrame
     simulations['overwrite']=simulations.apply(lambda row: overwrite_tmp_dict[(row['Bex'],row['L'],row['folderName'],row['mech'])], axis=1)
     return simulations
 
+
 def validate_simulation_table(simulations):
+    """
+    Validate that the passed simulations are sufficient for finite-size scaling analysis
+    :param simulations: pandas DataFrame containing all simulations for the analysis
+    :return: whether the given table has simulations that are sufficient for
+    finite-size scaling analysis
+    """
     if simulations.empty:
         raise Exception('No simulations found matching the given arguments.')
     for Bex, df in simulations.groupby(['folderName','Bex']):
         if (df['L'] == df['L'].iloc[0]).all():
-            raise Exception('For finite size scaling there should be different linear system sizes (L) for each given Bex. \n' \
+            raise Exception('For finite size scaling there should be different linear system '
+                            + 'sizes (L) for each given Bex. \n'
                             + 'for Bex='+str(Bex)+' the given simulations were: \n' + str(df))
     return simulations
+
 
 def main():
     args = parse_arguments()
@@ -182,23 +210,26 @@ def main():
     else:
         raise Exception('Invalid scaling function given! Either \'binder\' or \'corr_length\' are allowed.') 
 
-    
     simulations = validate_simulation_table(analysis_tools.get_simulations(all_L, folderName_list, h_ex_list, mech_list))
     
     print('Adding overwrite column... ')
     simulations = add_overwrite_col(overwrite_tmp,simulations)
     print('done.')
     
-    # re-bin data for those simulations that are marked 'overwrite'. Files should be changed only if there is enough data for new bins.
+    # re-bin data for those simulations that are marked 'overwrite'.
+    # Files should be changed only if there is enough data for new bins.
     print('Binning data... ')
     bin_data.main_bin(simulations[simulations['overwrite']])
     print('done.')
     
     print('Testing equilibration... ')
+    # observables that need to be checked to determine whether the system has equilibrated
+    # this function adds a 'eq_bin' column to the simulations table
     to_check = ['Energy','|Magnetization|','Magnetization^2','mk2x']
     simulations = plot_equilibration_pdf_bin.main_check_equilibration(simulations, to_check)
     print('done.')
-    # iterate over the 2 mech options. within the loop 'simulations_mech' is a DataFrame for just one of the options
+
+    # iterate over the 2 'mech' options. within the loop 'simulations_mech' is a DataFrame for just one of the options
     for mech, simulations_mech in simulations.groupby(['mech']):
         # file to write results to
         f = open("phase_diagram_%s_%s_%s_%s_res.txt"%(config.system_name, mech,'_'.join(map(str,all_L)), '_'.join(map(str,folderName_list))), "w")
@@ -209,53 +240,56 @@ def main():
         
         # constant shift so that the result for Bex=0.0 is 1.53
         shift=None
-        # iterate over the given folderNames's. within the loop 'simulations_mech_folderName' is a DataFrame for just one of the 'mech' options and just one of the folderName's
-        # usually this loop (folderName) should have just one iteration. This is unless we want to see different phase diagram boundaries for different simulations (say, different Jex)
+        # iterate over the given folderNames's. within the loop 'simulations_mech_folderName' is a
+        # DataFrame for just one of the 'mech' options and just one of the folderName's
+        # usually this loop (folderName) should have just one iteration. This is unless we want to
+        # see different phase diagram boundaries for different simulations (say, different Jex)
         for folderName, simulations_mech_folderName in simulations_mech.groupby(['folderName']):
             print('********************************************************')
             print('Starting work on folderName=%s'%folderName)
             print('********************************************************')
-            # iterate over the given Bex's. within the loop 'simulations_mech_folderName_Bex' is a DataFrame for just one of the 'mech' options, just one of the folderName's and just one of the Bex's
+            # iterate over the given Bex's. within the loop 'simulations_mech_folderName_Bex' is a
+            # DataFrame for just one of the 'mech' options, just one of the folderName's and just one of the Bex's
             for Bex, simulations_mech_folderName_Bex in simulations_mech_folderName.groupby(['Bex']):
                 print('********************************************************')
                 print('Starting work on Bex=%s'%Bex)
                 print('********************************************************')
                 
                 try:
-                    #tau_dict = {k:1 for k in all_L}
                     print('Plotting finite size scaling graphs to find initial T_c guess...')
+                    # plot the entire temperature range, and use the
+                    # plotted curves to estimate Tc
                     all_y_curves=plot_bin.main_plot(simulations_mech_folderName_Bex, boot_num, plot_options)
-                    #print(all_y_curves)
-
                     initial_xc = find_initial_xc(all_y_curves)
                     
-                    print('found initial T_c guess: %s'%initial_xc)
+                    print('found initial T_c guess: %s' % initial_xc)
                 except Exception as e:
                     print('error getting initial T_c guess. Skipping Bex=%s'%Bex)
                     print(e)
                     continue
-                
+
+                # given the initial guess for Tc, do the analysis on a narrower T range around that initial Tc
                 good_fit=False
+                # delta is the T range. if the initial Tc is close to the edge of the T range, decrease delta so
+                # it is symmetric with respect to the initial Tc
                 delta=min(float(args.delta),min(simulations_mech_folderName_Bex['T'].max()-initial_xc,initial_xc-simulations_mech_folderName_Bex['T'].min()))
                 delta_step = delta*0.25
-                #delta=0.04
+                # gradually increase delta until a good fit is found
                 while not good_fit and delta<20*delta_step:
                     min_x = initial_xc-delta
                     max_x = initial_xc+delta
                     print('Starting fitting...')
                     x_c, x_c_err, v, v_err, r_squared, all_y_curves = fit.fit_bin(simulations_mech_folderName_Bex, boot_num, min_x, max_x, initial_xc, plot_options)
 
-                    #print('x_c=%s, x_c_err=%s, v=%s, v_err=%s, r_squared=%s'%(x_c, x_c_err, v, v_err, r_squared))
-                    #print('y_curves:')
-                    #print(all_y_curves)
+                    # conditions for a 'good fit'
                     if r_squared<0.95 or v<=0 or x_c_err>0.01 or x_c<min_x or x_c>max_x:
                         print('x_c=%s, x_c_err=%s, v=%s, v_err=%s, r_squared=%s, max_x=%s, min_x=%s'%(x_c, x_c_err, v, v_err, r_squared, max_x, min_x))
                         print('Could not find good fit. Trying again.')
-                        # retry
+                        # retry with larger delta and new Tc guess
                         delta = delta+delta_step
                         try:
                             print(all_y_curves)
-                            initial_xc = find_initial_xc(all_y_curves)    # this is the index in the smaller array
+                            initial_xc = find_initial_xc(all_y_curves)
 
                         except Exception as e:
                             print('error finding next T_c guess')
@@ -284,10 +318,10 @@ def main():
                     continue
         f.close()
     
-        #save fig
+        # save fig
         fig.savefig('../' + config.system_name + '/figures/phase_diagram_%s_%s_%s.png'%(mech,'_'.join(map(str,all_L)),folderName_list[0]))
-    #os.system("rsync -avzhe ssh ../"+config.system_name+"/figures/ tomerdol@newphysnet1:~/graphs/")
-    
+
+
 if __name__ == "__main__":
     import matplotlib
     matplotlib.use('Agg')

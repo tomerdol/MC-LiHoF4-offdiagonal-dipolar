@@ -1,22 +1,24 @@
+"""
+Plot various quantities vs. T
+Replaces plot.py which used results from a single MC
+simulation instead of many independent runs.
+"""
 import glob
 import config
 import matplotlib
 matplotlib.use('Agg')
 import numpy as np
 import matplotlib.pyplot as plt
-import sys
 import pandas as pd
-import math
-import csv
-import os
 import analysis_tools, bin_data
 from itertools import cycle
+
 
 def plot_multiple(all_L, xdata, all_ydata, err_y, h_ex):
     markers=['o','s','^','D','v']
     toplot=[]
     fig = plt.figure()
-    
+
     for i in range(0,len(all_L)):
         data_label = 'L=%d' %all_L[i]
         plt.errorbar(xdata,all_ydata[i],yerr=err_y[i], fmt=markers[i % len(markers)]+'-', capsize=3, label=data_label)

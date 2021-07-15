@@ -1,5 +1,10 @@
 #!/bin/bash
+# plot histograms of multiple observables for multiple projects,
+# close to the found Tc of each project.
+# uncomment the desired project block -- colors refer to the marker
+# colors in the phase diagram.
 
+# tcs array contains the found Tc values, around which we want to plot the histograms
 declare -A tcs
 : '
 #green
