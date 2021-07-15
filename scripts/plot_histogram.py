@@ -1,23 +1,22 @@
+"""
+Plot histograms of site-specific quantities read from final simulation states in /data/lattice_output/
+"""
 import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-import sys
 import glob
 import analysis_tools
-import pandas as pd
 from scipy.ndimage import gaussian_filter1d
 import config
 
+
 def parse_arguments():
+    """Parse command line arguments. Uses the common parser from config.parse_arguments."""
     from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 
     parser = ArgumentParser(description="Plots histograms from lattice output files for LiHoF4", formatter_class=ArgumentDefaultsHelpFormatter, parents=[config.parse_arguments()], conflict_handler='resolve')
     parser.add_argument( "-L", nargs='+', type=int, required=True, help = "Linear system sizes.")
-    # parser.add_argument( "--h_ex", nargs='+', type=float, help = "External magnetic field value, Bex." , required=True)
-    # parser.add_argument( "-m", "--mech", nargs='+', choices=['true','false'], help = ("Whether internal fields are suppressed or not. \'false\' means "
-    #                                                                                   "that they aren't so the mechanism is on, and \'true\' means that they are and the mechanism is off." ), required=True)
-    # parser.add_argument( "-f", "--folder_list", nargs='+', type=str, help = "List of folders in \'data/results/\' in which results should be found. " , required=True)
     parser.add_argument( "--to_plot", type=str, nargs='+', default='localBx', help = "Which observable should be plotted. Default is \'localBx\'")
     parser.add_argument( "-T", nargs='+', type=float, required=True, help = "Temperature. If not exact match, closest available temperature(s) will be used.")
     parser.add_argument("--flip", action="store_true", help="Also plot the flipped distribution. Useful for visualizing any asymmetry.")
@@ -27,13 +26,25 @@ def parse_arguments():
     return args
 
 
-def main_hist2(simulations, to_plot, flip=False, seed='*'):
+def main_hist(simulations, to_plot, flip=False, seed='*'):
+    """
+    Plot histograms of site-specific quantities for the given simulations
+
+    :param simulations: pandas DataFrame containing all simulations for which histograms should be plotted
+    :param to_plot: which quantity(ies) to plot
+    :param flip: whether to also plot the flipped histogram for each of the simulations (to easily
+                    see if they are symmetric)
+    :param seed: (optional) a specific seed for which to plot a histogram
+    :return: None
+    """
     from fit import str_with_err
     from plot_bin import format_label
     fig, ax = plt.subplots(figsize=(10,10))
     prop_iter = iter(plt.rcParams['axes.prop_cycle'])
+
     for to_plot_now in to_plot:
         num_of_simulations_to_plot=len(simulations)
+
         multiple_sim_data=[]
         multiple_sim_groups=[]
         for i, sim in enumerate(simulations.itertuples()):
@@ -126,43 +137,6 @@ def main_hist2(simulations, to_plot, flip=False, seed='*'):
     plt.close(fig)
 
 
-def main_hist(simulations, to_plot, flip=False):
-
-    all_simulations=[]
-    for i, sim in enumerate(simulations.itertuples()):
-        path='../' + config.system_name + '/data/lattice_output/'+sim.folderName+'/table_'+str(sim.L)+'_'+str(sim.L)+'_'+str(sim.Bex)+'_'+str(sim.T)+'_'+str(sim.mech)+'_'+'*'+'.txt'
-
-        file_list = glob.glob(path)
-        data = pd.concat((analysis_tools.get_table_data_by_fname(f) for f in file_list))
-        data['Simulation']=sim.Index
-        all_simulations.append(data)
-    all_simulations = pd.concat(all_simulations, axis=0, ignore_index=True)
-
-    for to_plot_now in to_plot:
-        fig, ax = plt.subplots(figsize=(10,10))
-        histograms_to_plot=[]
-        histogram_labels=[]
-
-        for (label, df) in all_simulations.groupby('Simulation'):
-
-            shift = 0 if to_plot_now != 'localBx' else float(df['Bex'].iloc[0])
-            histograms_to_plot.append(df[to_plot_now].to_numpy() - shift)
-            histogram_labels.append(str(simulations.loc[int(label)].values.tolist()))
-
-        xmin = np.array(histograms_to_plot).min()
-        xmax = np.array(histograms_to_plot).max()
-        plt.hist(histograms_to_plot, bins=60, label=histogram_labels, range=(xmin,xmax))
-        if flip:
-            plt.hist([-hist for hist in histograms_to_plot], bins=60, label=["Flipped " + hist_label for hist_label in histogram_labels], alpha=0.5, range=(-xmax,-xmin))
-        # plot = all_simulations.hist(column=to_plot, by='Simulation', grid=True, sharex=True)
-        plt.legend()
-        plt.title('Distribution of ' + to_plot_now)
-        ax.set_ylabel('# of spins')
-        ax.set_xlabel(to_plot_now + ('' if shift == 0 else ' - ' + str(shift)))
-        fig.savefig('../' + config.system_name + '/figures/hist_%s_%s_%s_%s_%s.png'%('_'.join(map(str,simulations['Bex'].unique().tolist())),'_'.join(map(str,simulations['mech'].unique().tolist())),'_'.join(map(str,simulations['L'].unique().tolist())),'_'.join(map(str,simulations['folderName'].unique().tolist())),to_plot_now), dpi=300)
-        plt.close(fig)
-
-
 def main():
     from analysis_tools import listify
     args = parse_arguments()
@@ -177,7 +151,7 @@ def main():
     seed=args.seed
 
     simulations = analysis_tools.get_simulations(L, folderName, h_ex, mech, T=T)
-    main_hist2(simulations, to_plot, flip=flip, seed=seed)
+    main_hist(simulations, to_plot, flip=flip, seed=seed)
 
 
 if __name__ == "__main__":
