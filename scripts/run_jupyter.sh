@@ -4,6 +4,8 @@
 #$ -V
 #$ -cwd
 
+# Script that opens the jupyter notebook server and prints out the required info to connect to it from a windows pc.
+
 # get tunneling info
 node=$(hostname -s)
 user=$(whoami)

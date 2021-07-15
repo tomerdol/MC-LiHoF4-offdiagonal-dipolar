@@ -9,8 +9,8 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import pandas as pd
 import csv, os
-import fit, test_autocorrelation
-from deprecated import check_equilibration, plot
+import fit
+from deprecated import check_equilibration, plot, test_autocorrelation
 import itertools
 import config
 
@@ -178,7 +178,7 @@ def main():
         print('Finished equilibration tests.')
         print('Starting autocorrelation tests...')
         test_autocorrelation.save_uncorrelated_timeseries(xdata, to_check, temp_all_L, L_equilibrated_min_value, h_ex,
-        folderName_dict, mech, folder='../'+config.system_name+'/data/results')
+                                                          folderName_dict, mech, folder='../'+config.system_name+'/data/results')
         print('Finished autocorrelation tests.')
         L_equilibrated_min_value = {k:0 for k in all_L}
         tau_dict = {k:1 for k in all_L}

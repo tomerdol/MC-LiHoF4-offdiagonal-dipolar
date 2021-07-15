@@ -1,3 +1,4 @@
+# script to translate the spin number in lattice output files to real space positions for the Fe8 system
 BEGIN{
 Lx=L
 Ly=L

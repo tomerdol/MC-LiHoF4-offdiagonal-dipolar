@@ -1,3 +1,9 @@
+"""
+Test autocorrelation using the binning method described in
+https://arxiv.org/pdf/0906.0943.pdf
+See also Binning section in the MSc thesis.
+No longer in use since we now use independent runs instead of a single long run.
+"""
 import numpy as np
 import matplotlib
 matplotlib.use('Agg')

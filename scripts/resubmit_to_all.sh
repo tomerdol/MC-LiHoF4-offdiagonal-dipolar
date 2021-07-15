@@ -1,4 +1,12 @@
 #!/bin/bash
+# Removes queued parallel jobs and resubmits them to intel_all.q in serial mode
+
+# Check input
+if [ $# -ne 2 ]
+then
+echo "Usage $0 [jobs name] [# of jobs to resubmit]"
+exit
+fi
 
 search_key=$1
 num_of_jobs_to_resubmit=$2
@@ -15,9 +23,11 @@ do
 
     # resubmit to intel_all.q in single mode
     new_jobid=$(qsub -l mem_free=40G -V -S /bin/bash -cwd -N "$jobname" -o ./"$SYS_NAME"/output/ -e ./"$SYS_NAME"/output/ -q smoshe.q@sge1082,lublin.q,intel_all.q scripts/met_with_t_single.sh "${args//,/ }")
+    # get the job id number from the output message
     new_jobid=$(echo $new_jobid | awk 'match($0,/[0-9]+/){print substr($0, RSTART, RLENGTH)}')
     qdel "$jobid"
 
+    # make sure the new submitted job is running before grabbing the next queued job
     while [ "$(qstat -u tomerdol | awk -v jid="$new_jobid" '$1 == jid {print $5}')" != "r" ]; do
       echo "New job ($new_jobid) is not yet running. Sleeping for 10 seconds."
       sleep 10

@@ -1,4 +1,9 @@
-rawData = OpenRead["/gpfs0/smoshe/users/tomerdol/home/LiHoF4_transverse_field_MC/dev/scripts/temp_lattice.txt"];
+(* Mathematica script to create a 3D plot of a magnetic system. Spins are plotted as dots with colors (yellow or green) indicating their orientation (up or down)
+The system to plot is read from the file temp_lattice.txt in the scripts dir.
+The required format is that each row look like: x,y,x,s
+E.g. -0.775731,-0.275482,2.88103,1
+The resulting figure is saved in 'lattice_output.png'.*)
+rawData = OpenRead["/gpfs0/smoshe/users/tomerdol/home/LiHoF4_transverse_field_MC/stable/scripts/temp_lattice.txt"];
 data = ToExpression@ReadList[rawData, {Record, Record, Record, Record},RecordSeparators -> {",", "\n"}];
 Close[rawData];
 plot = ListPointPlot3D[List /@ data[[All, {1, 2, 3}]], PlotStyle -> ({PointSize[Large], Blend[{{-1, Darker[Green]}, {1, Yellow}}, #1]} &/@Flatten[data[[All, 4]]]), Axes -> True, BoxRatios -> Automatic, AxesLabel -> {"x", "y", "z"}];

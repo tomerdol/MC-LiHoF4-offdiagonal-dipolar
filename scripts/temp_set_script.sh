@@ -1,4 +1,6 @@
 #!/bin/bash
+# script to optimize the temperature schedule (to get nearly constant acceptance rate)
+# based on the energy measurements from a short run.
 	/usr/bin/R --slave --args $@ << "EOF"
 args <- commandArgs(trailingOnly=T)
 	d <- read.table(args[1],header=T);

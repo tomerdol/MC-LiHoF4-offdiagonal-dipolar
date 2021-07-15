@@ -47,52 +47,61 @@ def main_hist(simulations, to_plot, flip=False, seed='*'):
 
         multiple_sim_data=[]
         multiple_sim_groups=[]
+        # first go over all simulations to determine the bins:
         for i, sim in enumerate(simulations.itertuples()):
             path='../' + config.system_name + '/data/lattice_output/'+sim.folderName+'/table_'+str(sim.L)+'_'+str(sim.L)+'_'+str(sim.Bex)+'_'+str(sim.T)+'_'+str(sim.mech)+'_'+str(seed)+'.txt'
 
             file_list = glob.glob(path)
-            data=[]
-            groups=[]
+            data=[]     # the data for the current simulation from all seeds
+            groups=[]   # an index which indicates for the corresponding item in data which seed it came from
+
             num_independent_runs=len(file_list)
+            # iterate over the different seeds that correspond to the current simulation
             for j, file in enumerate(file_list):
+                # the local Bx is shifted by the external Bx to that it is centered around zero
                 shift = 0 if to_plot_now != 'localBx' else float(sim.Bex)
                 temp_data=analysis_tools.get_table_data_by_fname(file)[to_plot_now].to_numpy() - shift
                 data.append(temp_data)
+                # fill the groups list with the index of this seed for all of the data that was just appended
                 groups.append(np.full(temp_data.size,j))
             data=np.concatenate(data).ravel()
             groups=np.concatenate(groups).ravel()
             multiple_sim_data.append(data)
             multiple_sim_groups.append(groups)
+            # if we want to plot the flipped histogram, also all the data *(-1)
             if flip:
                 multiple_sim_data.append(-data)
                 multiple_sim_groups.append(groups)
+        # determine the bins based on all of the data that will be plotted
         shared_bins = np.histogram_bin_edges(np.concatenate(multiple_sim_data).ravel(), bins=120)
 
+        # now plot the histograms
         for i, sim in enumerate(simulations.itertuples()):
+            # if we also plot the flipped histogram for each simulation,
+            # we have twice the number of simulations to plot
             sim_index=i if not flip else i*2
+            # get the data for the current simulation (multiple seeds, labeled by the numbers in 'groups')
             data=multiple_sim_data[sim_index]
             groups=multiple_sim_groups[sim_index]
             shared_bins_to_plot = shared_bins[:-1] + i*np.diff(shared_bins)/num_of_simulations_to_plot
             num_independent_runs=len(np.unique(groups))
             histograms = np.zeros((num_independent_runs, len(shared_bins)-1))
-            #smooth_histogram_x = np.linspace(shared_bins[0],shared_bins[-1],num=200)
-            #smooth_histogram = np.zeros((num_independent_runs, len(smooth_histogram_x)))
+
             simple_values=np.zeros(num_independent_runs)
             abs_values=np.zeros(num_independent_runs)
             standard_deviations=np.zeros(num_independent_runs)
-            #window_size=5
+
+            # loop over independent runs, and for each such run's data
+            # get its mean, abs and std and create a separate histogram
             for j in range(num_independent_runs):
                 simple_values[j] = np.mean(data[groups==j])
                 abs_values[j] = np.mean(np.abs(data[groups==j]))
                 standard_deviations[j] = np.sqrt(np.mean(data[groups==j]**2))
                 histograms[j], _ = np.histogram(data[groups == j], bins=shared_bins)
 
-                #for idx, x in enumerate(smooth_histogram_x):
-                #    bin_width = shared_bins[1]-shared_bins[0]
-                #    low_bound = x - bin_width*(window_size*0.5)
-                #    upper_bound = x + bin_width*(window_size*0.5)
-                #    smooth_histogram[i,idx] = np.sum((groups==i) & (data > low_bound) & (data<upper_bound))/(window_size)
+            # create a smooth curve for each of the histograms (notice axis=1)
             smooth_histogram_gauss = gaussian_filter1d(histograms,2,axis=1)
+            # calculate the overall means, abs and stds and their errors
             simple_values_mean = simple_values.mean()
             simple_values_err = simple_values.std()/np.sqrt(simple_values.size-1)
             abs_values_mean = abs_values.mean()
@@ -105,27 +114,49 @@ def main_hist(simulations, to_plot, flip=False, seed='*'):
             print("MEAN: " + str(simple_values_mean) + ' +- ' + str(simple_values_err))
             print("ABS: " + str(abs_values_mean) + ' +- ' + str(abs_values_err))
             print("SD: " + str(sd_mean) + ' +- ' + str(sd_err))
-            plt.bar(shared_bins_to_plot, np.mean(histograms,axis=0), alpha=0.9, align='edge', width=np.diff(shared_bins)/num_of_simulations_to_plot, label="%s, MEAN=%s, ABS=%s, SD=%s" % (format_label(list(sim)[2:],format=['L','folderName','Bex','mech','T']), str_with_err(simple_values_mean,simple_values_err), str_with_err(abs_values_mean,abs_values_err), str_with_err(sd_mean,sd_err)),
+
+            # plot the histograms. each histogram bin is divided such that each plotted quantity
+            # has its own bar in there.
+            # the error bars are the standard errors of each bin among the different seeds.
+            plt.bar(shared_bins_to_plot, np.mean(histograms,axis=0), alpha=0.9, align='edge',
+                    width=np.diff(shared_bins)/num_of_simulations_to_plot,
+                    label="%s, MEAN=%s, ABS=%s, SD=%s" %
+                          (format_label(list(sim)[2:],format=['L','folderName','Bex','mech','T']),
+                           str_with_err(simple_values_mean,simple_values_err),
+                           str_with_err(abs_values_mean,abs_values_err),
+                           str_with_err(sd_mean,sd_err)),
                     yerr=np.std(histograms,axis=0)/np.sqrt(num_independent_runs-1), color=next(prop_iter)['color'])
 
+            # plot the smooth gaussian curve
+            plt.plot(shared_bins_to_plot + 0.5 * np.diff(shared_bins)/num_of_simulations_to_plot,
+                     np.mean(smooth_histogram_gauss, axis=0),
+                     label="Gaussian Smooth %s 2" %
+                           format_label(list(sim)[2:],format=['L','folderName','Bex','mech','T']),
+                     color=next(prop_iter)['color'])
 
-            #plt.plot(smooth_histogram_x, np.mean(smooth_histogram,axis=0),label="Smooth %s 2"%format_label(list(sim)[2:],format=['L','folderName','Bex','mech','T']), color=next(prop_iter)['color'])
-            plt.plot(shared_bins_to_plot + 0.5 * np.diff(shared_bins)/num_of_simulations_to_plot, np.mean(smooth_histogram_gauss, axis=0), label="Gaussian Smooth %s 2"%format_label(list(sim)[2:],format=['L','folderName','Bex','mech','T']), color=next(prop_iter)['color'])
             if flip:
                 data=multiple_sim_data[sim_index+1]
                 groups=multiple_sim_groups[sim_index+1]
-                smooth_histogram_x = np.linspace(shared_bins[0],shared_bins[-1],num=200)
-                smooth_histogram = np.zeros((num_independent_runs, len(smooth_histogram_x)))
-                for i in range(num_independent_runs):
-                    histograms[i], _ = np.histogram(data[groups == i], bins=shared_bins)
-                    for idx, x in enumerate(smooth_histogram_x):
-                        bin_width = shared_bins[1]-shared_bins[0]
-                        low_bound = x - bin_width*(window_size*0.5)
-                        upper_bound = x + bin_width*(window_size*0.5)
-                        smooth_histogram[i,idx] = np.sum((groups==i) & (data > low_bound) & (data<upper_bound))/(window_size)
-                plt.bar(shared_bins_to_plot, np.mean(histograms,axis=0), align='edge', width=np.diff(shared_bins)/num_of_simulations_to_plot, label='Flipped %s' % format_label(list(sim)[2:],format=['L','folderName','Bex','mech','T']), alpha=0.5,
-                        yerr=np.std(histograms,axis=0)/np.sqrt(num_independent_runs-1), ecolor='b', color=next(prop_iter)['color'])
-                plt.plot(smooth_histogram_x, np.mean(smooth_histogram,axis=0),label="Flipped smooth %s"%format_label(list(sim)[2:],format=['L','folderName','Bex','mech','T']), color=next(prop_iter)['color'])
+                for j in range(num_independent_runs):
+                    simple_values[j] = np.mean(data[groups==j])
+                    abs_values[j] = np.mean(np.abs(data[groups==j]))
+                    standard_deviations[j] = np.sqrt(np.mean(data[groups==j]**2))
+                    histograms[j], _ = np.histogram(data[groups == j], bins=shared_bins)
+
+                plt.bar(shared_bins_to_plot, np.mean(histograms,axis=0), alpha=0.5, align='edge',
+                        width=np.diff(shared_bins)/num_of_simulations_to_plot,
+                        label="Flipped %s, MEAN=%s, ABS=%s, SD=%s" %
+                              (format_label(list(sim)[2:],format=['L','folderName','Bex','mech','T']),
+                               str_with_err(simple_values_mean,simple_values_err),
+                               str_with_err(abs_values_mean,abs_values_err),
+                               str_with_err(sd_mean,sd_err)),
+                        yerr=np.std(histograms,axis=0)/np.sqrt(num_independent_runs-1), color=next(prop_iter)['color'])
+
+                plt.plot(shared_bins_to_plot + 0.5 * np.diff(shared_bins)/num_of_simulations_to_plot,
+                         np.mean(smooth_histogram_gauss, axis=0),
+                         label="Flipped Gaussian Smooth %s 2" %
+                               format_label(list(sim)[2:],format=['L','folderName','Bex','mech','T']),
+                         color=next(prop_iter)['color'])
 
     plt.legend()
     plt.grid()

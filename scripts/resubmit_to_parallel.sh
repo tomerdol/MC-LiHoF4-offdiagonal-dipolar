@@ -1,4 +1,12 @@
 #!/bin/bash
+# Deletes serial jobs and resubmits them to smoshe.q,lublin.q in parallel mode
+
+# Check input
+if [ $# -ne 3 ]
+then
+echo "Usage $0 [job name] [# of jobs to resubmit] [# of temperatures]"
+exit
+fi
 
 search_key=$1
 num_of_jobs_to_resubmit=$2
