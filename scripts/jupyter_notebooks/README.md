@@ -7,7 +7,7 @@ There are two ways to work with them:
    and work on them from there -- easier but not very good for heavy computations.  
    In Windows, using WinPython, run the following in cmd:
    ```
-   "C:\WPy64-3770\Jupyter Notebook.exe" --notebook-dir C:\Users\Tomer\IdeaProjects\LiHoF4_transverse_field_MC\scripts\jupyter_notebooks\
+   "C:\path\to\Jupyter Notebook.exe" --notebook-dir C:\path\to\project\LiHoF4_transverse_field_MC\scripts\jupyter_notebooks\
    ```
 2. Remotely: start the jupyter notebook server on the SGE cluster and connect 
    to it from the PC. This is done by running the script `run_jupyter.sh` and following 
