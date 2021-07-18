@@ -16,15 +16,16 @@ from itertools import cycle
 
 def main_plot(simulations, boot_num, plot_options, to_plot='', shift_T=False):
     """
-    Plot the MC simulation results for the simulations given in the 'simulations' table
+    Plot the MC simulation results for the simulations given in the 'simulations' table.
+
     :param simulations: pandas DataFrame containing all simulations to plot
     :param boot_num: number of bootstrap samples
     :param plot_options: dict of plot options (axis scales etc.)
     :param to_plot: (optional) which quantity to plot vs. T. if not given, then either the
-     Binder ratio of the correlation length / L are plotted, according to what is defined in
-       plot_options.
+        Binder ratio of the correlation length / L are plotted, according to what is defined in
+        plot_options.
     :param shift_T: whether to shift the T axis according to hardcoded values so that different
-    projects have the same Tc
+        projects have the same Tc
     :return: all plotted curves in a padnas DataFrame
     """
     Nsigma = 1.
@@ -89,10 +90,11 @@ def main_plot(simulations, boot_num, plot_options, to_plot='', shift_T=False):
 
 def format_label(label_list, format=['Bex','L','folderName','mech']):
     """
-    Create a string format that indicates the parameters of a simulation
+    Create a string format that indicates the parameters of a simulation.
+
     :param label_list: list of labels that describe the parameters of a simulation, e.g. [0.0, 5, project1, true]
     :param format: the order of the labels in label_list -- what does each item
-    describe, e.g. ['Bex','L','folderName','mech']
+        describe, e.g. ['Bex','L','folderName','mech']
     :return: a string of the formatted data
     """
     mech_name = label_list[format.index('mech')]
@@ -106,13 +108,14 @@ def format_label(label_list, format=['Bex','L','folderName','mech']):
 
 def plot_lattice_correlators(simulations, plot_options, axes, to_plot='spinSize', shift_T=True):
     """
-    Plot lattice correlators based on the final state of the simulations saved in data/lattice_output/
+    Plot lattice correlators based on the final state of the simulations saved in data/lattice_output/.
+
     :param simulations: pandas DataFrame containing all simulations whose lattice correlators should be plotted
     :param plot_options: plot options, e.g. axis scale
     :param axes: list of axes along which the correlators should be calculated and plotted
     :param to_plot: which spin-specific quantity to plot
     :param shift_T: whether to shift the T axis according to hardcoded values so that different
-    projects have the same Tc
+        projects have the same Tc
     :return: the plotted curves
     """
     import scipy.stats
@@ -203,7 +206,8 @@ def remove_max_temperature(simulations):
 
 def main():
     """
-    Plot the results of a MC simulation vs. T
+    Plot the results of a MC simulation vs. T.
+
     :return: pandas DataFrame with the plotted curves
     """
     args = parse_arguments()

@@ -1,5 +1,6 @@
 """
 Generate a temperature schedule using a geometric sequence.
+
 Usage: python3 gen_temp_schedule.py [low T] [high T] [# of T]
 """
 import numpy as np

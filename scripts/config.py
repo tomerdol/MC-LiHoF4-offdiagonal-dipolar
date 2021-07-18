@@ -1,5 +1,6 @@
 """
 Configurations common to all Python scripts.
+
 Includes:
 - a system_name variable that can be set through other scripts as well.
 - a command-line argument parser function with the arguments common to

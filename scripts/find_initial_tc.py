@@ -16,6 +16,7 @@ def main():
     """
     Find and print an initial guess for T_c for the given simulation with at least
     two different system sizes.
+
     :return: None
     """
     args = parse_arguments()

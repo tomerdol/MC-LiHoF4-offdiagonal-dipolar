@@ -34,6 +34,7 @@ def find_initial_xc(all_y_curves):
     """Given a pandas DataFrame with scaling function data for various L's,
     find the approximate crossing of the different L curves.
     The data column can be named either 'y_to_plot' or 'scaling_func'.
+
     This is a wrapper for find_initial_xc_from_arr()."""
     arr_x=[]
     arr_y=[]
@@ -48,7 +49,8 @@ def find_initial_xc(all_y_curves):
 
 def find_initial_xc_from_arr(arr_x,arr_y):
     """
-    find average x_c from crossing of all possible pairs of L's
+    find average x_c from crossing of all possible pairs of L's.
+
     :param arr_x: list of numpy arrays for x values of the scaling function (each array is for a different L)
     :param arr_y: list of numpy arrays for y values of the scaling function (each array is for a different L)
     :return: approximate crossing of the different curves defined by the input
@@ -71,7 +73,8 @@ def find_initial_xc_from_arr(arr_x,arr_y):
 def find_initial_xc_from_pair(arr1,arr2):
     """
     find the crossing of two curves defined by the given numpy arrays.
-    the format for both curves is arr[0,:]= xvalues and arr[1,:] = yvalues
+    the format for both curves is arr[0,:]= xvalues and arr[1,:] = yvalues.
+
     :param arr1: numpy array that defines the first curve.
     :param arr2: numpy array that defines the second curve.
     :return: approximate crossing point of the curves
@@ -108,6 +111,7 @@ def find_initial_xc_from_pair(arr1,arr2):
 def plot_previous_data(ax):
     """
     Plot previous data from experiments and numerical works.
+
     :param ax: axes object in which to plot
     :return: the axes object
     """
@@ -136,9 +140,10 @@ def add_overwrite_col(overwrite_tmp, simulations):
     """
     Add an 'overwrite' column to the given simulations DataFrame where simulations
     that need to be binned and checked for equilibration again are marked as such (True)
+
     :param overwrite_tmp: whether the 'overwrite' argument was passed to the script.
-    if True, all simulations except those marked 'Done' in the 'simulation_plan' file
-    will be marked to overwrite.
+        if True, all simulations except those marked 'Done' in the 'simulation_plan' file
+        will be marked to overwrite.
     :param simulations: pandas DataFrame containing all simulations for the analysis
     :return: the simulations DataFrame with an additional 'overwrite' column
     """
@@ -176,10 +181,11 @@ def add_overwrite_col(overwrite_tmp, simulations):
 
 def validate_simulation_table(simulations):
     """
-    Validate that the passed simulations are sufficient for finite-size scaling analysis
+    Validate that the passed simulations are sufficient for finite-size scaling analysis.
+
     :param simulations: pandas DataFrame containing all simulations for the analysis
     :return: whether the given table has simulations that are sufficient for
-    finite-size scaling analysis
+        finite-size scaling analysis
     """
     if simulations.empty:
         raise Exception('No simulations found matching the given arguments.')

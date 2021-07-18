@@ -16,6 +16,7 @@ import config
 def bin_single_column_data(a, start_bin):
     """
     Bin data of a single observable.
+
     :param a: array to bin
     :param start_bin: which bin to start from
     :return: array of binned data
@@ -49,7 +50,8 @@ def bin_single_column_data(a, start_bin):
 
 def bin_data(a, l, start_bin):
     """
-    Bin data from all columns and restructure the column order
+    Bin data from all columns and restructure the column order.
+
     :param a: pandas DataFrame with the data to bin
     :param l: linear system size
     :param start_bin: which bin to start from
@@ -118,10 +120,11 @@ def read_binned_txt(sim, use_latest=True):
     """
     Read and aggregate binned data from text binned_data files.
     Used for tracking the equilibration process.
+
     :param sim: named tuple of the simulation whose binned data is needed
     :param use_latest: in case some simulation runs are more advanced than others,
-     whether to use the latest data and only the simulations that reached farthest,
-     or to use data only up to the bin that is common to all runs
+        whether to use the latest data and only the simulations that reached farthest,
+        or to use data only up to the bin that is common to all runs
     :return: a 2-tuple with (1) the means of all bins and (2) their standard errors
     """
     path=get_all_simulation_binned_files_wildcard(sim)
@@ -162,10 +165,11 @@ def read_binned(sim, use_latest=True):
     """
     Read and aggregate binned data from hdf5 binned_data files.
     Used for tracking the equilibration process.
+
     :param sim: named tuple of the simulation whose binned data is needed
     :param use_latest: in case some simulation runs are more advanced than others,
-     whether to use the latest data and only the simulations that reached farthest,
-     or to use data only up to the bin that is common to all runs
+        whether to use the latest data and only the simulations that reached farthest,
+        or to use data only up to the bin that is common to all runs
     :return: a 2-tuple with (1) the means of all bins and (2) their standard errors
     """
     fname='../' + config.system_name + '/data/results/'+sim.folderName+'/binned_data/table_'+str(sim.L)+'_'+str(sim.L)+'_'+str(sim.Bex)+'_'+str(sim.mech)+'.h5'
@@ -205,13 +209,14 @@ def read_binned(sim, use_latest=True):
 def read_binned_data_txt(sim, use_latest=False, use_bin=-1):
     """
     Get the binned data as a pandas DataFrame from binned_data .txt files.
+
     :param sim: named tuple of the simulation whose binned data is needed
     :param use_latest: in case some simulation runs are more advanced than others,
-     whether to use the latest data and only the simulations that reached farthest,
-     or to use data only from the bin that is common to all runs
+         whether to use the latest data and only the simulations that reached farthest,
+         or to use data only from the bin that is common to all runs
     :param use_bin: which bin to use. overrides the option use_latest.
     :return: pandas DataFrame which contains data from the last bin (defined by the given parameters)
-    for each of the existing seeds.
+        for each of the existing seeds.
     """
     path = get_all_simulation_binned_files_wildcard(sim)
 
@@ -255,13 +260,14 @@ def read_binned_data_txt(sim, use_latest=False, use_bin=-1):
 def read_binned_data(sim, use_latest=False, use_bin=-1):
     """
     Get the binned data as a pandas DataFrame from binned_data hdf5 files.
+
     :param sim: named tuple of the simulation whose binned data is needed
     :param use_latest: in case some simulation runs are more advanced than others,
-     whether to use the latest data and only the simulations that reached farthest,
-     or to use data only from the bin that is common to all runs
+         whether to use the latest data and only the simulations that reached farthest,
+         or to use data only from the bin that is common to all runs
     :param use_bin: which bin to use. overrides the option use_latest.
     :return: pandas DataFrame which contains data from the last bin (defined by the given parameters)
-    for each of the existing seeds.
+        for each of the existing seeds.
     """
     fname='../' + config.system_name + '/data/results/'+sim.folderName+'/binned_data/table_'+str(sim.L)+'_'+str(sim.L)+'_'+str(sim.Bex)+'_'+str(sim.mech)+'.h5'
     if not os.path.isfile(fname):
@@ -316,11 +322,13 @@ def read_binned_data(sim, use_latest=False, use_bin=-1):
 def bin_by_fname_txt(fname, fname_bin, l, start_bin=0):
     """
     Bin the data from the given fname in the given fname_bin txt file.
+
     :param fname: name of result file to bin
     :param fname_bin: name of file in which to save the binned data from fname
     :param l: linear system size
     :param start_bin: (optional) which bin to start from.
-    in the future might be used to only append new data instead of rewriting the entire file.
+        in the future might be used to only append new data instead of rewriting the entire file.
+    :return: None
     """
     # get the data to bin
     y = analysis_tools.get_table_data_by_fname(fname)
@@ -337,12 +345,14 @@ def bin_by_fname_txt(fname, fname_bin, l, start_bin=0):
 
 def bin_by_fname(fname, hdf_bin, T, seed, l, start_bin=0):
     """
-    Bin the data from the given fname in the given hdf5 file
+    Bin the data from the given fname in the given hdf5 file.
+
     :param fname: name of result file to bin
     :param hdf_bin: handler for the .h5 file in which the binned data is to be saved
     :param l: linear system size
     :param start_bin: (optional) which bin to start from.
-    in the future might be used to only append new data instead of rewriting the entire file.
+        in the future might be used to only append new data instead of rewriting the entire file.
+    :return: None
     """
     # get the data to bin
     y = analysis_tools.get_table_data_by_fname(fname)
@@ -408,7 +418,8 @@ def last_index(fname):
 
 def main_bin_txt(simulations):
     """
-    Bin all given simulations in txt files
+    Bin all given simulations in txt files.
+
     :param simulations: pandas DataFrame of simulations to bin
     :return: None
     """
@@ -446,7 +457,8 @@ def main_bin_txt(simulations):
 
 def main_bin(simulations):
     """
-    Bin all given simulations in hdf5 files
+    Bin all given simulations in hdf5 files.
+
     :param simulations: pandas DataFrame of simulations to bin
     :return: None
     """

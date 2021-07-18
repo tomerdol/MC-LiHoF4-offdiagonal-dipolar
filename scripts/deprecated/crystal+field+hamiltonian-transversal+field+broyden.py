@@ -13,6 +13,7 @@ for both "up" and "down", given a large enough applied magnetic field.
 It was originally introduced when using the Broyden method for the self-
 consistent calculation of the magnetic moments since that required large
 (possibly unphysical) fields be tested on the way to the solution.
+
 No longer in use, instead use crystal+field+hamiltonian-transversal+field+const.py
 """
 
@@ -27,6 +28,7 @@ import config
 def write_to_file(name, data, Bx, By, Bz):
 	"""
 	Writes the calculated table to a txt file in /system_name/data/interactions/.
+
 	:param name: name of the txt file
 	:param data: data (3D NumPy array) to save in the file
 	:param Bx: grid Bx values

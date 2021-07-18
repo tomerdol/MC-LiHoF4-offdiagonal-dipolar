@@ -24,7 +24,9 @@ import config
 def f_bin(par, data):
     """
     Third-order polynomial function used to represent the scaling function for plotting and fitting:
-    y(x) = p0 + p1*(x-x_c)*L^(1/v) + p2*(x-x_c)^2*L^(2/v) + p3*(x-x_c)^3*L^(3/v)
+
+    y(x) = p0 + p1*(x-x_c)*L^(1/v) + p2*(x-x_c)^2*L^(2/v) + p3*(x-x_c)^3*L^(3/v).
+
     :param par: 6-tuple parameters of the polynomial: (x_c, p0, p1, p2, p3, v)
     :param data: NumPy array of data:   first column is the linear system size of the point, L, and the
                                         second column is the x (T) value of the point
@@ -43,12 +45,13 @@ def f_bin(par, data):
 def fit_multiple_bin(data, initial_xc, bounds=False, input_p_global=[ -0.4, 0.2, -0.06, 0.6 ], max_nfev=None):
     """
     Fit curves for multiple system sizes that should all be described by the same universal function when rescaled.
+
     :param data: data to be fitted: formatted in a NumPy array of three columns: 0=L, 1=T, 2=y
     :param initial_xc: initial guess for the critical temperature (crossing of the different curves)
     :param bounds: whether to use bounds in the fitting process
     :param input_p_global: initial values for the fitting parameters
     :param max_nfev: maximum number of calls to the fitting function
-    :return:
+    :return: best fit parameters
     """
     # format of data columns: 0-L, 1-T, 2-y
     xdata=data[:,0:2]
@@ -74,8 +77,9 @@ def fit_multiple_bin(data, initial_xc, bounds=False, input_p_global=[ -0.4, 0.2,
 def plot_multiple_bin(simulations, param, err_pfit, h_ex, mech, folderName, plot_options, index=''):
     """
     Plot multiple curves and their fitted universal function after rescaling.
+
     :param simulations: pandas DataFrame that list all simulations to plot, the values of their
-    scaling functions and their errors (each T should appear separately)
+        scaling functions and their errors (each T should appear separately)
     :param param: the found best fitting parameters
     :param err_pfit: (bootstrap) error of the fitted params
     :param h_ex: external Bx magnetic field
@@ -147,7 +151,8 @@ def str_with_err(value, error):
 
 def get_binder(m2,m4,mk2,L):
     """
-    Calculate the Binder ratio -- a scaling function
+    Calculate the Binder ratio -- a scaling function.
+
     :param m2: numpy array of independent values of m^2
     :param m4: numpy array of independent values of m^4
     :param mk2: |m(k_min)|^2: not used but accepted to be compatible with get_correlation_length
@@ -162,10 +167,12 @@ def get_binder(m2,m4,mk2,L):
 def get_correlation_length(m2,m4,mk2,L):
     """
     Calculate the finite-size correlation length, divided by the linear system size -- a scaling function.
+
     See K.-M. Tam and M. J. P. Gingras, Spin-Glass Transition at Nonzero Temperature in a Disordered Dipolar
     Ising System: The Case of LiHo_{x}Y_{1-x}F_{4}, Phys. Rev. Lett. 103, 087202 (2009).
     https://link.aps.org/doi/10.1103/PhysRevLett.103.087202
     and references therein.
+
     :param m2: m^2: not used but accepted to be compatible with get_binder
     :param m4: m^4: not used but accepted to be compatible with get_binder
     :param mk2: numpy array of independent values |m(k_min)|^2
@@ -209,6 +216,7 @@ def fit_bin(simulations, boot_num, min_x, max_x, initial_xc, fit_options):
     Fit the given MC simulation data to a universal scaling function to find
     the critical temperature and critical exponents.
     Uses the bootstrap method to estimate errors.
+
     :param simulations: pandas DataFrame that includes all simulation (with a separate row for each T)
     :param boot_num: number of bootstrap samples to perform
     :param min_x: lower bound of T to use

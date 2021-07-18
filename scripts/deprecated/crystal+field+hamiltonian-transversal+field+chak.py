@@ -36,6 +36,7 @@ import os
 def write_to_file(name, data, Bx, By, Bz):
 	"""
 	Writes the calculated table to a txt file in /LiHoF4/data/interactions/.
+
 	:param name: name of the txt file
 	:param data: data (3D NumPy array) to save in the file
 	:param Bx: grid Bx values

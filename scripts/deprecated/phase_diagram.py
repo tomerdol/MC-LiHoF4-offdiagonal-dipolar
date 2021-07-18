@@ -1,6 +1,7 @@
 """
 Creates a phase diagram from the results of a MC simulation.
 Uses results from a single long MC run.
+
 Deprecated since independent runs are now used -- use phase_diagram_bin.py instead.
 """
 import numpy as np

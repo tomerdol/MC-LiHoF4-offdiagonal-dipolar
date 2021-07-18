@@ -33,6 +33,7 @@ def unlistify(x):
 def get_simulations(all_L, all_folderName, all_Bex, all_mech, T=None):
     """
     return a DataFrame with all simulations matching a combination of (L, folderName, Bex, mech).
+
     :param all_L: system sizes
     :param all_folderName: project name
     :param all_Bex: external magnetic field
@@ -80,6 +81,7 @@ def get_simulations(all_L, all_folderName, all_Bex, all_mech, T=None):
 def get_simulation(L, folderName, Bex, mech, T):
     """
     return a namedtuple of a single simulation matching the given parameters.
+
     :param all_L: system sizes
     :param all_folderName: project name
     :param all_Bex: external magnetic field
@@ -117,7 +119,8 @@ def get_simulation(L, folderName, Bex, mech, T):
 
 def get_table_data_by_fname(fname, print_prog=True):
     """
-    Get data from a table in a txt file with the given name
+    Get data from a table in a txt file with the given name.
+
     :param fname: name of the file to read
     :param print_prog: print which file was read and how many lines were read from it
     :return: pandas DataFrame with the data from the txt file

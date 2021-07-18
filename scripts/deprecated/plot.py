@@ -1,6 +1,7 @@
 """
 Plot various observables vs. T.
 Uses results from a single long MC run.
+
 Deprecated since independent runs are now used -- use plot_bin.py instead.
 """
 import matplotlib
@@ -16,12 +17,14 @@ import config
 
 def bootstrap_resample(X, n=None):
     """ Bootstrap resample an array_like
+
     Parameters
     ----------
     X : array_like
       data to resample
     n : int, optional
       length of resampled array, equal to len(X) if n==None
+
     Results
     -------
     returns X_resamples

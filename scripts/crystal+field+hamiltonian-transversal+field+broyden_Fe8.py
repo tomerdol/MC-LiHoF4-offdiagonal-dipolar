@@ -20,12 +20,13 @@ import os
 def write_to_file(name, data, Bx, By, Bz):
 	"""
 	Writes the calculated table to a txt file in /Fe8/data/interactions/.
+
 	:param name: name of the txt file
 	:param data: data (3D NumPy array) to save in the file
 	:param Bx: grid Bx values
 	:param By: grid By values
 	:param Bz: grid Bz values
-	:return:
+	:return: None
 	"""
 	script_dir = os.path.dirname(os.path.abspath(__file__)) #<-- absolute dir the script is in
 	rel_path = "/../Fe8/data/interactions/" + name + '.txt'

@@ -1,5 +1,6 @@
 """
 Calculates running time of the MC simulations based on the timestamps in the .o* files they create.
+
 Usage: python3 get_avgs.py [maximum L to extrapolate to] [system name]
 """
 import matplotlib

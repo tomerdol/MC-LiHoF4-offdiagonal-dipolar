@@ -16,12 +16,13 @@ def check_equilibration(array, min_bin, consec_bins_for_equilib):
     """
     Check whether the given array which represents the binned time series of an observable from a MC simulation
     is equilibrated, i.e. have x consecutive bins that agree within error bars after min_bin.
+
     :param array: logarithmically binned time series of an observable from a MC simulation --
-    first column is the means and the second column is the errors.
+        first column is the means and the second column is the errors.
     :param min_bin: minimum bin in which to seek equilibration
     :param consec_bins_for_equilib: x -- the number of consecutive bins required for equilibration
     :return: the index of the last bin in the equilibrated sequence. if the number of bins is returned (last index+1),
-    it is an indication that the series has not equilibrated.
+        it is an indication that the series has not equilibrated.
     """
     # where to start looking
     curr_bin=min_bin
@@ -43,7 +44,8 @@ def check_equilibration(array, min_bin, consec_bins_for_equilib):
 
 def to_plot_col_index(to_plot):
     """
-    Translate column name to column index
+    Translate column name to column index.
+
     :param to_plot: column name
     :return: corresponding column index
     """
@@ -62,8 +64,9 @@ def to_plot_col_index(to_plot):
 def save_equilibration_data(sim_name, equilibrated_bin):
     """
     Save the equilibrated bin of the simulation in a text file in /binned_data/ to use later
+
     :param sim_name: list of the simulation parameters:
-    sim_name[0]=Bex; sim_name[1]=L; sim_name[2]=folderName; sim_name[3]=mech
+        sim_name[0]=Bex; sim_name[1]=L; sim_name[2]=folderName; sim_name[3]=mech
     :param equilibrated_bin: the equilibrated bin to save
     :return: None
     """
@@ -91,11 +94,12 @@ def read_equilibration_data(sim_name):
 def main_check_equilibration(simulations, to_check):
     """
     Checks the equilibration of the given simulations and adds the equilibrated bin to a
-    new 'eq_bin' column in the given DataFrame
+    new 'eq_bin' column in the given DataFrame.
+
     :param simulations: pandas DataFrame of all simulations to check for equilibration
     :param to_check: a list of observables to check for equilibration
     :return: the given simulations table with an additional column for the equilibrated bin
-    and with simulations that could not be read removed
+        and with simulations that could not be read removed
     """
     # a temperature ensemble is considered for equilibration (due to the use of parallel tempering)
     equilibrated_bin_dict={}
@@ -146,6 +150,7 @@ def main_plot(simulations, to_plot):
     """
     Create a PDF with the equilibration plots of all observables and all temperature of the given simulations.
     The given simulations should all have the same mech, folderName and Bex, and should only differ by their L.
+
     :param simulations: pandas DataFrame containing all simulations whose equilibration process should be plotted
     :param to_plot: list of observables whose equilibration is to be plotted
     :return: None
