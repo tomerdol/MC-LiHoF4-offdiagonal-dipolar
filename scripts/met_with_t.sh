@@ -4,7 +4,8 @@
 
 if [ $SYS_NAME == "LiHoF4" ]; then
 #jex="1.16e-3"
-jex="3.91e-3"
+#jex="3.91e-3"
+jex="${10}"
 x=$9
 elif [ $SYS_NAME == "Fe8" ]; then
 jex="0.0"

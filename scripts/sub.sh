@@ -30,6 +30,8 @@ runs="$3"
 nT="$4"
 extra_par="_const"
 x="0.46"
+#jex="1.16e-3"
+jex="3.91e-3"
 
 temp_initial="$(echo $temp | head -c 1)"
 
@@ -69,9 +71,9 @@ while [ $COUNT -lt $runs ]; do
     fi
 
     # parallel submission
-    qsub -pe shared $nT -l mem_free=40G -V -S /bin/bash -cwd -N "$temp_initial"r"$L"_"$H"_"$COUNT"_"$mech_initial" -o ./"$SYS_NAME"/output/ -e ./"$SYS_NAME"/output/ -q "$queues" scripts/met_with_t.sh "$L" "$L" "$max_sweeps" "$H" "$mech" "$local_name" "${seeds[$i]}" "$extra_par" "$x"
+    qsub -pe shared $nT -l mem_free=40G -V -S /bin/bash -cwd -N "$temp_initial"r"$L"_"$H"_"$COUNT"_"$mech_initial" -o ./"$SYS_NAME"/output/ -e ./"$SYS_NAME"/output/ -q "$queues" scripts/met_with_t.sh "$L" "$L" "$max_sweeps" "$H" "$mech" "$local_name" "${seeds[$i]}" "$extra_par" "$x" "$jex"
     # sequential submission
-    #qsub -l mem_free=2G -V -S /bin/bash -cwd -N "$temp_initial"r"$L"_"$H"_"$COUNT"_"$mech_initial" -o ./"$SYS_NAME"/output/ -e ./"$SYS_NAME"/output/ -q smoshe.q,lublin.q scripts/met_with_t_single.sh "$L" "$L" "$max_sweeps" "$H" "$mech" "$local_name" "${seeds[$i]}" "$extra_par" "$x"
+    #qsub -l mem_free=2G -V -S /bin/bash -cwd -N "$temp_initial"r"$L"_"$H"_"$COUNT"_"$mech_initial" -o ./"$SYS_NAME"/output/ -e ./"$SYS_NAME"/output/ -q smoshe.q,lublin.q scripts/met_with_t_single.sh "$L" "$L" "$max_sweeps" "$H" "$mech" "$local_name" "${seeds[$i]}" "$extra_par" "$x" "$jex"
     #echo "${seeds[$i]}"
     ((i++))
     ((COUNT++))
