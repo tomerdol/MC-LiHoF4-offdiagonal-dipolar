@@ -5,8 +5,8 @@
 # E.g., source ./scripts/sub.sh; sub "" 8200 1000 20
 
 name="dilution_0.46"
-arrayMech=( "false" )
-arrayL=( 7 )
+arrayMech=( "true" )
+arrayL=( 5 6 7 )
 arrayH=( 0.0 )
 
 #name="exact_test_const"
