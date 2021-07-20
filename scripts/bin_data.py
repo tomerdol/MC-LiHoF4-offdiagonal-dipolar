@@ -185,7 +185,12 @@ def read_binned(sim, use_latest=True):
         for (path, subgroups, subkeys) in hdf_bin.walk():
             if path == '':    # we only need to iterate over the root level (seed groups)
                 for subgroup in subgroups:
-                    curr_array = hdf_bin.get(subgroup+"/T"+str(sim.T).replace('.','_'))
+                    try:
+                        curr_array = hdf_bin.get(subgroup+"/T"+str(sim.T).replace('.','_'))
+                    except KeyError:
+                        # this means that a seed group exists (otherwise it will not be in subgroups)
+                        # but does not include the required temperature dataset, so we just skip it.
+                        continue
                     # keep track of the minimum and maximum number of bins to discover any mismatch
                     max_bins = len(curr_array) if len(curr_array)>max_bins else max_bins
                     min_bins = len(curr_array) if len(curr_array)<min_bins or first_iter else min_bins
