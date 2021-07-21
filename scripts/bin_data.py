@@ -509,7 +509,7 @@ def get_dataset_name(seed, T):
 def parse_arguments():
     from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
     parser = ArgumentParser(description="Analyzes Monte Carlo results and plots correlation length curves.", formatter_class=ArgumentDefaultsHelpFormatter, parents=[config.parse_arguments()], conflict_handler='resolve')
-    parser.add_argument("--force", nargs=0, action="store_true",
+    parser.add_argument("--force", action="store_true",
                         help="Bin all data from the start, overwriting what was previously binned.")
     args = parser.parse_args()
     config.system_name = args.system_name
