@@ -460,11 +460,12 @@ def main_bin_txt(simulations):
                     pass
 
 
-def main_bin(simulations):
+def main_bin(simulations, force=False):
     """
     Bin all given simulations in hdf5 files.
 
     :param simulations: pandas DataFrame of simulations to bin
+    :param force: if True, binning is performed and written regardless of what was previously binned.
     :return: None
     """
     # loop through the simulations in groups which correspond to a single resulting hdf5 file
@@ -491,7 +492,7 @@ def main_bin(simulations):
                     if last_sample<0:
                         print('No data in simulation: %s. seed: %s. Skipping.' % (str(sim),fname.split("_")[-1].split(".")[0]))
                     else:
-                        if 2*(2**(last_bin+1) - 1) <= last_sample:
+                        if 2*(2**(last_bin+1) - 1) <= last_sample or force:
                             print('rewriting bins for simulation: %s. seed: %s' % (str(sim),fname.split("_")[-1].split(".")[0]))
                             bin_by_fname(fname, hdf_bin, sim.T, seed, L)
                         else:
@@ -508,6 +509,8 @@ def get_dataset_name(seed, T):
 def parse_arguments():
     from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
     parser = ArgumentParser(description="Analyzes Monte Carlo results and plots correlation length curves.", formatter_class=ArgumentDefaultsHelpFormatter, parents=[config.parse_arguments()], conflict_handler='resolve')
+    parser.add_argument("--force", nargs=0, action="store_true",
+                        help="Bin all data from the start, overwriting what was previously binned.")
     args = parser.parse_args()
     config.system_name = args.system_name
     return args
@@ -531,7 +534,7 @@ def main():
     # main_bin_txt(simulations)
 
     simulations = analysis_tools.get_simulations(L, folderName, h_ex, mech)
-    main_bin(simulations)
+    main_bin(simulations, force=args.force)
 
     # for testing:
     # print(read_binned_data(list(simulations.itertuples())[3]))
