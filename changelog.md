@@ -1,5 +1,17 @@
 # Change log
 
+## v1.5.1 - 22/07/2021
+* BUGFIX in output of final simulation state:
+  1. interactions table was read without dilution
+  2. interactions table was only read at the end in the case of suppression of transverse fields, so the exchange interaction remained in the other case
+* Added option to force binning
+* Added exception when binned data is read that seeds that do not include a given temperature (perhaps they were created during the binning process) are just skipped.
+* Added Jupyter notebooks
+* Moved definition of Jex to the submitting scripts
+* Added important directory info to the README
+* Added MSc thesis to docs
+* Extended documentation and removed unused scripts
+
 ## v1.5.0 - 13/07/2021
 * Removed tMaxConfig column
 * Added junit4.jar to lib
