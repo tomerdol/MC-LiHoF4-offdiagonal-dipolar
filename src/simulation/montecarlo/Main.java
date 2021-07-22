@@ -447,7 +447,11 @@ public class Main {
             ((MultipleTMonteCarloSimulation) simulation).run(parallelMode);
 
             // Write final lattice states
-            if (suppressInternalTransFields) ReadInteractionsTable.receiveIntTable(intTable, Lx, Lz);	// get interaction table from file AGAIN, for off-diagonal interactions that where previously set to zero
+            ReadInteractionsTable.receiveIntTable(intTable, Lx, Lz, dilution);	// get interaction table from file AGAIN,
+                                                                                // for off-diagonal interactions that where
+                                                                                // previously set to zero and to remove
+                                                                                // the exchange that was added to the table
+                                                                                // but does not constitute a magnetic field.
             for (int i=0;i<T.length;i++){
                 // Create file to write full lattice configurations into
                 // lattices are written in full only at the end of the simulation.
