@@ -20,7 +20,7 @@ def pow_fit(x, a, b):
     return a * x**b
 
 # earliest datetime to use
-timestamp = datetime(2021, 1, 16).replace(tzinfo=timezone.utc).timestamp()
+timestamp = datetime(2021, 7, 22, 14, 0, 0).replace(tzinfo=timezone.utc).timestamp()
 
 max_L = float(sys.argv[1])  # for extrapolation
 config.system_name = sys.argv[2]
@@ -42,7 +42,7 @@ for file in os.listdir(output_directory):
         if os.path.getmtime('../' + config.system_name + '/output/'+fname) > timestamp:
             try:
                 # read the timestamps from the .o* file, non-time values will be discarded
-                y=pd.read_csv('../' + config.system_name + '/output/' + fname,header=None,skiprows=0,parse_dates=True,infer_datetime_format=True, comment='S')
+                y=pd.read_csv('../' + config.system_name + '/output/' + fname,header=None,skiprows=0,parse_dates=True,infer_datetime_format=True, comment='#')
                 ts = pd.Series(pd.to_datetime(y[0],errors='coerce'))
                 ts = ts.dropna()
 
