@@ -29,9 +29,9 @@ max_sweeps="$2"
 runs="$3"
 nT="$4"
 extra_par="_const"
-x="0.46"
-#jex="1.16e-3"
-jex="3.91e-3"
+x="1.0"
+jex="1.16e-3"
+#jex="3.91e-3"
 
 temp_initial="$(echo $temp | head -c 1)"
 

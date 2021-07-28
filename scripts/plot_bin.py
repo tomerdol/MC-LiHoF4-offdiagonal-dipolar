@@ -163,6 +163,7 @@ def plot_lattice_correlators(simulations, plot_options, axes, to_plot='spinSize'
     # plot the results
     for (label, df), marker in zip(all_y_curves.groupby(['Bex','L','folderName','mech']), cycle(markers)):
         for axis in axes:
+            df['T']=df['T'].astype(np.float64)  # should be float anyway, but just in case
             df.plot(x='T',y=axis+'_correlator', yerr=axis+'_correlator_err', ax=ax, label=format_label(label) + ' | ' + axis + ' correlator', capsize=3, marker=marker)
 
     if shift_T:

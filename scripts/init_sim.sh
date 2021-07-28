@@ -12,9 +12,9 @@ nT=20
 
 # this should override the definitions from sub.sh
 if [ $SYS_NAME == "LiHoF4" ]; then
-name="dilution_1.0"
-arrayMech=("true")
-arrayL=( 4 5 6 7 )
+name="low_jex_dilution_1.0"
+arrayMech=( "true" "false" )
+arrayL=( 6 7 8 )
 # if adding a new L to existing simulations, we may want to address the
 # previous L's to find an initial Tc but not actually re-run those simulation.
 # those can be but in the arrayLexclude array
@@ -22,9 +22,9 @@ arrayLexclude=()
 arrayH=( 0.0 )
 minT_false=1.3
 maxT_false=1.8
-minT_true=1.3
-maxT_true=1.8
-delta=0.08
+minT_true=1.6
+maxT_true=2.0
+delta=0.14
 elif [ $SYS_NAME == "Fe8" ]; then
 name="Fe8_test4"
 arrayMech=("true")
@@ -55,15 +55,15 @@ gen_temp_schedules() {
 
 # enables one to temporarily deactivate parts of this script when set to false.
 # notice where the terminating "fi" is.
-if true; then
+if false; then
 # generate temporary temperature schedules for "true"
 gen_temp_schedules $minT_true $maxT_true "true" "temp_"
 # generate temporary temperature schedules for "false"
 gen_temp_schedules $minT_false $maxT_false "false" "temp_"
 
 # run initial temporary run
-sub "temp_" 513 20 $nT
-fi
+sub "temp_" 800 20 $nT
+
 
 # wait until temporary runs finish
 running_jobs=$(qstat -u tomerdol | awk '$3 ~ /^tr/' | awk 'END {print NR}')
@@ -177,8 +177,9 @@ for mech in "${arrayMech[@]}"; do
 done
 #*************************************************************************
 
+fi
 # run simulations
 echo "running simulations"
-sub "" 2048 25 $nT
+sub "" 2048 50 $nT
 echo "done"
 exit 0
