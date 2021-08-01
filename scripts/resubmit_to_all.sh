@@ -28,7 +28,7 @@ do
     new_jobid=$(echo $new_jobid | awk 'match($0,/[0-9]+/){print substr($0, RSTART, RLENGTH)}')
     qdel "$jobid"
     
-    sleep 7
+    sleep 8
 
     # make sure the new submitted job is running before grabbing the next queued job
     while [ "$(qstat -u tomerdol | awk -v jid="$new_jobid" '$1 == jid {print $5}')" != "r" ]; do

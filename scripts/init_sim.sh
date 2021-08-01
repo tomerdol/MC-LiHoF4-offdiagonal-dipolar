@@ -8,7 +8,7 @@
 source ./scripts/sub.sh
 
 # number of temperatures to run (also affects the number of CPUs requested when running parallel jobs)
-nT=20
+nT=24
 
 # this should override the definitions from sub.sh
 if [ $SYS_NAME == "LiHoF4" ]; then
@@ -19,12 +19,12 @@ arrayL=( 6 7 8 )
 # previous L's to find an initial Tc but not actually re-run those simulation.
 # those can be but in the arrayLexclude array
 arrayLexclude=()
-arrayH=( 0.0 )
+arrayH=( 0.3 )
 minT_false=1.3
 maxT_false=1.8
 minT_true=1.6
 maxT_true=2.0
-delta=0.14
+delta=0.1
 elif [ $SYS_NAME == "Fe8" ]; then
 name="Fe8_test4"
 arrayMech=("true")
@@ -55,14 +55,14 @@ gen_temp_schedules() {
 
 # enables one to temporarily deactivate parts of this script when set to false.
 # notice where the terminating "fi" is.
-if false; then
+if true; then
 # generate temporary temperature schedules for "true"
 gen_temp_schedules $minT_true $maxT_true "true" "temp_"
 # generate temporary temperature schedules for "false"
 gen_temp_schedules $minT_false $maxT_false "false" "temp_"
 
 # run initial temporary run
-sub "temp_" 800 20 $nT
+sub "temp_" 600 20 $nT
 
 
 # wait until temporary runs finish
@@ -179,7 +179,7 @@ done
 
 fi
 # run simulations
-echo "running simulations"
-sub "" 2048 50 $nT
+#echo "running simulations"
+#sub "" 2048 50 $nT
 echo "done"
 exit 0
