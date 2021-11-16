@@ -190,6 +190,7 @@ def read_binned(sim, use_latest=True):
                     except KeyError:
                         # this means that a seed group exists (otherwise it will not be in subgroups)
                         # but does not include the required temperature dataset, so we just skip it.
+                        print('keyerror: ' + str(subgroup+"/T"+str(sim.T).replace('.','_')))
                         continue
                     # keep track of the minimum and maximum number of bins to discover any mismatch
                     max_bins = len(curr_array) if len(curr_array)>max_bins else max_bins

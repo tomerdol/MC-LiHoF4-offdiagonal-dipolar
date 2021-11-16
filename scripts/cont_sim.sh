@@ -5,12 +5,12 @@
 unset module
 
 # simulation parameters
-name="temp_dilution_0.46"
-arrayMech=( "false" )
-arrayL=( 7 )
+name="high_jex_dilution_0.67"
+arrayMech=( "true" )
+arrayL=( 8 )
 arrayH=( 0.0 )
-nT=20
-x=0.46
+nT=24
+x=0.67
 #jex="1.16e-3"
 jex="3.91e-3"
 
@@ -51,22 +51,13 @@ do
       jobid=$(qstat -u tomerdol | awk 'NR>2 {print $1}' | xargs -n1 qstat -j | grep -B26 ${seed} | awk 'NR==1 {print $2}')
       echo "Seed ${seed} already running with job id ${jobid}."
     else
-      used_slots=`free_slot smoshe.q | grep sge1081 | cut -d' ' -f 2 | cut -d'/' -f 1`
-      #exclude sge1081 to leave at least 30 cores available for other users
-      queues="lublin.q,smoshe.q@sge1082,smoshe.q@sge190,fairshare.q,smoshe.q@sge247,smoshe.q@sge249"
-
-      # if there are enough free slots, just submit to all queues
-      if [ "$used_slots" != "" ]; then
-      if [ $used_slots -le "$nT" ]; then
-      queues="lublin.q,smoshe.q,fairshare.q"
-      fi
-      fi
+      queues="lublin.q,smoshe.q@sge1082,smoshe.q@sge190,smoshe.q@sge247,smoshe.q@sge1081"
 
       # parallel submission
-      qsub -pe shared "$nT" -l mem_free=40G -V -S /bin/bash -cwd -N tr"$L"_"$H"_"$COUNT"_"$mech_initial" -o ./"$SYS_NAME"/output/ -e ./"$SYS_NAME"/output/ -q "$queues" ./scripts/met_with_t.sh "$L" "$L" "$max_sweeps" "$H" "$mech" "$name" "$seed" "$extra" "$x" "$jex"
+      qsub -pe shared "$nT" -l mem_free=40G -V -S /bin/bash -cwd -N r"$L"_"$H"_"$COUNT"_"$mech_initial" -o ./"$SYS_NAME"/output/ -e ./"$SYS_NAME"/output/ -q "$queues" ./scripts/met_with_t.sh "$L" "$L" "$max_sweeps" "$H" "$mech" "$name" "$seed" "$extra" "$x" "$jex"
 
       # single submission
-      #qsub -l mem_free=4G -V -S /bin/bash -cwd -N r"$L"_"$H"_"$COUNT"_"$mech_initial" -o ./"$SYS_NAME"/output/ -e ./"$SYS_NAME"/output/ -q smoshe.q,lublin.q,intel_all.q ./scripts/met_with_t_single.sh "$L" "$L" "$max_sweeps" "$H" "$mech" "$name" "$seed" "$extra" "$x" "$jex"
+      #qsub -l mem_free=4G -V -S /bin/bash -cwd -N r"$L"_"$H"_"$COUNT"_"$mech_initial" -o ./"$SYS_NAME"/output/ -e ./"$SYS_NAME"/output/ -q smoshe.q@sge1082,smoshe.q@sge190,smoshe.q@sge247,smoshe.q@sge1081,lublin.q,intel_all.q ./scripts/met_with_t_single.sh "$L" "$L" "$max_sweeps" "$H" "$mech" "$name" "$seed" "$extra" "$x" "$jex"
 
       ((COUNT++))
       sleep 10

@@ -22,7 +22,7 @@ do
     if [[ ${jobname:0:1} == "t" ]]; then temp="temp_"; else temp=""; fi
 
     # resubmit to intel_all.q in single mode
-    new_jobid=$(qsub -l mem_free=40G -V -S /bin/bash -cwd -N "$jobname" -o ./"$SYS_NAME"/output/ -e ./"$SYS_NAME"/output/ -q smoshe.q@sge1082,lublin.q,intel_all.q scripts/met_with_t_single.sh "${args//,/ }")
+    new_jobid=$(qsub -l mem_free=40G -V -S /bin/bash -cwd -N "$jobname" -o ./"$SYS_NAME"/output/ -e ./"$SYS_NAME"/output/ -q smoshe.q@sge247,smoshe.q@sge1081,smoshe.q@sge1082,lublin.q,intel_all.q scripts/met_with_t_single.sh "${args//,/ }")
     echo "$new_jobid"  # this echos the submission message
     # get the job id number from the output message
     new_jobid=$(echo $new_jobid | awk 'match($0,/[0-9]+/){print substr($0, RSTART, RLENGTH)}')

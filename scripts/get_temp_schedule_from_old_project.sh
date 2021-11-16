@@ -26,7 +26,7 @@ for L in "${arrayL[@]}"; do
     maxL="$L"
     IFS=$'\n,' read -d '' -ra temp_schedule < ../../"$root_dir"/"$SYS_NAME"/temperature_schedules/temp_schedule_"$L"_"$L"_"$name"_"$H"_"$mech".txt
 
-    echo "reading temperatures from ../../${root_dir}/${SYS_NAME}/temperature_schedules/temp_schedule_${L}_${L}_temp_${name}_${H}_${mech}.txt"
+    echo "reading temperatures from ../../${root_dir}/${SYS_NAME}/temperature_schedules/temp_schedule_${L}_${L}_${name}_${H}_${mech}.txt"
     echo "T e corr_length"
 
     tmp_file="sample_energy.txt"
@@ -62,14 +62,16 @@ output=$(
 python3 - <<END_SCRIPT
 import bin_data
 import analysis_tools
-sim = analysis_tools.get_simulation("$L", "$name", "$H", "$mech", "$T")
+sim = analysis_tools.get_simulation("$L", "$name", "$H", "$mech", float("$T"))
 df = bin_data.read_binned_data(sim, use_latest=False)
 print(df.Energy.mean(),df['Magnetization^2'].mean(),df['mk2x'].mean())
 END_SCRIPT
 )
-        energy="${output[1]}"
-        m2="${output[2]}"
-        mk2="${output[3]}"
+        output=$(echo "$output" | tail -n 1)
+        IFS=' ' read -r -a array <<< "$output"
+        energy="${array[0]}"
+        m2="${array[1]}"
+        mk2="${array[2]}"
         corr_length=$(bc -l <<<"scale=5; sqrt(($m2/$mk2)-1)/(2*$L*s(4*a(1)/$L))")
 
         cd "$original_dir"

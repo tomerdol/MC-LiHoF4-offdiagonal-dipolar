@@ -9,6 +9,7 @@ import glob
 import analysis_tools
 from scipy.ndimage import gaussian_filter1d
 import config
+import pandas as pd
 
 
 def parse_arguments():
@@ -39,7 +40,7 @@ def main_hist(simulations, to_plot, flip=False, seed='*'):
     """
     from fit import str_with_err
     from plot_bin import format_label
-    fig, ax = plt.subplots(figsize=(10,10))
+    fig, ax = plt.subplots(figsize=(6.22,5.5))
     prop_iter = iter(plt.rcParams['axes.prop_cycle'])
 
     for to_plot_now in to_plot:
@@ -50,6 +51,7 @@ def main_hist(simulations, to_plot, flip=False, seed='*'):
         # first go over all simulations to determine the bins:
         for i, sim in enumerate(simulations.itertuples()):
             path='../' + config.system_name + '/data/lattice_output/'+sim.folderName+'/table_'+str(sim.L)+'_'+str(sim.L)+'_'+str(sim.Bex)+'_'+str(sim.T)+'_'+str(sim.mech)+'_'+str(seed)+'.txt'
+            print(path)
 
             file_list = glob.glob(path)
             data=[]     # the data for the current simulation from all seeds
@@ -120,7 +122,7 @@ def main_hist(simulations, to_plot, flip=False, seed='*'):
             # the error bars are the standard errors of each bin among the different seeds.
             plt.bar(shared_bins_to_plot, np.mean(histograms,axis=0), alpha=0.9, align='edge',
                     width=np.diff(shared_bins)/num_of_simulations_to_plot,
-                    label="%s, MEAN=%s, ABS=%s, SD=%s" %
+                    label="%s, \nMEAN=%s, ABS=%s, SD=%s" %
                           (format_label(list(sim)[2:],format=['L','folderName','Bex','mech','T']),
                            str_with_err(simple_values_mean,simple_values_err),
                            str_with_err(abs_values_mean,abs_values_err),
@@ -158,13 +160,13 @@ def main_hist(simulations, to_plot, flip=False, seed='*'):
                                format_label(list(sim)[2:],format=['L','folderName','Bex','mech','T']),
                          color=next(prop_iter)['color'])
 
-    plt.legend()
+    plt.legend(loc='lower left')
     plt.grid()
     plt.title('Distribution of ' + to_plot_now)
     ax.set_ylabel('# of spins')
     ax.set_xlabel(to_plot_now + ('' if shift == 0 else ' - ' + str(shift)))
-    plt.tight_layout()
-    fig.savefig('../' + config.system_name + '/figures/hist_%s_%s_%s_%s_%s.png'%('_'.join(map(str,simulations['Bex'].unique().tolist())),'_'.join(map(str,simulations['mech'].unique().tolist())),'_'.join(map(str,simulations['L'].unique().tolist())),'_'.join(map(str,simulations['folderName'].unique().tolist())),to_plot_now), dpi=300)
+    #plt.tight_layout()
+    fig.savefig('../' + config.system_name + '/figures/hist_%s_%s_%s_%s_%s.svg'%('_'.join(map(str,simulations['Bex'].unique().tolist())),'_'.join(map(str,simulations['mech'].unique().tolist())),'_'.join(map(str,simulations['L'].unique().tolist())),'_'.join(map(str,simulations['folderName'].unique().tolist())),to_plot_now))
     plt.close(fig)
 
 
@@ -182,6 +184,8 @@ def main():
     seed=args.seed
 
     simulations = analysis_tools.get_simulations(L, folderName, h_ex, mech, T=T)
+    simulations = pd.read_csv('simulations.txt', sep='\s+', dtype=str)
+    print(simulations)
     main_hist(simulations, to_plot, flip=flip, seed=seed)
 
 

@@ -38,7 +38,7 @@ function redraw_progress_bar { # int barsize, int base, int i, int top
 
 function find_last_line {
   local seed=$1
-  for file in ./"$SYS_NAME"/data/results/$name/table_*"$seed".txt
+  for file in ./"$SYS_NAME"/data/results/$name/table_7_7_0.0_0.40894*"$seed".txt
   do
   # get the last index, not including lines with comments '#'
   last_line=$(sed '/^#/d' "$file" | tail -n1 | awk '{print $1}')
@@ -48,7 +48,7 @@ function find_last_line {
 }
 
 # look over all results files in the given directory
-res=$(find ./$SYS_NAME/data/results/$name/table_* -maxdepth 0 | wc -l)
+res=$(find -maxdepth 5 -wholename "./$SYS_NAME/data/results/$name/table_*" | wc -l)
 echo "found $res results"
 
 i=1
@@ -57,7 +57,7 @@ i=1
 if [[ $2 == "" ]]; then
     echo "Looking for simulation with maximum written steps..."
     expected_last_line=0
-    for file in ./"$SYS_NAME"/data/results/$name/table_*
+    for file in ./"$SYS_NAME"/data/results/$name/table_7_7_0.0_0.40894*
     do
       redraw_progress_bar 50 0 $i $res
       ((i++))
@@ -79,7 +79,7 @@ printf "\n"
 echo "Maximum # of steps: ${expected_last_line}"
 printf "\n"
 echo "Looking for unfinished simulations..."
-for file in ./"$SYS_NAME"/data/results/$name/table_*
+for file in ./"$SYS_NAME"/data/results/$name/table_7_7_0.0_0.40894*
 do
   redraw_progress_bar 50 0 $i $res
   ((i++))

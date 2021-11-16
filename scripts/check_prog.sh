@@ -56,7 +56,7 @@ while IFS= read -r line; do
     else
     last_step_array+=( 0 )
     fi
-done < <( tail -n 1 ${files} | awk '$1=="==>" {split(substr($0, 5, length-8),a,"_"); next} $1!="" {print a[5]":"$1}' )
+done < <( tail -n 1 ${files} | awk '$1=="==>" {n=split(substr($0, 5, length-8),a,"_"); next} $1!="" {print a[n-2]":"$1}' )
 
 # check if all temperature are at the same last step
 if [ "${#last_step_array[@]}" -gt 0 ] && [ $(printf "%s\000" "${last_step_array[@]}" |

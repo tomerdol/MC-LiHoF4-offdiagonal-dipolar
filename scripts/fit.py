@@ -63,7 +63,7 @@ def fit_multiple_bin(data, initial_xc, bounds=False, input_p_global=[ -0.4, 0.2,
     p_global = [initial_xc, 0.5*(max_val+min_val)] + input_p_global
 
     if not bounds:
-        p_best=optimize.least_squares(lambda p, x, y: f_bin(p, x) - y, p_global, args=(xdata,ydata), max_nfev=max_nfev)
+        p_best=optimize.least_squares(lambda p, x, y: f_bin(p, x) - y, p_global, args=(xdata,ydata), max_nfev=max_nfev, method='lm')
     else:
         p_best=optimize.least_squares(lambda p, x, y: f_bin(p, x) - y, p_global, args=(xdata,ydata), bounds=([0,min_val,-np.inf,-np.inf,-np.inf,0.0],[3,max_val,np.inf,np.inf,np.inf,np.inf]))
 
@@ -96,11 +96,11 @@ def plot_multiple_bin(simulations, param, err_pfit, h_ex, mech, folderName, plot
     # the left one would have the raw curves (still bootstrapped)
     # the right one would have the rescaled curves that should all
     # fall on the same universal curve.
-    fig, (ax1, ax2) = plt.subplots(1,2, sharey='row',figsize=(10,7))
+    fig, (ax1, ax2) = plt.subplots(1,2, sharey='row',figsize=(6.5,4))
     # create an additional, rescaled T axis
     simulations['rescaled_T']=(simulations['L']**(1/param[5]))*(simulations['T']-param[0])
 
-    ax1.set_ylabel(plot_options['Name'],fontsize=16)
+    ax1.set_ylabel(plot_options['Name'],fontsize=12)
 
     # loop over simulations according to their L's
     for (L, df), marker in zip(simulations.groupby(['L']), cycle(markers)):
@@ -128,7 +128,7 @@ def plot_multiple_bin(simulations, param, err_pfit, h_ex, mech, folderName, plot
     ax1.set_yscale(plot_options['axis_yscale'])
     ax2.set_yscale(plot_options['axis_yscale'])
     
-    plt.tight_layout(pad=1.08)
+    plt.tight_layout()
 
     # save both a png and an eps file
     fig.savefig('../' + config.system_name + '/figures/fit_%s_%s_%s_%s_%s.eps'%(h_ex,mech,'_'.join(map(str,simulations['L'].unique().tolist())), folderName, index),format='eps')

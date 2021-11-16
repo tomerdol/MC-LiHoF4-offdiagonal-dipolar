@@ -22,7 +22,8 @@ jobname=$(qstat -j ${jobid} | grep job_name | awk '{print $2}')
 
 # resubmit to smoshe.q,lublin.q in parallel mode
 qdel "$jobid"
-qsub -pe shared "$nT" -l mem_free=40G -V -S /bin/bash -cwd -N "$jobname" -o ./"$SYS_NAME"/output/ -e ./"$SYS_NAME"/output/ -q smoshe.q,lublin.q scripts/met_with_t.sh "${args//,/ }"
+queues="lublin.q,fairshare.q,smoshe.q@sge1081,smoshe.q@sge1082,smoshe.q@sge190,smoshe.q@sge247"
+qsub -pe shared "$nT" -l mem_free=40G -V -S /bin/bash -cwd -N "$jobname" -o ./"$SYS_NAME"/output/ -e ./"$SYS_NAME"/output/ -q "$queues" scripts/met_with_t.sh "${args//,/ }"
 ((count++))
 sleep 10
 num_of_queued_jobs=$(qstat -u tomerdol | grep "$search_key" | awk '$9=="1" {count++} END {print count}')
