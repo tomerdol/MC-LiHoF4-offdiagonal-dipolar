@@ -1,10 +1,10 @@
 #!/bin/bash
 
 jex="1.16e-3"
-name="low_jex_dilution_0.83"
-x="0.83"
+name="low_jex_dilution_1.0"
+x="1.0"
 H="0.0"
-L=8
+L=6
 mech="false"
 files="../LiHoF4/data/results/""$name""/table_${L}_${L}_${H}_*_${mech}_*"
 

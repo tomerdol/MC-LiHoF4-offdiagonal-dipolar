@@ -106,11 +106,11 @@ def plot_multiple_bin(simulations, param, err_pfit, h_ex, mech, folderName, plot
     for (L, df), marker in zip(simulations.groupby(['L']), cycle(markers)):
         data_label = 'L=%d' %L
         # plot crossing
-        df.plot(x='T',y='scaling_func', yerr='scaling_func_err', ax=ax1, label=data_label, capsize=3, marker=marker, linestyle='-')
+        df.plot(x='T',y='scaling_func', yerr='scaling_func_err', ax=ax1, label=data_label, legend=False, capsize=3, marker=marker, linestyle='-',fillstyle='none')
         ax1.set_xlabel('T')
         
         # plot collapse (use same color as most recently plotted line)
-        df.plot(x='rescaled_T',y='scaling_func', yerr='scaling_func_err', ax=ax2, label=data_label, capsize=3, marker=marker, color=ax1.get_lines()[-1].get_color(), linestyle='')
+        df.plot(x='rescaled_T',y='scaling_func', yerr='scaling_func_err', ax=ax2, label=data_label, capsize=3, marker=marker, color=ax1.get_lines()[-1].get_color(), linestyle='',fillstyle='none')
         ax2.set_xlabel(r'$L^{1/\nu} (T-T_c)$')
 
     
@@ -118,11 +118,15 @@ def plot_multiple_bin(simulations, param, err_pfit, h_ex, mech, folderName, plot
     dummy_L=1
     universal_func_to_plot = f_bin(param, np.column_stack((int(dummy_L)*np.ones(50),param[0]+(dummy_L**param[5])*np.linspace(simulations['rescaled_T'].min(),simulations['rescaled_T'].max(), num=50) )))
     p_rescaled=ax2.plot(np.linspace(simulations['rescaled_T'].min(),simulations['rescaled_T'].max()), universal_func_to_plot, '-', color='plum')
-    
-    plt.legend(loc='best',framealpha=1)
+
+    ax1.tick_params(direction='in',which='both')
+    ax2.tick_params(direction='in',which='both')
+
+    x = float(folderName.split("_")[-1])
+
 
     # add box with found T_c and nu values and the used Bx
-    ob = offsetbox.AnchoredText(r'$T_c=%s$' '\n' r'$\nu=%s$' '\n' r'$B_x=%.2g$'%(str_with_err(param[0],err_pfit[0]),str_with_err(param[-1],err_pfit[-1]),h_ex), loc=3, prop=dict(size=11))
+    ob = offsetbox.AnchoredText(r'$T_c=%s$' '\n' r'$\nu=%s$' '\n' r'$B_x=%.2g$' '\n' r'$x=%.2g$'%(str_with_err(param[0],err_pfit[0]),str_with_err(param[-1],err_pfit[-1]),h_ex,x), loc=3, prop=dict(size=11))
     ax2.add_artist(ob)
     # set the y axis scale (linear or log)
     ax1.set_yscale(plot_options['axis_yscale'])
@@ -132,6 +136,7 @@ def plot_multiple_bin(simulations, param, err_pfit, h_ex, mech, folderName, plot
 
     # save both a png and an eps file
     fig.savefig('../' + config.system_name + '/figures/fit_%s_%s_%s_%s_%s.eps'%(h_ex,mech,'_'.join(map(str,simulations['L'].unique().tolist())), folderName, index),format='eps')
+    fig.savefig('../' + config.system_name + '/figures/fit_%s_%s_%s_%s_%s.pdf'%(h_ex,mech,'_'.join(map(str,simulations['L'].unique().tolist())), folderName, index),format='pdf')
     fig.savefig('../' + config.system_name + '/figures/fit_%s_%s_%s_%s_%s.png'%(h_ex,mech,'_'.join(map(str,simulations['L'].unique().tolist())), folderName, index),dpi=300)
 
 
