@@ -1,0 +1,972 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AnalysisUIOptions">
+    <option name="SCOPE_TYPE" value="4" />
+  </component>
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="BranchesTreeState">
+    <expand>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="LOCAL_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="REMOTE_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="REMOTE_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="GROUP_NODE:origin" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+    </expand>
+    <select>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="LOCAL_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="BRANCH:dev" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+    </select>
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="fe2c44c9-35ff-4d7d-871c-462c261bc9b5" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/LiHoF4_transverse_field_MC.iml" beforeDir="false" afterPath="$PROJECT_DIR$/LiHoF4_transverse_field_MC.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/jupyter_notebooks/Energy-LiHoF4.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/jupyter_notebooks/Energy-LiHoF4.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/jupyter_notebooks/Phase diagram - extracted data.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/jupyter_notebooks/Phase diagram - extracted data.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/scripts.iml" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/scripts.iml" afterDir="false" />
+    </list>
+    <list id="b76d16f2-94f9-4d0b-a281-c7a037b45333" name="Add correlator plotting to plot_bin.py" comment="Add correlator plotting to plot_bin.py">
+      <changelist_data name="Tomer" email="tomerdol@gmail.com" date="1602010309000" />
+    </list>
+    <list id="3bb36414-58d0-4ff6-9392-5baf65078bc2" name="Revert &quot;* Read interactions table into *compact* array + tests * Fixed double multiplying by 0.5 for self-interactions&quot;" comment="Revert &quot;* Read interactions table into *compact* array + tests * Fixed double multiplying by 0.5 for self-interactions&quot;&#10;&#10;This reverts commit 515d307d" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="CodeInsightWorkspaceSettings">
+    <option name="optimizeImportsOnTheFly" value="true" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="JUnit5 Test Class" />
+        <option value="Enum" />
+        <option value="JUnit4 Test Class" />
+        <option value="Jupyter Notebook" />
+        <option value="Python Script" />
+        <option value="Interface" />
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="FlaskConsoleOptions" custom-start-script="import sys&#10;sys.path.extend([WORKING_DIR_AND_PYTHON_PATHS])&#10;from flask.cli import ScriptInfo&#10;locals().update(ScriptInfo(create_app=None).load_app().make_shell_context())&#10;print(&quot;Python %s on %s\nApp: %s [%s]\nInstance: %s&quot; % (sys.version, sys.platform, app.import_name, app.env, app.instance_path))">
+    <envs>
+      <env key="FLASK_APP" value="app" />
+    </envs>
+    <option name="myCustomStartScript" value="import sys&#10;sys.path.extend([WORKING_DIR_AND_PYTHON_PATHS])&#10;from flask.cli import ScriptInfo&#10;locals().update(ScriptInfo(create_app=None).load_app().make_shell_context())&#10;print(&quot;Python %s on %s\nApp: %s [%s]\nInstance: %s&quot; % (sys.version, sys.platform, app.import_name, app.env, app.instance_path))" />
+    <option name="myEnvs">
+      <map>
+        <entry key="FLASK_APP" value="app" />
+      </map>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="PREVIOUS_COMMIT_AUTHORS">
+      <list>
+        <option value="Tomer &lt;tomerdol@gmail.com&gt;" />
+      </list>
+    </option>
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="dev" />
+      </map>
+    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="RESET_MODE" value="HARD" />
+    <option name="UPDATE_TYPE" value="REBASE" />
+  </component>
+  <component name="GitSEFilterConfiguration">
+    <file-type-list>
+      <filtered-out-file-type name="LOCAL_BRANCH" />
+      <filtered-out-file-type name="REMOTE_BRANCH" />
+      <filtered-out-file-type name="TAG" />
+      <filtered-out-file-type name="COMMIT_BY_MESSAGE" />
+    </file-type-list>
+  </component>
+  <component name="JupyterTrust" id="73553c8f-0c67-4bc6-ae84-610acb47ec17" />
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProjectId" id="1PSajKXHyQmzl7H1IWfnHyLcbwd" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "node.js.selected.package.tslint": "(autodetect)",
+    "project.structure.last.edited": "Modules",
+    "project.structure.proportion": "0.15",
+    "project.structure.side.proportion": "0.2",
+    "settings.editor.selected.configurable": "preferences.pluginManager"
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\Tomer\IdeaProjects\LiHoF4_transverse_field_MC\scripts" />
+      <recent name="C:\Users\Tomer\IdeaProjects\LiHoF4_transverse_field_MC\LiHoF4\temperature_schedules" />
+      <recent name="C:\Users\Tomer\IdeaProjects\LiHoF4_transverse_field_MC\LiHoF4\data\results\default" />
+      <recent name="C:\Users\Tomer\IdeaProjects\LiHoF4_transverse_field_MC\docs" />
+      <recent name="C:\Users\Tomer\IdeaProjects\LiHoF4_transverse_field_MC\lib" />
+    </key>
+    <key name="CreateTestDialog.Recents.Supers">
+      <recent name="" />
+    </key>
+    <key name="MoveMembersDialog.RECENTS_KEY">
+      <recent name="simulation.montecarlo.Lattice" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\Tomer\IdeaProjects\LiHoF4_transverse_field_MC\scripts\jupyter_notebooks" />
+      <recent name="C:\Users\Tomer\IdeaProjects\LiHoF4_transverse_field_MC\scripts\deprecated" />
+      <recent name="C:\Users\Tomer\IdeaProjects\LiHoF4_transverse_field_MC\scripts" />
+      <recent name="C:\Users\Tomer\IdeaProjects\LiHoF4_transverse_field_MC\Fe8" />
+      <recent name="C:\Users\Tomer\IdeaProjects\LiHoF4_transverse_field_MC\LiHoF4" />
+    </key>
+    <key name="MoveClassesOrPackagesDialog.RECENTS_KEY">
+      <recent name="simulation.montecarlo" />
+      <recent name="simulation" />
+    </key>
+    <key name="CreateTestDialog.RecentsKey">
+      <recent name="simulation.montecarlo" />
+    </key>
+    <key name="CopyClassDialog.RECENTS_KEY">
+      <recent name="simulation.montecarlo" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Application.Main">
+    <configuration name="AFMInteraction" type="Application" factoryName="Application" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="simulation.montecarlo.AFMInteraction" />
+      <module name="LiHoF4_transverse_field_MC" />
+      <option name="PROGRAM_PARAMETERS" value="-max_iter 80 -L 8,8 -d 1.0 -extBx 0.0 -continue_from_save no -max_sweeps 37 -temp_schedule temp_schedule_new.txt -seed 29384756923345 -alpha 1.0 -verbose -mode s -print_sweep_num 5 -suppress" />
+      <option name="VM_PARAMETERS" value="-Dsystem=LiHoF4" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="simulation.montecarlo.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="GenerateSeeds" type="Application" factoryName="Application" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="utilities.GenerateSeeds" />
+      <module name="LiHoF4_transverse_field_MC" />
+      <option name="PROGRAM_PARAMETERS" value="123 10" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Main" type="Application" factoryName="Application" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="simulation.montecarlo.Main" />
+      <module name="LiHoF4_transverse_field_MC" />
+      <option name="PROGRAM_PARAMETERS" value="-max_iter 80 -L 8,8 -d 1.0 -extBx 0.0 -continue_from_save no -max_sweeps 37 -temp_schedule temp_schedule_new.txt -seed 29384756923345 -alpha 1.0 -verbose -mode s -print_sweep_num 5" />
+      <option name="VM_PARAMETERS" value="-Dsystem=LiHoF4" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="Application" factoryName="Application">
+      <option name="MAIN_CLASS_NAME" value="simulation.montecarlo.Main" />
+      <option name="PROGRAM_PARAMETERS" value="-max_iter 80 -L 3,3 -d 1.0 -extBx 0.0 -continue_from_save no -max_sweeps 10 -temp_schedule temp_schedule_new.txt -alpha 0.95 -verbose" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ewaldSum" type="Application" factoryName="Application" nameIsGenerated="true">
+      <output_file path="$USER_HOME$/Desktop/test.txt" is_save="true" />
+      <option name="MAIN_CLASS_NAME" value="utilities.ewaldSum" />
+      <module name="LiHoF4_transverse_field_MC" />
+      <option name="PROGRAM_PARAMETERS" value="10 10 12 10" />
+      <option name="VM_PARAMETERS" value="-Dsystem=Fe8" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="All in LiHoF4_transverse_field_MC" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="LiHoF4_transverse_field_MC" />
+      <option name="PACKAGE_NAME" value="" />
+      <option name="TEST_OBJECT" value="package" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="LatticeTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="LiHoF4_transverse_field_MC" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="simulation.montecarlo.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="simulation.montecarlo" />
+      <option name="MAIN_CLASS_NAME" value="simulation.montecarlo.LatticeTest" />
+      <option name="METHOD_NAME" value="" />
+      <option name="TEST_OBJECT" value="class" />
+      <option name="VM_PARAMETERS" value="-ea -Dsystem=LiHoF4" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ReadInteractionsTableLiHoF4Test" type="JUnit" factoryName="JUnit" temporary="true">
+      <module name="LiHoF4_transverse_field_MC" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="simulation.montecarlo.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="simulation.montecarlo" />
+      <option name="MAIN_CLASS_NAME" value="simulation.montecarlo.ReadInteractionsTableLiHoF4Test" />
+      <option name="METHOD_NAME" value="exchangeInt" />
+      <option name="TEST_OBJECT" value="method" />
+      <option name="VM_PARAMETERS" value="-ea -Dsystem=LiHoF4" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ReadInteractionsTableTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="LiHoF4_transverse_field_MC" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="simulation.montecarlo.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="simulation.montecarlo" />
+      <option name="MAIN_CLASS_NAME" value="simulation.montecarlo.ReadInteractionsTableTest" />
+      <option name="METHOD_NAME" value="" />
+      <option name="TEST_OBJECT" value="class" />
+      <option name="VM_PARAMETERS" value="-ea -Dsystem=LiHoF4" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="JetRunConfigurationType">
+      <module name="project7" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="KotlinStandaloneScriptRunConfigurationType">
+      <module name="project7" />
+      <option name="filePath" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="bin_data" type="PythonConfigurationType" factoryName="Python">
+      <module name="scripts" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="C:\WPy64-3770\python-3.7.7.amd64\python.exe" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/scripts" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/bin_data.py" />
+      <option name="PARAMETERS" value="-sys LiHoF4 -h_ex 0.0 -f default -m false -L 6" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="fit6" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="LiHoF4_transverse_field_MC" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/scripts" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/fit6.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <list>
+      <item itemvalue="Application.AFMInteraction" />
+      <item itemvalue="Application.GenerateSeeds" />
+      <item itemvalue="Application.Main" />
+      <item itemvalue="Application.ewaldSum" />
+      <item itemvalue="JUnit.ReadInteractionsTableTest" />
+      <item itemvalue="JUnit.LatticeTest" />
+      <item itemvalue="JUnit.All in LiHoF4_transverse_field_MC" />
+      <item itemvalue="JUnit.ReadInteractionsTableLiHoF4Test" />
+      <item itemvalue="Python.bin_data" />
+      <item itemvalue="Python.fit6" />
+    </list>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Python.fit6" />
+        <item itemvalue="JUnit.LatticeTest" />
+        <item itemvalue="JUnit.ReadInteractionsTableLiHoF4Test" />
+        <item itemvalue="JUnit.ReadInteractionsTableTest" />
+        <item itemvalue="JUnit.All in LiHoF4_transverse_field_MC" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="fe2c44c9-35ff-4d7d-871c-462c261bc9b5" name="Default Changelist" comment="" />
+      <created>1561040991270</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1561040991270</updated>
+      <workItem from="1561041001318" duration="4085000" />
+      <workItem from="1561113072376" duration="27472000" />
+      <workItem from="1561274115986" duration="43529000" />
+      <workItem from="1561446162579" duration="18654000" />
+      <workItem from="1561536433131" duration="4622000" />
+      <workItem from="1561553344806" duration="17161000" />
+      <workItem from="1561630089888" duration="6809000" />
+      <workItem from="1561650312481" duration="648000" />
+      <workItem from="1561720733707" duration="8231000" />
+      <workItem from="1561791829923" duration="4131000" />
+      <workItem from="1561878453430" duration="15353000" />
+      <workItem from="1562171242364" duration="4462000" />
+      <workItem from="1562227620731" duration="13567000" />
+      <workItem from="1562485029051" duration="922000" />
+      <workItem from="1564829999877" duration="5425000" />
+      <workItem from="1564900121582" duration="2775000" />
+      <workItem from="1565090615046" duration="7888000" />
+      <workItem from="1565178759412" duration="18930000" />
+      <workItem from="1565258783445" duration="16855000" />
+      <workItem from="1565283319872" duration="2231000" />
+      <workItem from="1565340410240" duration="3388000" />
+      <workItem from="1565510647127" duration="1226000" />
+      <workItem from="1565596501992" duration="636000" />
+      <workItem from="1565599010924" duration="635000" />
+      <workItem from="1565862083956" duration="881000" />
+      <workItem from="1565870095724" duration="1041000" />
+      <workItem from="1565872044002" duration="272000" />
+      <workItem from="1566570599740" duration="1495000" />
+      <workItem from="1566637970975" duration="2800000" />
+      <workItem from="1566831252703" duration="635000" />
+      <workItem from="1567163458170" duration="44000" />
+      <workItem from="1567163550819" duration="4525000" />
+      <workItem from="1567666486427" duration="4668000" />
+      <workItem from="1569941661763" duration="526000" />
+      <workItem from="1570014791519" duration="620000" />
+      <workItem from="1570030297680" duration="3506000" />
+      <workItem from="1570038256200" duration="1615000" />
+      <workItem from="1570088076528" duration="20944000" />
+      <workItem from="1570361873231" duration="5118000" />
+      <workItem from="1572506395047" duration="32000" />
+      <workItem from="1572506590203" duration="114000" />
+      <workItem from="1573582098146" duration="2791000" />
+      <workItem from="1577900828465" duration="12000" />
+      <workItem from="1579787088166" duration="9000" />
+      <workItem from="1599119518920" duration="1592000" />
+      <workItem from="1599124889650" duration="6129000" />
+      <workItem from="1599299648570" duration="1348000" />
+      <workItem from="1599645077755" duration="1256000" />
+      <workItem from="1599903203051" duration="2610000" />
+      <workItem from="1599906930079" duration="3083000" />
+      <workItem from="1599910046358" duration="9565000" />
+      <workItem from="1599922058164" duration="44000" />
+      <workItem from="1599922144547" duration="2067000" />
+      <workItem from="1599924286306" duration="3701000" />
+      <workItem from="1599981626823" duration="4143000" />
+      <workItem from="1599986069470" duration="11762000" />
+      <workItem from="1600066271007" duration="9273000" />
+      <workItem from="1600169667610" duration="10987000" />
+      <workItem from="1600239944312" duration="9595000" />
+      <workItem from="1600329090852" duration="5984000" />
+      <workItem from="1600504554847" duration="2095000" />
+      <workItem from="1600506844310" duration="2682000" />
+      <workItem from="1600594179380" duration="5606000" />
+      <workItem from="1600668099179" duration="26935000" />
+      <workItem from="1600755772176" duration="22370000" />
+      <workItem from="1600844261757" duration="20090000" />
+      <workItem from="1600928834819" duration="21685000" />
+      <workItem from="1601191007892" duration="11087000" />
+      <workItem from="1601360211609" duration="28089000" />
+      <workItem from="1601446653731" duration="9242000" />
+      <workItem from="1601471560771" duration="1261000" />
+      <workItem from="1601537118218" duration="6725000" />
+      <workItem from="1601621469877" duration="598000" />
+      <workItem from="1601717604443" duration="5575000" />
+      <workItem from="1601802966933" duration="15918000" />
+      <workItem from="1601886275255" duration="16890000" />
+      <workItem from="1601965223167" duration="7465000" />
+      <workItem from="1601993552803" duration="3084000" />
+      <workItem from="1602051565121" duration="21979000" />
+      <workItem from="1602085714201" duration="346000" />
+      <workItem from="1602145169776" duration="7163000" />
+      <workItem from="1602417130826" duration="7856000" />
+      <workItem from="1602492865688" duration="1298000" />
+      <workItem from="1602742493760" duration="5534000" />
+      <workItem from="1603010724014" duration="109000" />
+      <workItem from="1603010875749" duration="4638000" />
+      <workItem from="1603350061042" duration="535000" />
+      <workItem from="1606383869413" duration="1201000" />
+      <workItem from="1606405024989" duration="733000" />
+      <workItem from="1608882758649" duration="622000" />
+      <workItem from="1608883870864" duration="1824000" />
+      <workItem from="1608902995162" duration="3482000" />
+      <workItem from="1608907395114" duration="152000" />
+      <workItem from="1609053745922" duration="1677000" />
+      <workItem from="1609233152766" duration="16618000" />
+      <workItem from="1609319929277" duration="2713000" />
+      <workItem from="1609427587676" duration="507000" />
+      <workItem from="1610716314758" duration="7438000" />
+      <workItem from="1611044602251" duration="1918000" />
+      <workItem from="1611051610864" duration="145000" />
+      <workItem from="1611820704870" duration="6572000" />
+      <workItem from="1612110228912" duration="1337000" />
+      <workItem from="1612165519369" duration="8693000" />
+      <workItem from="1614180911979" duration="953000" />
+      <workItem from="1614604234483" duration="6597000" />
+      <workItem from="1614673636343" duration="16380000" />
+      <workItem from="1614700820683" duration="611000" />
+      <workItem from="1614853100113" duration="8130000" />
+      <workItem from="1615118748431" duration="14146000" />
+      <workItem from="1615194084200" duration="8664000" />
+      <workItem from="1615296231842" duration="5479000" />
+      <workItem from="1615369578278" duration="2981000" />
+      <workItem from="1615466096881" duration="1992000" />
+      <workItem from="1615536484099" duration="588000" />
+      <workItem from="1615735274226" duration="2952000" />
+      <workItem from="1615789285808" duration="10886000" />
+      <workItem from="1615814044302" duration="10484000" />
+      <workItem from="1615877410232" duration="7852000" />
+      <workItem from="1615965336759" duration="1107000" />
+      <workItem from="1615968784776" duration="3433000" />
+      <workItem from="1616052436616" duration="9407000" />
+      <workItem from="1616319797974" duration="4272000" />
+      <workItem from="1616602716339" duration="2367000" />
+      <workItem from="1617096272703" duration="535000" />
+      <workItem from="1617096861910" duration="8785000" />
+      <workItem from="1617175886583" duration="2724000" />
+      <workItem from="1617262768373" duration="2363000" />
+      <workItem from="1617359513341" duration="3177000" />
+      <workItem from="1617541996002" duration="4118000" />
+      <workItem from="1617628022753" duration="2633000" />
+      <workItem from="1617780919930" duration="3704000" />
+      <workItem from="1617874483990" duration="3525000" />
+      <workItem from="1618126016522" duration="6666000" />
+      <workItem from="1619944725317" duration="9452000" />
+      <workItem from="1620231494676" duration="331000" />
+      <workItem from="1621410290551" duration="12350000" />
+      <workItem from="1621513877809" duration="955000" />
+      <workItem from="1621768543686" duration="2671000" />
+      <workItem from="1621773040048" duration="4250000" />
+      <workItem from="1621784912248" duration="875000" />
+      <workItem from="1621849361951" duration="6563000" />
+      <workItem from="1621924217117" duration="3999000" />
+      <workItem from="1621942010094" duration="10688000" />
+      <workItem from="1621953244195" duration="101000" />
+      <workItem from="1622007261906" duration="3086000" />
+      <workItem from="1622103732952" duration="14791000" />
+      <workItem from="1622180732637" duration="5437000" />
+      <workItem from="1622354385665" duration="8773000" />
+      <workItem from="1622440671020" duration="2634000" />
+      <workItem from="1622460807807" duration="4421000" />
+      <workItem from="1622559423965" duration="3557000" />
+      <workItem from="1622630813792" duration="762000" />
+      <workItem from="1622699251024" duration="1480000" />
+      <workItem from="1622723385340" duration="5077000" />
+      <workItem from="1622793263995" duration="1195000" />
+      <workItem from="1622963736935" duration="7105000" />
+      <workItem from="1623664738424" duration="129000" />
+      <workItem from="1623664939467" duration="79000" />
+      <workItem from="1623665073995" duration="4194000" />
+      <workItem from="1624782299174" duration="3068000" />
+      <workItem from="1624786307471" duration="1494000" />
+      <workItem from="1624802627355" duration="4801000" />
+      <workItem from="1624862629016" duration="11985000" />
+      <workItem from="1624942785825" duration="17193000" />
+      <workItem from="1625032371505" duration="6664000" />
+      <workItem from="1625044468934" duration="8065000" />
+      <workItem from="1625124612877" duration="3635000" />
+      <workItem from="1625138312415" duration="8712000" />
+      <workItem from="1625476764064" duration="14437000" />
+      <workItem from="1625504210599" duration="1492000" />
+      <workItem from="1625551387753" duration="8451000" />
+      <workItem from="1625638964334" duration="17313000" />
+      <workItem from="1625733695787" duration="15407000" />
+      <workItem from="1625931045269" duration="4729000" />
+      <workItem from="1625983941423" duration="24468000" />
+      <workItem from="1626078140317" duration="20705000" />
+      <workItem from="1626155323552" duration="22350000" />
+      <workItem from="1626242737441" duration="22745000" />
+      <workItem from="1626331021993" duration="22029000" />
+      <workItem from="1626591982272" duration="7845000" />
+      <workItem from="1626623533745" duration="498000" />
+      <workItem from="1626693884657" duration="4451000" />
+      <workItem from="1626788418169" duration="2515000" />
+      <workItem from="1626850764860" duration="1928000" />
+      <workItem from="1626935563442" duration="2219000" />
+      <workItem from="1627210255923" duration="2780000" />
+      <workItem from="1627455234583" duration="5851000" />
+      <workItem from="1627644157230" duration="929000" />
+      <workItem from="1627801497198" duration="623000" />
+      <workItem from="1627802275688" duration="459000" />
+      <workItem from="1627802917803" duration="108000" />
+      <workItem from="1627803072744" duration="10460000" />
+      <workItem from="1631177983140" duration="153000" />
+      <workItem from="1637058842435" duration="7160000" />
+      <workItem from="1637075850819" duration="314000" />
+      <workItem from="1637076221804" duration="479000" />
+      <workItem from="1638117013901" duration="332000" />
+      <workItem from="1640432317568" duration="187000" />
+      <workItem from="1640432745992" duration="195000" />
+      <workItem from="1640433088509" duration="152000" />
+      <workItem from="1640433553937" duration="8790000" />
+      <workItem from="1640507138174" duration="12034000" />
+      <workItem from="1640607094243" duration="4029000" />
+      <workItem from="1640945478545" duration="5358000" />
+      <workItem from="1641125886063" duration="9062000" />
+      <workItem from="1641196166505" duration="4732000" />
+      <workItem from="1642494051774" duration="4857000" />
+      <workItem from="1642516567699" duration="2292000" />
+      <workItem from="1642579441108" duration="1373000" />
+      <workItem from="1642697232567" duration="2987000" />
+      <workItem from="1642766273491" duration="4365000" />
+      <workItem from="1642850350046" duration="1109000" />
+      <workItem from="1647438847777" duration="4000" />
+      <workItem from="1647776103317" duration="3429000" />
+      <workItem from="1649259140132" duration="223000" />
+      <workItem from="1649308723200" duration="4342000" />
+      <workItem from="1651644695555" duration="1367000" />
+      <workItem from="1651646148495" duration="7712000" />
+      <workItem from="1651922819613" duration="830000" />
+      <workItem from="1652001726212" duration="11332000" />
+      <workItem from="1652073228167" duration="4990000" />
+      <workItem from="1652084488023" duration="7316000" />
+      <workItem from="1652183471190" duration="15555000" />
+      <workItem from="1654509636797" duration="722000" />
+    </task>
+    <task id="LOCAL‎00255" summary="* removed unused functions from plot_bin.py&#10;* extended documentation in plot_bin.py">
+      <created>1626335932736</created>
+      <option name="number" value="LOCAL‎00255" />
+      <option name="presentableId" value="LOCAL‎00255" />
+      <updated>1626335932736</updated>
+    </task>
+    <task id="LOCAL‎00256" summary="* extended documentation in plot_equilibration_pdf_bin.py&#10;* removed an old version of the function main_hist() and changed main_hist2()-&gt;main_hist()">
+      <created>1626343100649</created>
+      <option name="number" value="LOCAL‎00256" />
+      <option name="presentableId" value="LOCAL‎00256" />
+      <updated>1626343100649</updated>
+    </task>
+    <task id="LOCAL‎00257" summary="* extended documentation in plot_histogram.py, plot_lattice.awk, plot_lattice.sh, plot_lattice.txt, print_lattice_from_existing_checkpoints.sh, resubmit_to_all.sh, resubmit_to_parallel.sh, run_jupyter.sh, sub.sh, temp_set_script.sh&#10;* removed plot_phase_diagram.py, re_bin.sh, remove_raw_data.sh&#10;* deprecated phase_diagram.py, test_autocorrelation.py">
+      <created>1626350998745</created>
+      <option name="number" value="LOCAL‎00257" />
+      <option name="presentableId" value="LOCAL‎00257" />
+      <updated>1626350998745</updated>
+    </task>
+    <task id="LOCAL‎00258" summary="* Added separate dir for jupyter notebooks in /scripts">
+      <created>1626592099269</created>
+      <option name="number" value="LOCAL‎00258" />
+      <option name="presentableId" value="LOCAL‎00258" />
+      <updated>1626592099273</updated>
+    </task>
+    <task id="LOCAL‎00259" summary="* BUGFIX: Changed mk2x column number to 16 (in the master branch where we removed a column 15 is the correct index)">
+      <created>1626592222946</created>
+      <option name="number" value="LOCAL‎00259" />
+      <option name="presentableId" value="LOCAL‎00259" />
+      <updated>1626592222946</updated>
+    </task>
+    <task id="LOCAL‎00260" summary="* BUGFIX: Changed mk2x column number to 16 (in the master branch where we removed a column 15 is the correct index)">
+      <created>1626592338373</created>
+      <option name="number" value="LOCAL‎00260" />
+      <option name="presentableId" value="LOCAL‎00260" />
+      <updated>1626592338373</updated>
+    </task>
+    <task id="LOCAL‎00261" summary="Added JavaDoc">
+      <created>1626592464428</created>
+      <option name="number" value="LOCAL‎00261" />
+      <option name="presentableId" value="LOCAL‎00261" />
+      <updated>1626592464428</updated>
+    </task>
+    <task id="LOCAL‎00262" summary="Reformatted python docstrings for better visibility">
+      <created>1626593446997</created>
+      <option name="number" value="LOCAL‎00262" />
+      <option name="presentableId" value="LOCAL‎00262" />
+      <updated>1626593446997</updated>
+    </task>
+    <task id="LOCAL‎00263" summary="Added Jupyter notebooks">
+      <created>1626622689985</created>
+      <option name="number" value="LOCAL‎00263" />
+      <option name="presentableId" value="LOCAL‎00263" />
+      <updated>1626622689986</updated>
+    </task>
+    <task id="LOCAL‎00264" summary="Added Jupyter notebooks">
+      <created>1626623649967</created>
+      <option name="number" value="LOCAL‎00264" />
+      <option name="presentableId" value="LOCAL‎00264" />
+      <updated>1626623649968</updated>
+    </task>
+    <task id="LOCAL‎00265" summary="Added important directory info to the README.">
+      <created>1626698042053</created>
+      <option name="number" value="LOCAL‎00265" />
+      <option name="presentableId" value="LOCAL‎00265" />
+      <updated>1626698042053</updated>
+    </task>
+    <task id="LOCAL‎00266" summary="moved definition of Jex to the submitting scripts">
+      <created>1626698543563</created>
+      <option name="number" value="LOCAL‎00266" />
+      <option name="presentableId" value="LOCAL‎00266" />
+      <updated>1626698543563</updated>
+    </task>
+    <task id="LOCAL‎00267" summary="* Add exception when binned data is read that seeds that do not include a given temperature (perhaps they were created during the binning process) are just skipped.&#10;* notebook for plotting the x-T phase diagram">
+      <created>1626792692380</created>
+      <option name="number" value="LOCAL‎00267" />
+      <option name="presentableId" value="LOCAL‎00267" />
+      <updated>1626792692381</updated>
+    </task>
+    <task id="LOCAL‎00268" summary="Added option to force binning">
+      <created>1626851527260</created>
+      <option name="number" value="LOCAL‎00268" />
+      <option name="presentableId" value="LOCAL‎00268" />
+      <updated>1626851527261</updated>
+    </task>
+    <task id="LOCAL‎00269" summary="Added option to force binning">
+      <created>1626852493903</created>
+      <option name="number" value="LOCAL‎00269" />
+      <option name="presentableId" value="LOCAL‎00269" />
+      <updated>1626852493903</updated>
+    </task>
+    <task id="LOCAL‎00270" summary="BUGFIX in output of final simulation state - 1. interactions table was read without dilution. 2. interactions table was only read at the end in the case of suppression of transverse fields, so the exchange interaction remained in the other case.">
+      <created>1626935999305</created>
+      <option name="number" value="LOCAL‎00270" />
+      <option name="presentableId" value="LOCAL‎00270" />
+      <updated>1626935999306</updated>
+    </task>
+    <task id="LOCAL‎00271" summary="VERSION 1.5.1">
+      <created>1626937873291</created>
+      <option name="number" value="LOCAL‎00271" />
+      <option name="presentableId" value="LOCAL‎00271" />
+      <updated>1626937873291</updated>
+    </task>
+    <task id="LOCAL‎00272" summary="* Added jupyter notebook for energy calculations&#10;* Use only output files after a certain date in get_avgs.py">
+      <created>1627210577250</created>
+      <option name="number" value="LOCAL‎00272" />
+      <option name="presentableId" value="LOCAL‎00272" />
+      <updated>1627210577250</updated>
+    </task>
+    <task id="LOCAL‎00273" summary="Changed comment to '#' in get_avgs.py">
+      <created>1627216667985</created>
+      <option name="number" value="LOCAL‎00273" />
+      <option name="presentableId" value="LOCAL‎00273" />
+      <updated>1627216667985</updated>
+    </task>
+    <task id="LOCAL‎00274" summary="* update submission parameters&#10;* treat temperature as float when plotting correlators">
+      <created>1627463666957</created>
+      <option name="number" value="LOCAL‎00274" />
+      <option name="presentableId" value="LOCAL‎00274" />
+      <updated>1627463666958</updated>
+    </task>
+    <task id="LOCAL‎00275" summary="* added results from low_jex_dilution_1.0 Bx=0 to results notebook">
+      <created>1627644225408</created>
+      <option name="number" value="LOCAL‎00275" />
+      <option name="presentableId" value="LOCAL‎00275" />
+      <updated>1627644225410</updated>
+    </task>
+    <task id="LOCAL‎00276" summary="correctly read interactions table at the end of the simulation, and also add the exchange interaction to it (all in case internal fields were suppressed)">
+      <created>1627645108921</created>
+      <option name="number" value="LOCAL‎00276" />
+      <option name="presentableId" value="LOCAL‎00276" />
+      <updated>1627645108921</updated>
+    </task>
+    <task id="LOCAL‎00277" summary="Added get_temp_schedule_from_old_project.sh">
+      <created>1627819179235</created>
+      <option name="number" value="LOCAL‎00277" />
+      <option name="presentableId" value="LOCAL‎00277" />
+      <updated>1627819179236</updated>
+    </task>
+    <task id="LOCAL‎00278" summary="Updated results notebooks">
+      <created>1631178128643</created>
+      <option name="number" value="LOCAL‎00278" />
+      <option name="presentableId" value="LOCAL‎00278" />
+      <updated>1631178128644</updated>
+    </task>
+    <task id="LOCAL‎00279" summary="updated scripts">
+      <created>1637059724671</created>
+      <option name="number" value="LOCAL‎00279" />
+      <option name="presentableId" value="LOCAL‎00279" />
+      <updated>1637059724686</updated>
+    </task>
+    <task id="LOCAL‎00280" summary="updated scripts">
+      <created>1637073608166</created>
+      <option name="number" value="LOCAL‎00280" />
+      <option name="presentableId" value="LOCAL‎00280" />
+      <updated>1637073608166</updated>
+    </task>
+    <task id="LOCAL‎00281" summary="updated scripts">
+      <created>1637076628970</created>
+      <option name="number" value="LOCAL‎00281" />
+      <option name="presentableId" value="LOCAL‎00281" />
+      <updated>1637076628971</updated>
+    </task>
+    <task id="LOCAL‎00282" summary="retrieved old jupyter notebooks">
+      <created>1638117256913</created>
+      <option name="number" value="LOCAL‎00282" />
+      <option name="presentableId" value="LOCAL‎00282" />
+      <updated>1638117256916</updated>
+    </task>
+    <task id="LOCAL‎00283" summary="retrieved old jupyter notebooks">
+      <created>1638117338908</created>
+      <option name="number" value="LOCAL‎00283" />
+      <option name="presentableId" value="LOCAL‎00283" />
+      <updated>1638117338908</updated>
+    </task>
+    <task id="LOCAL‎00284" summary="Add calculation of effective antiferromagnetic interaction due to the ODD mechanism">
+      <created>1640462709417</created>
+      <option name="number" value="LOCAL‎00284" />
+      <option name="presentableId" value="LOCAL‎00284" />
+      <updated>1640462709418</updated>
+    </task>
+    <task id="LOCAL‎00285" summary="Improved calculation of effective antiferromagnetic interaction due to the ODD mechanism">
+      <created>1640945771018</created>
+      <option name="number" value="LOCAL‎00285" />
+      <option name="presentableId" value="LOCAL‎00285" />
+      <updated>1640945771026</updated>
+    </task>
+    <task id="LOCAL‎00286" summary="Code used for the &quot;ESTIMATION OF THE EFFECTIVE INTERACTION&quot; section in the supplemental information">
+      <created>1642512447641</created>
+      <option name="number" value="LOCAL‎00286" />
+      <option name="presentableId" value="LOCAL‎00286" />
+      <updated>1642512447643</updated>
+    </task>
+    <task id="LOCAL‎00287" summary="added self-consistent calculation">
+      <created>1642698968043</created>
+      <option name="number" value="LOCAL‎00287" />
+      <option name="presentableId" value="LOCAL‎00287" />
+      <updated>1642698968044</updated>
+    </task>
+    <task id="LOCAL‎00288" summary="added commandline agruments for cluster run">
+      <created>1642850395933</created>
+      <option name="number" value="LOCAL‎00288" />
+      <option name="presentableId" value="LOCAL‎00288" />
+      <updated>1642850395935</updated>
+    </task>
+    <task id="LOCAL‎00289" summary="updated jupyter notebooks to latest version (from effective_interaction branch)">
+      <created>1647778266825</created>
+      <option name="number" value="LOCAL‎00289" />
+      <option name="presentableId" value="LOCAL‎00289" />
+      <updated>1647778266826</updated>
+    </task>
+    <task id="LOCAL‎00290" summary="updated jupyter notebooks to latest version (from effective_interaction branch)">
+      <created>1647778847980</created>
+      <option name="number" value="LOCAL‎00290" />
+      <option name="presentableId" value="LOCAL‎00290" />
+      <updated>1647778847980</updated>
+    </task>
+    <task id="LOCAL‎00291" summary="added shift of Tc in phase diagram proportional to energy decrease, when applied to MF results in good agreement with experiment">
+      <created>1647779620186</created>
+      <option name="number" value="LOCAL‎00291" />
+      <option name="presentableId" value="LOCAL‎00291" />
+      <updated>1647779620186</updated>
+    </task>
+    <task id="LOCAL‎00292" summary="updated scripts from cluster">
+      <created>1649310663988</created>
+      <option name="number" value="LOCAL‎00292" />
+      <option name="presentableId" value="LOCAL‎00292" />
+      <updated>1649310663988</updated>
+    </task>
+    <task id="LOCAL‎00293" summary="Added fit2.py that fixes nu at the MF value of 1/2">
+      <created>1649310743860</created>
+      <option name="number" value="LOCAL‎00293" />
+      <option name="presentableId" value="LOCAL‎00293" />
+      <updated>1649310743860</updated>
+    </task>
+    <task id="LOCAL‎00294" summary="Added plot_lattice_staggered_mag to plot the staggered magnetization based on lattice outputs">
+      <created>1649313177074</created>
+      <option name="number" value="LOCAL‎00294" />
+      <option name="presentableId" value="LOCAL‎00294" />
+      <updated>1649313177074</updated>
+    </task>
+    <task id="LOCAL‎00295" summary="Added plot of shift in Tc due to ODD terms">
+      <created>1651644882666</created>
+      <option name="number" value="LOCAL‎00295" />
+      <option name="presentableId" value="LOCAL‎00295" />
+      <updated>1651644882673</updated>
+    </task>
+    <task id="LOCAL‎00296" summary="Organize Energy-LiHoF4.ipynb">
+      <created>1651645423417</created>
+      <option name="number" value="LOCAL‎00296" />
+      <option name="presentableId" value="LOCAL‎00296" />
+      <updated>1651645423417</updated>
+    </task>
+    <task id="LOCAL‎00297" summary="Organize Phase diagram - extracted data.ipynb and Phase diagram - results.ipynb">
+      <created>1651646333019</created>
+      <option name="number" value="LOCAL‎00297" />
+      <option name="presentableId" value="LOCAL‎00297" />
+      <updated>1651646333021</updated>
+    </task>
+    <task id="LOCAL‎00298" summary="adding 3 components of the magnetic moment">
+      <created>1652010811644</created>
+      <option name="number" value="LOCAL‎00298" />
+      <option name="presentableId" value="LOCAL‎00298" />
+      <updated>1652010811644</updated>
+    </task>
+    <task id="LOCAL‎00299" summary="changed calls to momentTable in Lattice">
+      <created>1652023594374</created>
+      <option name="number" value="LOCAL‎00299" />
+      <option name="presentableId" value="LOCAL‎00299" />
+      <updated>1652023594374</updated>
+    </task>
+    <task id="LOCAL‎00300" summary="more changes in Lattice to move to 3 component magnetic moments">
+      <created>1652078242280</created>
+      <option name="number" value="LOCAL‎00300" />
+      <option name="presentableId" value="LOCAL‎00300" />
+      <updated>1652078242281</updated>
+    </task>
+    <task id="LOCAL‎00301" summary="updated the Jacobian function">
+      <created>1652094141667</created>
+      <option name="number" value="LOCAL‎00301" />
+      <option name="presentableId" value="LOCAL‎00301" />
+      <updated>1652094141671</updated>
+    </task>
+    <task id="LOCAL‎00302" summary="finished updating for transverse components. code compiles">
+      <created>1652101384632</created>
+      <option name="number" value="LOCAL‎00302" />
+      <option name="presentableId" value="LOCAL‎00302" />
+      <updated>1652101384632</updated>
+    </task>
+    <task id="LOCAL‎00303" summary="code compiled and runs w/o errors">
+      <created>1652267280093</created>
+      <option name="number" value="LOCAL‎00303" />
+      <option name="presentableId" value="LOCAL‎00303" />
+      <updated>1652267280094</updated>
+    </task>
+    <option name="localTasksCounter" value="304" />
+    <servers />
+  </component>
+  <component name="Vcs.Log.History.Properties">
+    <option name="COLUMN_ID_ORDER">
+      <list>
+        <option value="Default.Root" />
+        <option value="Default.Author" />
+        <option value="Default.Date" />
+        <option value="Default.Subject" />
+        <option value="Space.CommitStatus" />
+      </list>
+    </option>
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="master" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
+          </value>
+        </entry>
+        <entry key="b4eb5f7a-bf62-46cb-ac67-6fa6492f3d75">
+          <value>
+            <State>
+              <option name="SHOW_ONLY_AFFECTED_CHANGES" value="true" />
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="HEAD" />
+                      </list>
+                    </value>
+                  </entry>
+                  <entry key="structure">
+                    <value>
+                      <list>
+                        <option value="dir:C:/Users/Tomer/IdeaProjects/LiHoF4_transverse_field_MC/scripts" />
+                      </list>
+                    </value>
+                  </entry>
+                  <entry key="text">
+                    <value>
+                      <list>
+                        <option value="autocorrelation_tests" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
+          </value>
+        </entry>
+        <entry key="d41dcb4e-6a80-4936-a7f1-256f094ae608">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
+    <MESSAGE value="* added results from low_jex_dilution_1.0 Bx=0 to results notebook" />
+    <MESSAGE value="correctly read interactions table at the end of the simulation, and also add the exchange interaction to it (all in case internal fields were suppressed)" />
+    <MESSAGE value="Added get_temp_schedule_from_old_project.sh" />
+    <MESSAGE value="Updated results notebooks" />
+    <MESSAGE value="updated scripts" />
+    <MESSAGE value="retrieved old jupyter notebooks" />
+    <MESSAGE value="Add calculation of effective antiferromagnetic interaction due to the ODD mechanism" />
+    <MESSAGE value="Improved calculation of effective antiferromagnetic interaction due to the ODD mechanism" />
+    <MESSAGE value="Code used for the &quot;ESTIMATION OF THE EFFECTIVE INTERACTION&quot; section in the supplemental information" />
+    <MESSAGE value="added self-consistent calculation" />
+    <MESSAGE value="added commandline agruments for cluster run" />
+    <MESSAGE value="updated jupyter notebooks to latest version (from effective_interaction branch)" />
+    <MESSAGE value="added shift of Tc in phase diagram proportional to energy decrease, when applied to MF results in good agreement with experiment" />
+    <MESSAGE value="updated scripts from cluster" />
+    <MESSAGE value="Added fit2.py that fixes nu at the MF value of 1/2" />
+    <MESSAGE value="Added plot_lattice_staggered_mag to plot the staggered magnetization based on lattice outputs" />
+    <MESSAGE value="Added plot of shift in Tc due to ODD terms" />
+    <MESSAGE value="Organize Energy-LiHoF4.ipynb" />
+    <MESSAGE value="Organize Phase diagram - extracted data.ipynb and Phase diagram - results.ipynb" />
+    <MESSAGE value="adding 3 components of the magnetic moment" />
+    <MESSAGE value="changed calls to momentTable in Lattice" />
+    <MESSAGE value="more changes in Lattice to move to 3 component magnetic moments" />
+    <MESSAGE value="updated the Jacobian function" />
+    <MESSAGE value="finished updating for transverse components. code compiles" />
+    <MESSAGE value="code compiled and runs w/o errors" />
+    <option name="LAST_COMMIT_MESSAGE" value="code compiled and runs w/o errors" />
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
+  </component>
+</project>
