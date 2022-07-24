@@ -1,6 +1,6 @@
 # Monte Carlo study of LiHoF<sub>4</sub> under a weak transverse magnetic field 
 
-**Version 1.3.0b** - [Change log](changelog.md)
+**Version 1.5.1** - [Change log](changelog.md)
 
 ## Overview
 Software used to study LiHoF<sub>4</sub> and other dipolar magnetic systems.\
