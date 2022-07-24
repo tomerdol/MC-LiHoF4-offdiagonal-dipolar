@@ -11,7 +11,7 @@ This software is run under the Sun Grid Engine ([SGE](http://gridscheduler.sourc
 
 ## How to compile?
 The project was developed using IntelliJ IDEA (2021.*, Ultimate edition) and is most easily compiled inside the IDE.\
-If unavailable, it is also possible to compile using the primary Java compiler, javac. All dependencies are kept as .jar files in [lib](./lib).\
+If unavailable, it is also possible to compile using the primary Java compiler, javac. All dependencies are kept as .jar files in [lib](./lib).
 * On Linux:
 ```
 find src/ -name *.java > sources.txt  
