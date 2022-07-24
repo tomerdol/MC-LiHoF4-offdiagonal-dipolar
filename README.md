@@ -4,6 +4,7 @@
 
 ## Overview
 Software used to study LiHoF<sub>4</sub> and other dipolar magnetic systems.\
+Used for the paper *Effect of intrinsic quantum fluctuations on the phase diagram of anisotropic dipolar magnets* by T. Dollberg, J. C. Andresen, M. Schechter, [Phys. Rev. B 105, L180413 (2022)](https://link.aps.org/doi/10.1103/PhysRevB.105.L180413).\
 This repository contains the main Java simulation software (in [src](./src)), Java dependencies (in [lib](./lib)) and various Python and shell scripts (in [scripts](./scripts)) used to monitor the simulations and analyze their results.\
 Different studied systems use separate working directories (LiHoF4 and Fe8) where simulation data, figures and checkpoints are stored.\
 This software is run under the Sun Grid Engine ([SGE](http://gridscheduler.sourceforge.net/htmlman/manuals.html)).
